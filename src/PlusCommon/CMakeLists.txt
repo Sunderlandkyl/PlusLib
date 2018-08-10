@@ -17,6 +17,7 @@ SET(${PROJECT_NAME}_SRCS
   IO/vtkPlusNrrdSequenceIO.cxx
   IO/vtkPlusSequenceIOBase.cxx
   IO/vtkPlusSequenceIO.cxx
+  IO/vtkPlusMkvSequenceIO.cxx
   vtkPlusRecursiveCriticalSection.cxx
   )
 
@@ -39,10 +40,12 @@ IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
     IO/vtkPlusNrrdSequenceIO.h
     IO/vtkPlusSequenceIO.h
     IO/vtkPlusSequenceIOBase.h
+    IO/vtkPlusMkvSequenceIO.h
     vtkPlusRecursiveCriticalSection.h
     PixelCodec.h
     PlusXmlUtils.h
     )
+
 ENDIF()
 
 SET(${PROJECT_NAME}_INCLUDE_DIRS
@@ -51,6 +54,24 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/IO
   CACHE INTERNAL "" FORCE)
+
+IF(PLUS_USE_vtkVideoIO)
+  LIST(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${VTKVIDEOIO_INCLUDE_DIRS})
+  LIST(APPEND ${PROJECT_NAME}_SRCS vtkPlusOpenIGTLinkCodec.cxx)
+  IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
+    LIST(APPEND ${PROJECT_NAME}_HDRS vtkPlusOpenIGTLinkCodec.h)
+  ENDIF()
+ENDIF()
+
+# If igtlioConverter was compiled as a static library, we do not need igtlio in the install configuration
+GET_PROPERTY(IGTLIO_LIB_TYPE TARGET igtlioConverter PROPERTY STATIC_LIBRARY_FLAGS)
+IF(NOT IGTLIO_LIB_TYPE STREQUAL "STATIC_LIBRARY")
+  SET(OPENIGTLINKIO_CONFIG_CODE [=[
+    IF(NOT DEFINED OpenIGTLinkIO_DIR)
+      SET(OpenIGTLinkIO_DIR "@OpenIGTLinkIO_DIR@")
+    ENDIF()
+    FIND_PACKAGE(OpenIGTLinkIO NO_MODULE REQUIRED)]=])
+ENDIF()
 
 # --------------------------------------------------------------------------
 # Build the library
@@ -82,6 +103,7 @@ SET(${PROJECT_NAME}_LIBS
   ITKIOMeta
   itkvnl
   itkvnl_algo
+  igtlioConverter
   )
 
 IF(WIN32)
@@ -90,6 +112,10 @@ ENDIF(WIN32)
 
 IF(PLUS_USE_OpenIGTLink)
   LIST(APPEND ${PROJECT_NAME}_LIBS OpenIGTLink)
+ENDIF()
+
+IF(PLUS_USE_vtkVideoIO)
+  LIST(APPEND ${PROJECT_NAME}_LIBS ${VTKVIDEOIO_LIBRARIES})
 ENDIF()
 
 GENERATE_EXPORT_DIRECTIVE_FILE(vtk${PROJECT_NAME})

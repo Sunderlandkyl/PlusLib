@@ -19,6 +19,8 @@
 #include "vtksys/SystemTools.hxx"
 #include <math.h>
 
+#include <vtkPlusMkvSequenceIO.h>
+
 //----------------------------------------------------------------------------
 // ************************* vtkPlusTrackedFrameList *****************************
 //----------------------------------------------------------------------------
@@ -541,6 +543,38 @@ PlusStatus vtkPlusTrackedFrameList::ReadFromNrrdFile(const std::string& trackedS
   if (reader->Read() != PLUS_SUCCESS)
   {
     LOG_ERROR("Couldn't read Nrrd file: " <<  trackedSequenceDataFileName);
+    return PLUS_FAIL;
+  }
+  return PLUS_SUCCESS;
+}
+
+//----------------------------------------------------------------------------
+PlusStatus vtkPlusTrackedFrameList::SaveToMatroskaFile(const std::string& filename, US_IMAGE_ORIENTATION orientationInFile /*= US_IMG_ORIENT_MF*/, bool useCompression /*= true*/, bool enableImageDataWrite /*= true*/)
+{
+  return PLUS_SUCCESS;
+}
+
+//----------------------------------------------------------------------------
+PlusStatus vtkPlusTrackedFrameList::ReadFromMatroskaFile(const std::string& trackedSequenceDataFileName)
+{
+  std::string trackedSequenceDataFilePath(trackedSequenceDataFileName);
+
+  // If file is not found in the current directory then try to find it in the image directory, too
+  if (!vtksys::SystemTools::FileExists(trackedSequenceDataFilePath.c_str(), true))
+  {
+    if (vtkPlusConfig::GetInstance()->FindImagePath(trackedSequenceDataFileName, trackedSequenceDataFilePath) == PLUS_FAIL)
+    {
+      LOG_ERROR("Cannot find MKV file: " << trackedSequenceDataFileName);
+      return PLUS_FAIL;
+    }
+  }
+
+  vtkSmartPointer<vtkPlusMkvSequenceIO> reader = vtkSmartPointer<vtkPlusMkvSequenceIO>::New();
+  reader->SetFileName(trackedSequenceDataFilePath.c_str());
+  reader->SetTrackedFrameList(this);
+  if (reader->Read() != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Couldn't read MKV file: " << trackedSequenceDataFileName);
     return PLUS_FAIL;
   }
   return PLUS_SUCCESS;

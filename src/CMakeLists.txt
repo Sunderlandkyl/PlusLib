@@ -39,6 +39,16 @@ IF(PLUS_USE_OpenIGTLink)
 ENDIF()
 
 # --------------------------------------------------------------------------
+# Use vtkVideoIO for video file IO
+OPTION(PLUS_USE_vtkVideoIO "Use vtkVideoIO for video file reading and writign" OFF)
+SET(PLUS_USE_vtkVideoIO)
+IF (PLUS_USE_vtkVideoIO)
+  FIND_PACKAGE(vtkVideoIO REQUIRED NO_MODULE)
+  SET(libwebm_DIR ${vtkVideoIO_DIR}/libwebm-bin)
+  FIND_PACKAGE(libwebm REQUIRED NO_MODULE)
+ENDIF()
+
+# --------------------------------------------------------------------------
 # Options
 OPTION(BUILD_SHARED_LIBS "Build with shared libraries." ${VTK_BUILD_SHARED_LIBS} ${ITK_BUILD_SHARED_LIBS})
 
