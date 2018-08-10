@@ -20,6 +20,10 @@ SET(${PROJECT_NAME}_SRCS
   vtkPlusRecursiveCriticalSection.cxx
   )
 
+  IF(${PLUS_USE_libwebm} AND ${OpenIGTLink_ENABLE_VIDEOSTREAMING} AND ${PLUS_USE_OpenIGTLink})
+    LIST(APPEND ${PROJECT_NAME}_SRCS IO/vtkPlusMkvSequenceIO.cxx)
+  ENDIF()
+
 IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
   SET(${PROJECT_NAME}_HDRS
     ${PROJECT_NAME}.h
@@ -43,6 +47,11 @@ IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
     PixelCodec.h
     PlusXmlUtils.h
     )
+
+  IF(${PLUS_USE_libwebm} AND ${OpenIGTLink_ENABLE_VIDEOSTREAMING} AND ${PLUS_USE_OpenIGTLink})
+    LIST(APPEND ${PROJECT_NAME}_HDRS IO/vtkPlusMkvSequenceIO.h)
+  ENDIF()
+
 ENDIF()
 
 SET(${PROJECT_NAME}_INCLUDE_DIRS
@@ -51,6 +60,20 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/IO
   CACHE INTERNAL "" FORCE)
+
+IF(${PLUS_USE_libwebm} AND ${OpenIGTLink_ENABLE_VIDEOSTREAMING} AND ${PLUS_USE_OpenIGTLink})
+  LIST(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${libwebm_INCLUDE_DIR})
+ENDIF()
+
+# If igtlioConverter was compiled as a static library, we do not need igtlio in the install configuration
+GET_PROPERTY(IGTLIO_LIB_TYPE TARGET igtlioConverter PROPERTY STATIC_LIBRARY_FLAGS)
+IF(NOT IGTLIO_LIB_TYPE STREQUAL "STATIC_LIBRARY")
+  SET(OPENIGTLINKIO_CONFIG_CODE [=[
+    IF(NOT DEFINED OpenIGTLinkIO_DIR)
+      SET(OpenIGTLinkIO_DIR "@OpenIGTLinkIO_DIR@")
+    ENDIF()
+    FIND_PACKAGE(OpenIGTLinkIO NO_MODULE REQUIRED)]=])
+ENDIF()
 
 # --------------------------------------------------------------------------
 # Build the library
@@ -82,6 +105,7 @@ SET(${PROJECT_NAME}_LIBS
   ITKIOMeta
   itkvnl
   itkvnl_algo
+  igtlioConverter
   )
 
 IF(WIN32)
@@ -90,6 +114,11 @@ ENDIF(WIN32)
 
 IF(PLUS_USE_OpenIGTLink)
   LIST(APPEND ${PROJECT_NAME}_LIBS OpenIGTLink)
+ENDIF()
+
+IF(${PLUS_USE_libwebm} AND ${OpenIGTLink_ENABLE_VIDEOSTREAMING} AND ${PLUS_USE_OpenIGTLink})
+  include(${libwebm_BINARY_DIR}/libwebmTargets.cmake)
+  LIST(APPEND ${PROJECT_NAME}_LIBS webm)
 ENDIF()
 
 GENERATE_EXPORT_DIRECTIVE_FILE(vtk${PROJECT_NAME})

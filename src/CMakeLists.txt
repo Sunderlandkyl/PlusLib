@@ -39,6 +39,10 @@ IF(PLUS_USE_OpenIGTLink)
 ENDIF()
 
 # --------------------------------------------------------------------------
+# Use libwebm for video saving
+OPTION(PLUS_USE_libwebm "Use the OpenIGTLink protocol" OFF)
+
+# --------------------------------------------------------------------------
 # Options
 OPTION(BUILD_SHARED_LIBS "Build with shared libraries." ${VTK_BUILD_SHARED_LIBS} ${ITK_BUILD_SHARED_LIBS})
 

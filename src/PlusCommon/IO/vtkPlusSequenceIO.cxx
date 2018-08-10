@@ -10,6 +10,7 @@
 #include "vtkPlusNrrdSequenceIO.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkPlusTrackedFrameList.h"
+#include "vtkPlusMkvSequenceIO.h"
 
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusSequenceIO::Write(const std::string& filename, vtkPlusTrackedFrameList* frameList, US_IMAGE_ORIENTATION orientationInFile/*=US_IMG_ORIENT_MF*/, bool useCompression/*=true*/, bool enableImageDataWrite/*=true*/)
@@ -50,16 +51,16 @@ PlusStatus vtkPlusSequenceIO::Write(const std::string& filename, vtkPlusTrackedF
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusSequenceIO::Read(const std::string& filename, vtkPlusTrackedFrameList* frameList)
 {
-  if( !vtksys::SystemTools::FileExists(filename.c_str()) )
+  if (!vtksys::SystemTools::FileExists(filename.c_str()))
   {
     LOG_ERROR("File: " << filename << " does not exist.");
     return PLUS_FAIL;
   }
 
-  if( vtkPlusMetaImageSequenceIO::CanReadFile(filename) )
+  if (vtkPlusMetaImageSequenceIO::CanReadFile(filename))
   {
     // Attempt metafile read
-    if ( frameList->ReadFromSequenceMetafile(filename) != PLUS_SUCCESS )
+    if (frameList->ReadFromSequenceMetafile(filename) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to read video buffer from sequence metafile: " << filename);
       return PLUS_FAIL;
@@ -68,10 +69,21 @@ PlusStatus vtkPlusSequenceIO::Read(const std::string& filename, vtkPlusTrackedFr
     return PLUS_SUCCESS;
   }
   // Parse sequence filename to determine if it's metafile or NRRD
-  else if( vtkPlusNrrdSequenceIO::CanReadFile(filename) )
+  else if (vtkPlusNrrdSequenceIO::CanReadFile(filename))
   {
     // Attempt Nrrd read
-    if( frameList->ReadFromNrrdFile(filename.c_str()) != PLUS_SUCCESS )
+    if (frameList->ReadFromNrrdFile(filename.c_str()) != PLUS_SUCCESS)
+    {
+      LOG_ERROR("Failed to read video buffer from Nrrd file: " << filename);
+      return PLUS_FAIL;
+    }
+
+    return PLUS_SUCCESS;
+  }
+  else if (vtkPlusMkvSequenceIO::CanReadFile(filename))
+  {
+    // Attempt Nrrd read
+    if (frameList->ReadFromMatroskaFile(filename.c_str()) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to read video buffer from Nrrd file: " << filename);
       return PLUS_FAIL;
@@ -94,6 +106,10 @@ vtkPlusSequenceIOBase* vtkPlusSequenceIO::CreateSequenceHandlerForFile(const std
   else if( vtkPlusNrrdSequenceIO::CanWriteFile(filename) )
   {
     return vtkPlusNrrdSequenceIO::New();
+  }
+  else if (vtkPlusMkvSequenceIO::CanReadFile(filename))
+  {
+    return vtkPlusMkvSequenceIO::New();
   }
 
   LOG_ERROR("No writer for file: " << filename);
