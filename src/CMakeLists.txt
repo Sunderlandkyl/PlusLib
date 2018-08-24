@@ -39,13 +39,13 @@ IF(PLUS_USE_OpenIGTLink)
 ENDIF()
 
 # --------------------------------------------------------------------------
-# Use vtkVideoIO for video file IO
-OPTION(PLUS_USE_vtkVideoIO "Use vtkVideoIO for video file reading and writign" OFF)
-SET(PLUS_USE_vtkVideoIO)
-IF (PLUS_USE_vtkVideoIO)
-  FIND_PACKAGE(vtkVideoIO REQUIRED NO_MODULE)
-  SET(libwebm_DIR ${vtkVideoIO_DIR}/libwebm-bin)
-  FIND_PACKAGE(libwebm REQUIRED NO_MODULE)
+# Use IGSIO
+OPTION(PLUS_USE_IGSIO "Use IGSIO" OFF)
+IF (PLUS_USE_IGSIO)
+  FIND_PACKAGE(IGSIO REQUIRED NO_MODULE)
+  IF (VTKVIDEO_ENABLE_MKV)
+    FIND_PACKAGE(libwebm REQUIRED NO_MODULE)  
+  ENDIF()
 ENDIF()
 
 # --------------------------------------------------------------------------

@@ -15,6 +15,7 @@
 // vtkVideoIO includes
 #include <vtkMKVReader.h>
 #include <vtkMKVWriter.h>
+#include <vtkMKVUtil.h>
 
 class vtkPlusTrackedFrameList;
 
@@ -30,11 +31,12 @@ public:
   vtkTypeMacro(vtkPlusMkvSequenceIO, vtkPlusSequenceIOBase);
   virtual void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;
 
-  /*! Update the number of frames in the header
-      This is used primarily by vtkPlusVirtualCapture to update the final tally of frames, as it continually appends new frames to the file
-      /param numberOfFrames the new number of frames to write
-      /param isData3D is the data 3D or 2D?
-      */
+  /*!
+    Update the number of frames in the header
+    This is used primarily by vtkPlusVirtualCapture to update the final tally of frames, as it continually appends new frames to the file
+    /param numberOfFrames the new number of frames to write
+    /param isData3D is the data 3D or 2D?
+  */
   virtual PlusStatus UpdateDimensionsCustomStrings(int numberOfFrames, bool isData3D);
 
   /*!

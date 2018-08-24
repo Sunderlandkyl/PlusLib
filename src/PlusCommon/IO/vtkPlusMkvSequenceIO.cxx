@@ -13,8 +13,6 @@ See License.txt for details.
 #ifdef PLUS_USE_OpenIGTLink
 #include "igtlCommon.h"
 #ifdef OpenIGTLink_ENABLE_VIDEOSTREAMING
-#include "vtkGenericCodecFactory.h"
-#include "vtkPlusOpenIGTLinkCodec.h"
 #ifdef OpenIGTLink_USE_VP9
 #include <igtlVP9Encoder.h>
 #include <igtlVP9Decoder.h>
@@ -34,13 +32,12 @@ vtkPlusMkvSequenceIO::vtkPlusMkvSequenceIO()
   , InitialTimestamp(-1)
 {
 #ifdef OpenIGTLink_ENABLE_VIDEOSTREAMING
-  vtkGenericCodecFactory* genericCodecFactory = vtkGenericCodecFactory::GetInstance();
 #ifdef OpenIGTLink_USE_VP9
-  vtkSmartPointer<vtkPlusOpenIGTLinkCodec> vp9Codec = vtkSmartPointer<vtkPlusOpenIGTLinkCodec>::New();
-  vp9Codec->SetCodecFourCC(IGTL_VIDEO_CODEC_NAME_VP9);
-  vp9Codec->Encoder = igtl::VP9Encoder::New();
-  vp9Codec->Decoder = igtl::VP9Decoder::New();
-  genericCodecFactory->RegisterCodec(vp9Codec);
+  //vtkSmartPointer<vtkPlusOpenIGTLinkCodec> vp9Codec = vtkSmartPointer<vtkPlusOpenIGTLinkCodec>::New();
+  //vp9Codec->SetCodecFourCC(IGTL_VIDEO_CODEC_NAME_VP9);
+  //vp9Codec->Encoder = igtl::VP9Encoder::New();
+  //vp9Codec->Decoder = igtl::VP9Decoder::New();
+  //genericCodecFactory->RegisterCodec(vp9Codec);
 #endif
 #endif
 }
@@ -81,12 +78,12 @@ PlusStatus vtkPlusMkvSequenceIO::ReadImagePixels()
   }
 
   int totalFrameNumber = 0;
-  vtkMKVReader::VideoTrackMap videoTracks = this->MKVReader->GetVideoTracks();
-  for (vtkMKVReader::VideoTrackMap::iterator videoTrackIt = videoTracks.begin(); videoTrackIt != videoTracks.end(); ++videoTrackIt)
+  vtkMKVUtil::VideoTrackMap videoTracks = this->MKVReader->GetVideoTracks();
+  for (vtkMKVUtil::VideoTrackMap::iterator videoTrackIt = videoTracks.begin(); videoTrackIt != videoTracks.end(); ++videoTrackIt)
   {
     FrameSizeType frameSize = { videoTrackIt->second.Width, videoTrackIt->second.Height, 1 };
     int frameNumber = 0;
-    for (vtkMKVReader::FrameInfoList::iterator frameIt = videoTrackIt->second.Frames.begin(); frameIt != videoTrackIt->second.Frames.end(); ++frameIt)
+    for (vtkMKVUtil::FrameInfoList::iterator frameIt = videoTrackIt->second.Frames.begin(); frameIt != videoTrackIt->second.Frames.end(); ++frameIt)
     {
       this->CreateTrackedFrameIfNonExisting(totalFrameNumber);
       PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(totalFrameNumber);
@@ -96,21 +93,21 @@ PlusStatus vtkPlusMkvSequenceIO::ReadImagePixels()
       trackedFrame->SetTimestamp(frameIt->TimestampSeconds);
 
       double timestamp = frameIt->TimestampSeconds;
-      if (!this->MKVReader->GetDecodedVideoFrame(videoTrackIt->first, frameNumber, trackedFrame->GetImageData()->GetImage(), timestamp))
-      {
-        LOG_ERROR("Could not decode frame!");
-        continue;
-      }
+      //if (!this->MKVReader->GetDecodedVideoFrame(videoTrackIt->first, frameNumber, trackedFrame->GetImageData()->GetImage(), timestamp))
+      //{
+      //  LOG_ERROR("Could not decode frame!");
+      //  continue;
+      //}
 
       ++frameNumber;
       ++totalFrameNumber;
     }
   }
 
-  vtkMKVReader::MetadataTrackMap metadataTracks = this->MKVReader->GetMetadataTracks();
-  for (vtkMKVReader::MetadataTrackMap::iterator metadataTrackIt = metadataTracks.begin(); metadataTrackIt != metadataTracks.end(); ++metadataTrackIt)
+  vtkMKVUtil::MetadataTrackMap metadataTracks = this->MKVReader->GetMetadataTracks();
+  for (vtkMKVUtil::MetadataTrackMap::iterator metadataTrackIt = metadataTracks.begin(); metadataTrackIt != metadataTracks.end(); ++metadataTrackIt)
   {
-    for (vtkMKVReader::FrameInfoList::iterator frameIt = metadataTrackIt->second.Frames.begin(); frameIt != metadataTrackIt->second.Frames.end(); ++frameIt)
+    for (vtkMKVUtil::FrameInfoList::iterator frameIt = metadataTrackIt->second.Frames.begin(); frameIt != metadataTrackIt->second.Frames.end(); ++frameIt)
     {
       for (unsigned int i = 0; i < this->TrackedFrameList->GetNumberOfTrackedFrames(); ++i)
       {
@@ -168,7 +165,7 @@ PlusStatus vtkPlusMkvSequenceIO::WriteInitialImageHeader()
   this->MKVWriter->SetFilename(this->FileName);
 
   //TODO: Allow users to specify FourCC code
-  this->EncodingType = IGTL_VIDEO_CODEC_NAME_VP9;
+  this->EncodingType = "VP90";
 
   if (this->TrackedFrameList->Size() == 0)
   {
@@ -251,12 +248,12 @@ PlusStatus vtkPlusMkvSequenceIO::WriteImages()
         this->InitialTimestamp = trackedFrame->GetTimestamp();
       }
       
-      if (this->MKVWriter->EncodeAndWriteVideoFrame(trackedFrame->GetImageData()->GetImage(), this->VideoTrackNumber, trackedFrame->GetTimestamp() - this->InitialTimestamp)
-        != PLUS_SUCCESS)
-      {
-        vtkErrorMacro("Could not encode and write frame to file!");
-        continue;
-      }
+      //if (this->MKVWriter->EncodeAndWriteVideoFrame(trackedFrame->GetImageData()->GetImage(), this->VideoTrackNumber, trackedFrame->GetTimestamp() - this->InitialTimestamp)
+      //  != PLUS_SUCCESS)
+      //{
+      //  vtkErrorMacro("Could not encode and write frame to file!");
+      //  continue;
+      //}
 
       std::map<std::string, std::string> customFields = trackedFrame->GetCustomFields();
       for (std::map<std::string, std::string>::iterator customFieldIt = customFields.begin(); customFieldIt != customFields.end(); ++customFieldIt)

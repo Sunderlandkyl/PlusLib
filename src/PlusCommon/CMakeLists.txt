@@ -17,7 +17,6 @@ SET(${PROJECT_NAME}_SRCS
   IO/vtkPlusNrrdSequenceIO.cxx
   IO/vtkPlusSequenceIOBase.cxx
   IO/vtkPlusSequenceIO.cxx
-  IO/vtkPlusMkvSequenceIO.cxx
   vtkPlusRecursiveCriticalSection.cxx
   )
 
@@ -40,7 +39,6 @@ IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
     IO/vtkPlusNrrdSequenceIO.h
     IO/vtkPlusSequenceIO.h
     IO/vtkPlusSequenceIOBase.h
-    IO/vtkPlusMkvSequenceIO.h
     vtkPlusRecursiveCriticalSection.h
     PixelCodec.h
     PlusXmlUtils.h
@@ -55,12 +53,12 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}/IO
   CACHE INTERNAL "" FORCE)
 
-IF(PLUS_USE_vtkVideoIO)
+IF(IGSIO_BUILD_VTKVIDEOIO)
   LIST(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${VTKVIDEOIO_INCLUDE_DIRS})
-  LIST(APPEND ${PROJECT_NAME}_SRCS vtkPlusOpenIGTLinkCodec.cxx)
-  IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
-    LIST(APPEND ${PROJECT_NAME}_HDRS vtkPlusOpenIGTLinkCodec.h)
-  ENDIF()
+ENDIF()
+IF(VTKVIDEOIO_ENABLE_MKV)
+  LIST(APPEND ${PROJECT_NAME}_SRCS IO/vtkPlusMkvSequenceIO.cxx)
+  LIST(APPEND ${PROJECT_NAME}_HDRS IO/vtkPlusMkvSequenceIO.h)
 ENDIF()
 
 # If igtlioConverter was compiled as a static library, we do not need igtlio in the install configuration
@@ -114,8 +112,9 @@ IF(PLUS_USE_OpenIGTLink)
   LIST(APPEND ${PROJECT_NAME}_LIBS OpenIGTLink)
 ENDIF()
 
-IF(PLUS_USE_vtkVideoIO)
-  LIST(APPEND ${PROJECT_NAME}_LIBS ${VTKVIDEOIO_LIBRARIES})
+IF(IGSIO_BUILD_VTKVIDEOIO)
+  LIST(APPEND ${PROJECT_NAME}_LIBS
+    ${VTKVIDEOIO_LIBRARIES})
 ENDIF()
 
 GENERATE_EXPORT_DIRECTIVE_FILE(vtk${PROJECT_NAME})
