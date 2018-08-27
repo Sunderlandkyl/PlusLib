@@ -43,9 +43,6 @@ ENDIF()
 OPTION(PLUS_USE_IGSIO "Use IGSIO" OFF)
 IF (PLUS_USE_IGSIO)
   FIND_PACKAGE(IGSIO REQUIRED NO_MODULE)
-  IF (VTKVIDEO_ENABLE_MKV)
-    FIND_PACKAGE(libwebm REQUIRED NO_MODULE)  
-  ENDIF()
 ENDIF()
 
 # --------------------------------------------------------------------------
