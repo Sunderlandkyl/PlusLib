@@ -82,10 +82,10 @@ PlusStatus vtkPlusSequenceIO::Read(const std::string& filename, vtkPlusTrackedFr
   }
   else if (vtkPlusMkvSequenceIO::CanReadFile(filename))
   {
-    // Attempt Nrrd read
+    // Attempt MKV read
     if (frameList->ReadFromMatroskaFile(filename.c_str()) != PLUS_SUCCESS)
     {
-      LOG_ERROR("Failed to read video buffer from Nrrd file: " << filename);
+      LOG_ERROR("Failed to read video buffer from MKV file: " << filename);
       return PLUS_FAIL;
     }
 

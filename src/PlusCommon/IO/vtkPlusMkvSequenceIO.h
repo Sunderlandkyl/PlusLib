@@ -12,11 +12,6 @@
 // PlusLib includes
 #include "vtkPlusSequenceIOBase.h"
 
-// vtkVideoIO includes
-#include <vtkMKVReader.h>
-#include <vtkMKVWriter.h>
-#include <vtkMKVUtil.h>
-
 class vtkPlusTrackedFrameList;
 
 /*!
@@ -100,28 +95,15 @@ protected:
   */
   virtual PlusStatus WriteCompressedImagePixelsToFile(int& compressedDataSize);
 
-  vtkSetStdStringMacro(EncodingType);
-  vtkGetStdStringMacro(EncodingType);
-
-private:
-
-  double InitialTimestamp;
-  std::string EncodingType;
-  bool IsGreyScale;
-  double InitialTimestampSeconds;
-  std::map <std::string, uint64_t> CustomFrameFieldTracks;
-
-  vtkSmartPointer<vtkMKVWriter> MKVWriter;
-  vtkSmartPointer<vtkMKVReader> MKVReader;
-
-  bool Initialized;
-
-  double FrameRate;
-  int VideoTrackNumber;
+  void SetEncodingFourCC(std::string encodingFourCC);
+  std::string GetEncodingFourCC();
 
 protected:
   vtkPlusMkvSequenceIO(const vtkPlusMkvSequenceIO&); //purposely not implemented
   void operator=(const vtkPlusMkvSequenceIO&); //purposely not implemented
+
+  class vtkInternal;
+  vtkInternal* Internal;
 };
 
 #endif // __vtkPlusMkvSequenceIO_h 
