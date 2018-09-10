@@ -293,7 +293,7 @@ PlusStatus vtkPlusMkvSequenceIO::WriteInitialImageHeader()
       uint64_t trackNumber = this->Internal->FrameFieldTracks[*it];
       if (trackNumber <= 0)
       {
-        int metaDataTrackNumber = this->Internal->MKVWriter->AddMetaDataTrack((*it));
+        int metaDataTrackNumber = this->Internal->MKVWriter->AddMetadataTrack((*it));
         if (metaDataTrackNumber > 0)
         {
           this->Internal->FrameFieldTracks[*it] = metaDataTrackNumber;
@@ -391,7 +391,7 @@ PlusStatus vtkPlusMkvSequenceIO::WriteImages()
           continue;
         }
 
-        this->Internal->MKVWriter->WriteMetaData(customFieldIt->second, trackID, trackedFrame->GetTimestamp() - this->Internal->InitialTimestamp);
+        this->Internal->MKVWriter->WriteMetadata(customFieldIt->second, trackID, trackedFrame->GetTimestamp() - this->Internal->InitialTimestamp);
       }
     }
   }
