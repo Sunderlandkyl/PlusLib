@@ -19,7 +19,9 @@
 #include "vtksys/SystemTools.hxx"
 #include <math.h>
 
+#ifdef PLUS_USE_VTKVIDEOIO_MKV
 #include <vtkPlusMkvSequenceIO.h>
+#endif
 
 //----------------------------------------------------------------------------
 // ************************* vtkPlusTrackedFrameList *****************************
@@ -551,12 +553,32 @@ PlusStatus vtkPlusTrackedFrameList::ReadFromNrrdFile(const std::string& trackedS
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusTrackedFrameList::SaveToMatroskaFile(const std::string& filename, US_IMAGE_ORIENTATION orientationInFile /*= US_IMG_ORIENT_MF*/, bool useCompression /*= true*/, bool enableImageDataWrite /*= true*/)
 {
+#ifdef PLUS_USE_VTKVIDEOIO_MKV
+  vtkSmartPointer<vtkPlusMkvSequenceIO> writer = vtkSmartPointer<vtkPlusMkvSequenceIO>::New();
+  writer->SetUseCompression(useCompression);
+  writer->SetFileName(filename);
+  //writer->SetImageOrientationInFile(orientationInFile);
+  writer->SetTrackedFrameList(this);
+  //writer->SetEnableImageDataWrite(enableImageDataWrite);
+  //if (this->GetNumberOfTrackedFrames() == 1)
+  //{
+  //  writer->IsDataTimeSeriesOff();
+  //}
+  if (writer->Write() != PLUS_SUCCESS)
+  {
+    LOG_ERROR("Couldn't write MKV file: " << filename);
+    return PLUS_FAIL;
+  }
   return PLUS_SUCCESS;
+#else
+  return PLUS_FAIL;
+#endif
 }
 
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusTrackedFrameList::ReadFromMatroskaFile(const std::string& trackedSequenceDataFileName)
 {
+#ifdef PLUS_USE_VTKVIDEOIO_MKV
   std::string trackedSequenceDataFilePath(trackedSequenceDataFileName);
 
   // If file is not found in the current directory then try to find it in the image directory, too
@@ -578,6 +600,13 @@ PlusStatus vtkPlusTrackedFrameList::ReadFromMatroskaFile(const std::string& trac
     return PLUS_FAIL;
   }
   return PLUS_SUCCESS;
+#else
+  LOG_ERROR(
+    "Plus has not been compiled with MKV read/write support. "
+    "Configure PlusBuild with PLUS_USE_VTKVIDEOIO_MKV enabled."
+    );
+  return PLUS_FAIL;
+#endif
 }
 
 //-----------------------------------------------------------------------------

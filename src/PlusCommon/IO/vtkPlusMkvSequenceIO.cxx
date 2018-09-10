@@ -49,17 +49,17 @@ public:
   bool IsGreyScale;
   double InitialTimestampSeconds;
   std::map<std::string, uint64_t> FrameFieldTracks;
-  
+
   igtl::GenericEncoder::Pointer Encoder;
-  
+
   vtkSmartPointer<vtkMKVWriter> MKVWriter;
   vtkSmartPointer<vtkMKVReader> MKVReader;
-  
+
   bool Initialized;
-  
+
   double FrameRate;
   int VideoTrackNumber;
-  
+
   std::map<std::string, int> VideoNameToTrackMap;
   vtkSmartPointer<vtkImageMapToColors> GreyScaleToRGBFilter;
 
@@ -129,7 +129,7 @@ PlusStatus vtkPlusMkvSequenceIO::ReadImageHeader()
     LOG_ERROR("Could not read mkv header!")
     return PLUS_FAIL;
   }
-  
+
   return PLUS_SUCCESS;
 }
 
@@ -257,10 +257,6 @@ bool vtkPlusMkvSequenceIO::CanWriteFile(const std::string& filename)
 PlusStatus vtkPlusMkvSequenceIO::WriteInitialImageHeader()
 {
   this->Internal->MKVWriter->SetFilename(this->FileName);
-
-  //TODO: Allow users to specify FourCC code
-  this->Internal->EncodingFourCC = "VP90";
-
   if (this->TrackedFrameList->Size() == 0)
   {
     LOG_ERROR("Could not write MKV header, no tracked frames")
@@ -310,6 +306,8 @@ PlusStatus vtkPlusMkvSequenceIO::WriteInitialImageHeader()
       LOG_ERROR("Could not find encoder for type: " << this->Internal->EncodingFourCC);
       return PLUS_FAIL;
     }
+
+    this->Internal->Encoder->SetLosslessLink(!this->UseCompression);
   }
 
   return PLUS_SUCCESS;
@@ -353,7 +351,7 @@ PlusStatus vtkPlusMkvSequenceIO::WriteImages()
       {
         this->Internal->InitialTimestamp = trackedFrame->GetTimestamp();
       }
-      
+
       double timestamp = trackedFrame->GetTimestamp() - this->Internal->InitialTimestamp;
 
       if (!requiresEncoding)
@@ -378,7 +376,7 @@ PlusStatus vtkPlusMkvSequenceIO::WriteImages()
           LOG_ERROR("Could not write frame to file: " << this->Internal->MKVWriter->GetFilename());
           return PLUS_FAIL;
         }
-        
+
       }
 
       std::map<std::string, std::string> customFields = trackedFrame->GetCustomFields();

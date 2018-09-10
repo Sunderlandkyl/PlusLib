@@ -95,6 +95,7 @@ protected:
   */
   virtual PlusStatus WriteCompressedImagePixelsToFile(int& compressedDataSize);
 
+public:
   void SetEncodingFourCC(std::string encodingFourCC);
   std::string GetEncodingFourCC();
 
