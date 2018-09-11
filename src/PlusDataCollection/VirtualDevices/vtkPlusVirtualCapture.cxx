@@ -220,8 +220,6 @@ PlusStatus vtkPlusVirtualCapture::OpenFile(const char* aFilename)
   }
 #endif
 
-  //this->Writer->SetUseCompression(this->EnableFileCompression);
-  this->Writer->SetUseCompression(true);
   this->Writer->SetTrackedFrameList(this->RecordedFrames);
   // Need to set the filename before finalizing header, because the pixel data file name depends on the file extension
   this->Writer->SetFileName(vtkPlusConfig::GetInstance()->GetOutputPath(aFilename));
