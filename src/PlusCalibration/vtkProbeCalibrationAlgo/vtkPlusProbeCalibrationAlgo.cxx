@@ -10,8 +10,8 @@ See License.txt for details.
 #include "float.h"
 #include <vnl/vnl_inverse.h>
 
-#include "vtkPlusTrackedFrameList.h"
-#include "PlusTrackedFrame.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusTransformRepository.h"
 
 #include "PlusMath.h"
@@ -86,7 +86,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::ReadConfiguration(vtkXMLDataElement* aCo
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* validationTrackedFrameList, vtkPlusTrackedFrameList* calibrationTrackedFrameList, vtkPlusTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
+PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkIGSIOTrackedFrameList* validationTrackedFrameList, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, vtkPlusTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::Calibrate");
 
@@ -205,7 +205,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::ComputeImageToProbeTransformByLinearLeas
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkPlusTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkPlusTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
+PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkIGSIOTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkPlusTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::Calibrate(validation: " << validationStartFrame << "-" << validationEndFrame << ", calibration: " << calibrationStartFrame << "-" << calibrationEndFrame << ")");
 
@@ -216,12 +216,12 @@ PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* valid
   }
 
   // Check if TrackedFrameLists are MF oriented BRIGHTNESS images
-  if (vtkPlusTrackedFrameList::VerifyProperties(validationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
+  if (vtkIGSIOTrackedFrameList::VerifyProperties(validationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to perform calibration - validation tracked frame list is invalid");
     return PLUS_FAIL;
   }
-  if (vtkPlusTrackedFrameList::VerifyProperties(calibrationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
+  if (vtkIGSIOTrackedFrameList::VerifyProperties(calibrationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to perform calibration - calibration tracked frame list is invalid");
     return PLUS_FAIL;
@@ -366,7 +366,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* valid
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(PlusTrackedFrame* trackedFrame, vtkPlusTransformRepository* transformRepository, PreProcessedWirePositionIdType datasetType)
+PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(igsioTrackedFrame* trackedFrame, vtkPlusTransformRepository* transformRepository, PreProcessedWirePositionIdType datasetType)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(type=" << datasetType << ")");
 
@@ -656,7 +656,7 @@ std::string vtkPlusProbeCalibrationAlgo::GetResultString(int precision/* = 3*/)
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::SaveCalibrationResultAndErrorReportToXML(vtkPlusTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkPlusTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame)
+PlusStatus vtkPlusProbeCalibrationAlgo::SaveCalibrationResultAndErrorReportToXML(vtkIGSIOTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::SaveCalibrationResultsAndErrorReportsToXML");
 
@@ -687,7 +687,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::SaveCalibrationResultAndErrorReportToXML
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport(vtkPlusTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkPlusTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkXMLDataElement* probeCalibrationResult)
+PlusStatus vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport(vtkIGSIOTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkXMLDataElement* probeCalibrationResult)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport");
 

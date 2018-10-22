@@ -8,8 +8,10 @@ See License.txt for details.
 #include "PlusConfigure.h"
 #include "PlusCommon.h"
 #include "PlusRevision.h"
-#include "PlusTrackedFrame.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
+
+// IGSIO includes
+#include "igsioCommon.h"
 
 // VTK includes
 #include <vtkXMLDataElement.h>
@@ -659,7 +661,7 @@ bool vtkPlusCommonExport PlusCommon::HasSubstrInsensitive(std::wstring const& a,
 }
 
 //----------------------------------------------------------------------------
-vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList)
+vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList)
 {
   std::array<float, 3> colour;
   colour[0] = colour[1] = colour[2] = greyValue;
@@ -668,7 +670,7 @@ vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, 
 }
 
 //----------------------------------------------------------------------------
-vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList)
+vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList)
 {
   LOG_DEBUG("Processing " << trackedFrameList->GetNumberOfTrackedFrames() << " frames...");
 
@@ -676,7 +678,7 @@ vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, 
   for (unsigned int frameIndex = 0; frameIndex < trackedFrameList->GetNumberOfTrackedFrames(); frameIndex++)
   {
     LOG_DEBUG("Processing frame " << frameIndex);
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
     PlusCommon::DrawScanLines(inputImageExtent, colour, scanLineEndPoints, frame->GetImageData()->GetImage());
   }
 

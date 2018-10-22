@@ -12,7 +12,7 @@
 // PlusLib includes
 #include "vtkPlusSequenceIOBase.h"
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 /*!
   \class vtkPlusMkvSequenceIO

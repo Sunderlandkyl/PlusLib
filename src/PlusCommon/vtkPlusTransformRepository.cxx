@@ -5,7 +5,7 @@
 =========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkObjectFactory.h"
 #include "vtkPlusRecursiveCriticalSection.h"
 #include "vtkTransform.h"
@@ -118,7 +118,7 @@ void vtkPlusTransformRepository::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //----------------------------------------------------------------------------
-vtkPlusTransformRepository::TransformInfo* vtkPlusTransformRepository::GetOriginalTransform(const PlusTransformName& aTransformName)
+vtkPlusTransformRepository::TransformInfo* vtkPlusTransformRepository::GetOriginalTransform(const igsioTransformName& aTransformName)
 {
   CoordFrameToTransformMapType& fromCoordFrame = this->CoordinateFrames[aTransformName.From()];
 
@@ -134,14 +134,14 @@ vtkPlusTransformRepository::TransformInfo* vtkPlusTransformRepository::GetOrigin
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::SetTransforms(PlusTrackedFrame& trackedFrame)
+PlusStatus vtkPlusTransformRepository::SetTransforms(igsioTrackedFrame& trackedFrame)
 {
-  std::vector<PlusTransformName> transformNames;
+  std::vector<igsioTransformName> transformNames;
   trackedFrame.GetFrameTransformNameList(transformNames);
 
   int numberOfErrors(0);
 
-  for (std::vector<PlusTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
+  for (std::vector<igsioTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
   {
     std::string trName;
     it->GetTransformName(trName);
@@ -180,7 +180,7 @@ PlusStatus vtkPlusTransformRepository::SetTransforms(PlusTrackedFrame& trackedFr
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::SetTransform(const PlusTransformName& aTransformName, vtkMatrix4x4* matrix, bool isValid/*=true*/)
+PlusStatus vtkPlusTransformRepository::SetTransform(const igsioTransformName& aTransformName, vtkMatrix4x4* matrix, bool isValid/*=true*/)
 {
   if (!aTransformName.IsValid())
   {
@@ -220,7 +220,7 @@ PlusStatus vtkPlusTransformRepository::SetTransform(const PlusTransformName& aTr
     fromToTransformInfo->m_IsValid = isValid;
 
     // Set the same status for the computed inverse transform
-    PlusTransformName toFromTransformName(aTransformName.To(), aTransformName.From());
+    igsioTransformName toFromTransformName(aTransformName.To(), aTransformName.From());
     TransformInfo* toFromTransformInfo = GetOriginalTransform(toFromTransformName);
     if (toFromTransformInfo == NULL)
     {
@@ -263,7 +263,7 @@ PlusStatus vtkPlusTransformRepository::SetTransform(const PlusTransformName& aTr
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::SetTransformValid(const PlusTransformName& aTransformName, bool isValid)
+PlusStatus vtkPlusTransformRepository::SetTransformValid(const igsioTransformName& aTransformName, bool isValid)
 {
   if (aTransformName.From() == aTransformName.To())
   {
@@ -274,7 +274,7 @@ PlusStatus vtkPlusTransformRepository::SetTransformValid(const PlusTransformName
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::GetTransform(const PlusTransformName& aTransformName, vtkMatrix4x4* matrix, bool* isValid /*=NULL*/)
+PlusStatus vtkPlusTransformRepository::GetTransform(const igsioTransformName& aTransformName, vtkMatrix4x4* matrix, bool* isValid /*=NULL*/)
 {
   if (!aTransformName.IsValid())
   {
@@ -333,13 +333,13 @@ PlusStatus vtkPlusTransformRepository::GetTransform(const PlusTransformName& aTr
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::GetTransformValid(const PlusTransformName& aTransformName, bool& isValid)
+PlusStatus vtkPlusTransformRepository::GetTransformValid(const igsioTransformName& aTransformName, bool& isValid)
 {
   return GetTransform(aTransformName, NULL, &isValid);
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::SetTransformPersistent(const PlusTransformName& aTransformName, bool isPersistent)
+PlusStatus vtkPlusTransformRepository::SetTransformPersistent(const igsioTransformName& aTransformName, bool isPersistent)
 {
   PlusLockGuard<vtkPlusRecursiveCriticalSection> accessGuard(this->CriticalSection);
 
@@ -361,7 +361,7 @@ PlusStatus vtkPlusTransformRepository::SetTransformPersistent(const PlusTransfor
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::GetTransformPersistent(const PlusTransformName& aTransformName, bool& isPersistent)
+PlusStatus vtkPlusTransformRepository::GetTransformPersistent(const igsioTransformName& aTransformName, bool& isPersistent)
 {
   PlusLockGuard<vtkPlusRecursiveCriticalSection> accessGuard(this->CriticalSection);
 
@@ -383,7 +383,7 @@ PlusStatus vtkPlusTransformRepository::GetTransformPersistent(const PlusTransfor
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::SetTransformError(const PlusTransformName& aTransformName, double aError)
+PlusStatus vtkPlusTransformRepository::SetTransformError(const igsioTransformName& aTransformName, double aError)
 {
   PlusLockGuard<vtkPlusRecursiveCriticalSection> accessGuard(this->CriticalSection);
 
@@ -404,7 +404,7 @@ PlusStatus vtkPlusTransformRepository::SetTransformError(const PlusTransformName
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::GetTransformError(const PlusTransformName& aTransformName, double& aError, bool quiet /* = false */)
+PlusStatus vtkPlusTransformRepository::GetTransformError(const igsioTransformName& aTransformName, double& aError, bool quiet /* = false */)
 {
   if (aTransformName.From() == aTransformName.To())
   {
@@ -427,7 +427,7 @@ PlusStatus vtkPlusTransformRepository::GetTransformError(const PlusTransformName
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::SetTransformDate(const PlusTransformName& aTransformName, const std::string& aDate)
+PlusStatus vtkPlusTransformRepository::SetTransformDate(const igsioTransformName& aTransformName, const std::string& aDate)
 {
   if (aTransformName.From() == aTransformName.To())
   {
@@ -454,7 +454,7 @@ PlusStatus vtkPlusTransformRepository::SetTransformDate(const PlusTransformName&
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::GetTransformDate(const PlusTransformName& aTransformName, std::string& aDate, bool quiet /* = false */)
+PlusStatus vtkPlusTransformRepository::GetTransformDate(const igsioTransformName& aTransformName, std::string& aDate, bool quiet /* = false */)
 {
   if (aTransformName.From() == aTransformName.To())
   {
@@ -478,7 +478,7 @@ PlusStatus vtkPlusTransformRepository::GetTransformDate(const PlusTransformName&
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::FindPath(const PlusTransformName& aTransformName, TransformInfoListType& transformInfoList, const char* skipCoordFrameName /*=NULL*/, bool silent /*=false*/)
+PlusStatus vtkPlusTransformRepository::FindPath(const igsioTransformName& aTransformName, TransformInfoListType& transformInfoList, const char* skipCoordFrameName /*=NULL*/, bool silent /*=false*/)
 {
   if (aTransformName.From() == aTransformName.To())
   {
@@ -503,7 +503,7 @@ PlusStatus vtkPlusTransformRepository::FindPath(const PlusTransformName& aTransf
       // (probably it would just go back to the previous coordinate frame where we come from)
       continue;
     }
-    PlusTransformName newTransformName(transformInfoIt->first, aTransformName.To());
+    igsioTransformName newTransformName(transformInfoIt->first, aTransformName.To());
     if (FindPath(newTransformName, transformInfoList, aTransformName.From().c_str(), true /*silent*/) == PLUS_SUCCESS)
     {
       transformInfoList.push_back(&(transformInfoIt->second));
@@ -545,7 +545,7 @@ PlusStatus vtkPlusTransformRepository::FindPath(const PlusTransformName& aTransf
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::IsExistingTransform(PlusTransformName aTransformName, bool aSilent/* = true*/)
+PlusStatus vtkPlusTransformRepository::IsExistingTransform(igsioTransformName aTransformName, bool aSilent/* = true*/)
 {
   if (aTransformName.From() == aTransformName.To())
   {
@@ -557,7 +557,7 @@ PlusStatus vtkPlusTransformRepository::IsExistingTransform(PlusTransformName aTr
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransformRepository::DeleteTransform(const PlusTransformName& aTransformName)
+PlusStatus vtkPlusTransformRepository::DeleteTransform(const igsioTransformName& aTransformName)
 {
   if (aTransformName.From() == aTransformName.To())
   {
@@ -647,7 +647,7 @@ PlusStatus vtkPlusTransformRepository::ReadConfiguration(vtkXMLDataElement* conf
       continue;
     }
 
-    PlusTransformName transformName(fromAttribute, toAttribute);
+    igsioTransformName transformName(fromAttribute, toAttribute);
     if (!transformName.IsValid())
     {
       LOG_ERROR("Invalid transform name (From: '" <<  fromAttribute << "'  To: '" << toAttribute << "')");

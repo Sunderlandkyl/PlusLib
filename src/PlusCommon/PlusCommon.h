@@ -14,6 +14,9 @@
 #include "vtkPlusMacro.h"
 #include "vtkPlusRecursiveCriticalSection.h"
 
+// ITK includes
+#include "itkImage.h"
+
 // VTK includes
 #include <vtkImageData.h>
 #include <vtksys/SystemTools.hxx>
@@ -28,7 +31,7 @@
 #include <sstream>
 
 class vtkPlusUsScanConvert;
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 enum PlusStatus
 {
@@ -374,7 +377,7 @@ virtual void Set##name (type _arg) \
   } \
 }
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 class vtkXMLDataElement;
 
 namespace PlusCommon
@@ -509,8 +512,8 @@ namespace PlusCommon
   typedef std::array<int, 3> PixelPoint;
   typedef std::pair<PixelPoint, PixelPoint> PixelLine;
   typedef std::vector<PixelLine> PixelLineList;
-  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList);
-  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList);
+  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList);
+  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList);
   vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkImageData* imageData);
   vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkImageData* imageData);
 
@@ -578,6 +581,19 @@ namespace PlusCommon
     template<typename T> vtkPlusCommonExport PlusStatus SafeGetAttributeValueInsensitive(vtkXMLDataElement& element, const std::string& attributeName, T& value);
     template<typename T> vtkPlusCommonExport PlusStatus SafeGetAttributeValueInsensitive(vtkXMLDataElement& element, const std::wstring& attributeName, T& value);
   }
+
+#ifdef PLUS_USE_OpenIGTLink
+  /*! Convert between ITK and IGTL scalar pixel types */
+  static IGTLScalarPixelType GetIGTLScalarPixelTypeFromVTK(VTKScalarPixelType vtkScalarPixelType);
+
+  /*! Convert between IGTL and ITK scalar pixel types */
+  static VTKScalarPixelType GetVTKScalarPixelTypeFromIGTL(IGTLScalarPixelType igtlPixelType);
+#endif
+
+  /*! Convert 3D vtkImageData to 3D itkImage */
+  template<typename ScalarType> static PlusStatus DeepCopyVtkVolumeToItkVolume(vtkImageData* inFrame, typename itk::Image< ScalarType, 3 >::Pointer outFrame);
+  /*! Convert 2D/3D vtkImageData to 2D itkImage (take only first slice if 3D) */
+  template<typename ScalarType> static PlusStatus DeepCopyVtkVolumeToItkImage(vtkImageData* inFrame, typename itk::Image< ScalarType, 2 >::Pointer outFrame);
 
 };
 

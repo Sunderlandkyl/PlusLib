@@ -5,12 +5,12 @@ See License.txt for details.
 =========================================================Plus=header=end*/ 
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkImageData.h" 
 #include "vtkPlusRfProcessor.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkTransform.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
   // Read transformations data 
   LOG_DEBUG("Reading input meta file..."); 
   // frameList it will contain initially the RF data and the image data will be replaced by the processed output
-  vtkSmartPointer< vtkPlusTrackedFrameList > frameList = vtkSmartPointer< vtkPlusTrackedFrameList >::New();
+  vtkSmartPointer< vtkIGSIOTrackedFrameList > frameList = vtkSmartPointer< vtkIGSIOTrackedFrameList >::New();
   if( vtkPlusSequenceIO::Read(inputRfFile, frameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Unable to load input sequences file.");
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
     // Process the frames
     for (unsigned int j = 0; j < frameList->GetNumberOfTrackedFrames(); j++)
     {
-      PlusTrackedFrame* rfFrame = frameList->GetTrackedFrame(j);
+      igsioTrackedFrame* rfFrame = frameList->GetTrackedFrame(j);
 
       // Do the conversion
       rfProcessor->SetRfFrame(rfFrame->GetImageData()->GetImage(), rfFrame->GetImageData()->GetImageType());

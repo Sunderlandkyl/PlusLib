@@ -6,10 +6,10 @@ See License.txt for details.
 
 // Local includes
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
-#include "PlusVideoFrame.h"
+#include "igsioTrackedFrame.h"
+#include "igsioVideoFrame.h"
 #include "vtkPlusIgtlMessageCommon.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusTransformRepository.h"
 
 // VTK includes
@@ -83,8 +83,8 @@ PlusStatus vtkPlusIgtlMessageCommon::GetIgtlMatrix(igtl::Matrix4x4& igtlMatrix,
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusIgtlMessageCommon::PackTrackedFrameMessage(igtl::PlusTrackedFrameMessage::Pointer trackedFrameMessage,
-    PlusTrackedFrame& trackedFrame,
+PlusStatus vtkPlusIgtlMessageCommon::PackTrackedFrameMessage(igtl::igsioTrackedFrameMessage::Pointer trackedFrameMessage,
+    igsioTrackedFrame& trackedFrame,
     vtkSmartPointer<vtkMatrix4x4> embeddedImageTransform,
     const std::vector<PlusTransformName>& requestedTransforms)
 {
@@ -113,7 +113,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackTrackedFrameMessage(igtl::PlusTrackedFr
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIgtlMessageCommon::UnpackTrackedFrameMessage(igtl::MessageHeader::Pointer headerMsg,
     igtl::Socket* socket,
-    PlusTrackedFrame& trackedFrame,
+    igsioTrackedFrame& trackedFrame,
     const PlusTransformName& embeddedTransformName,
     int crccheck)
 {
@@ -129,10 +129,10 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackTrackedFrameMessage(igtl::MessageHead
     return PLUS_FAIL;
   }
 
-  igtl::PlusTrackedFrameMessage::Pointer trackedFrameMsg = dynamic_cast<igtl::PlusTrackedFrameMessage*>(headerMsg.GetPointer());
+  igtl::igsioTrackedFrameMessage::Pointer trackedFrameMsg = dynamic_cast<igtl::igsioTrackedFrameMessage*>(headerMsg.GetPointer());
   if (trackedFrameMsg.IsNull())
   {
-    trackedFrameMsg = igtl::PlusTrackedFrameMessage::New();
+    trackedFrameMsg = igtl::igsioTrackedFrameMessage::New();
   }
   trackedFrameMsg->SetMessageHeader(headerMsg);
   trackedFrameMsg->AllocateBuffer();
@@ -159,7 +159,7 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackTrackedFrameMessage(igtl::MessageHead
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusIgtlMessageCommon::PackUsMessage(igtl::PlusUsMessage::Pointer usMessage, PlusTrackedFrame& trackedFrame)
+PlusStatus vtkPlusIgtlMessageCommon::PackUsMessage(igtl::PlusUsMessage::Pointer usMessage, igsioTrackedFrame& trackedFrame)
 {
   if (usMessage.IsNull())
   {
@@ -176,7 +176,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackUsMessage(igtl::PlusUsMessage::Pointer 
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIgtlMessageCommon::UnpackUsMessage(igtl::MessageHeader::Pointer headerMsg,
     igtl::Socket* socket,
-    PlusTrackedFrame& trackedFrame,
+    igsioTrackedFrame& trackedFrame,
     int crccheck)
 {
   if (headerMsg.IsNull())
@@ -212,7 +212,7 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackUsMessage(igtl::MessageHeader::Pointe
 
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIgtlMessageCommon::PackImageMessage(igtl::ImageMessage::Pointer imageMessage,
-    PlusTrackedFrame& trackedFrame,
+    igsioTrackedFrame& trackedFrame,
     const vtkMatrix4x4& matrix)
 {
   if (imageMessage.IsNull())
@@ -238,7 +238,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackImageMessage(igtl::ImageMessage::Pointe
   int subOffset[3] = { 0 };
   double imageSpacingMm[3] = { 0 };
   double imageOriginMm[3] = { 0 };
-  int scalarType = PlusVideoFrame::GetIGTLScalarPixelTypeFromVTK(trackedFrame.GetImageData()->GetVTKScalarPixelType());
+  int scalarType = igsioVideoFrame::GetIGTLScalarPixelTypeFromVTK(trackedFrame.GetImageData()->GetVTKScalarPixelType());
   unsigned int numScalarComponents(1);
   if (trackedFrame.GetImageData()->GetNumberOfScalarComponents(numScalarComponents) == PLUS_FAIL)
   {
@@ -317,7 +317,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackImageMessage(igtl::ImageMessage::Pointe
   image->GetOrigin(imageOriginMm);
   // imageMessage->SetOrigin() is not used, because origin and normal is set later by igtlioImageConverter::VTKTransformToIGTLImage()
 
-  int scalarType = PlusVideoFrame::GetIGTLScalarPixelTypeFromVTK(image->GetScalarType());
+  int scalarType = igsioVideoFrame::GetIGTLScalarPixelTypeFromVTK(image->GetScalarType());
   imageMessage->SetScalarType(scalarType);
   imageMessage->SetEndian(igtl_is_little_endian() ? igtl::ImageMessage::ENDIAN_LITTLE : igtl::ImageMessage::ENDIAN_BIG);
   imageMessage->AllocateScalars();
@@ -346,7 +346,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackImageMessage(igtl::ImageMessage::Pointe
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIgtlMessageCommon::UnpackImageMessage(igtl::MessageHeader::Pointer headerMsg,
     igtl::Socket* socket,
-    PlusTrackedFrame& trackedFrame,
+    igsioTrackedFrame& trackedFrame,
     const PlusTransformName& embeddedTransformName,
     int crccheck)
 {
@@ -395,8 +395,8 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackImageMessage(igtl::MessageHeader::Poi
   FrameSizeType imageSize = {static_cast<unsigned int>(imgSize[0]), static_cast<unsigned int>(imgSize[1]), static_cast<unsigned int>(imgSize[2]) };
 
   // Set scalar pixel type
-  PlusCommon::VTKScalarPixelType pixelType = PlusVideoFrame::GetVTKScalarPixelTypeFromIGTL(imgMsg->GetScalarType());
-  PlusVideoFrame frame;
+  PlusCommon::VTKScalarPixelType pixelType = igsioVideoFrame::GetVTKScalarPixelTypeFromIGTL(imgMsg->GetScalarType());
+  igsioVideoFrame frame;
   if (frame.AllocateFrame(imageSize, pixelType, imgMsg->GetNumComponents()) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to allocate image data for tracked frame!");
@@ -476,7 +476,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackImageMetaMessage(igtl::ImageMetaMessage
 //----------------------------------------------------------------------------
 #if defined(OpenIGTLink_ENABLE_VIDEOSTREAMING)
 PlusStatus vtkPlusIgtlMessageCommon::PackVideoMessage(igtl::VideoMessage::Pointer videoMessage,
-  PlusTrackedFrame& trackedFrame, GenericEncoder* encoder, const vtkMatrix4x4& matrix)
+  igsioTrackedFrame& trackedFrame, GenericEncoder* encoder, const vtkMatrix4x4& matrix)
 {
   if (videoMessage.IsNull())
   {
@@ -498,7 +498,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackVideoMessage(igtl::VideoMessage::Pointe
   int subOffset[3] = { 0 };
   double imageSpacingMm[3] = { 0 };
   double imageOriginMm[3] = { 0 };
-  int scalarType = PlusVideoFrame::GetIGTLScalarPixelTypeFromVTK(trackedFrame.GetImageData()->GetVTKScalarPixelType());
+  int scalarType = igsioVideoFrame::GetIGTLScalarPixelTypeFromVTK(trackedFrame.GetImageData()->GetVTKScalarPixelType());
   unsigned int numScalarComponents(1);
   if (trackedFrame.GetImageData()->GetNumberOfScalarComponents(numScalarComponents) == PLUS_FAIL)
   {

@@ -5,11 +5,11 @@
 =========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkImageData.h"
 #include "vtkMatrix4x4.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusTransformRepository.h"
 #include "vtkPlusVolumeReconstructor.h"
 #include "vtkXMLUtilities.h"
@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
 
   // Read image sequence
   LOG_INFO("Reading image sequence " << inputImgSeqFileName);
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (vtkPlusSequenceIO::Read(inputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to load input sequences file.");
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
     LOG_DEBUG("Frame: " << frameIndex);
     vtkPlusLogger::PrintProgressbar((100.0 * frameIndex) / numberOfFrames);
 
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
 
     if (transformRepository->SetTransforms(*frame) != PLUS_SUCCESS)
     {

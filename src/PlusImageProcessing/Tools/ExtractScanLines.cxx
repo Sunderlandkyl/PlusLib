@@ -1,10 +1,10 @@
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkImageCast.h"
 #include "vtkImageData.h"
 #include "vtkPlusMetaImageSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusUsScanConvert.h"
 #include "vtkPlusUsScanConvertCurvilinear.h"
 #include "vtkPlusUsScanConvertLinear.h"
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 
   // Read input image.
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> inputFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> inputFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   inputFrameList->ReadFromSequenceMetafile(inputFileName.c_str());
   int numberOfFrames = inputFrameList->GetNumberOfTrackedFrames();
 
@@ -168,16 +168,16 @@ int main(int argc, char** argv)
   linesImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
 
   // Create frame lists for lines images and output images.
-  vtkSmartPointer<vtkPlusTrackedFrameList> linesFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
-  vtkSmartPointer<vtkPlusTrackedFrameList> outputFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> linesFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> outputFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
 
   // Iterate thought every frame.
   for (int frameIndex = 0; frameIndex < numberOfFrames; frameIndex ++ )
   {
-    PlusTrackedFrame* inputFrame = inputFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* inputFrame = inputFrameList->GetTrackedFrame(frameIndex);
 
     linesFrameList->AddTrackedFrame(inputFrame);
-    PlusTrackedFrame* linesFrame = linesFrameList->GetTrackedFrame(linesFrameList->GetNumberOfTrackedFrames()-1);
+    igsioTrackedFrame* linesFrame = linesFrameList->GetTrackedFrame(linesFrameList->GetNumberOfTrackedFrames()-1);
     linesFrame->GetImageData()->DeepCopyFrom(linesImage);  // Would there be a more efficient way to create this tracked frame?
 
     // Extract scan lines from image.

@@ -7,9 +7,9 @@ See License.txt for details.
 // Local includes
 #include "PlusConfigure.h"
 #include "PlusMath.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusTransformRepository.h"
 
 // VTK includes
@@ -57,7 +57,7 @@ public:
   std::string               FieldName;
   std::string               UpdatedFieldName;
   std::string               UpdatedFieldValue;
-  vtkPlusTrackedFrameList*  TrackedFrameList;
+  vtkigsioTrackedFrameList*  TrackedFrameList;
   double                    FrameScalarStart;
   double                    FrameScalarIncrement;
   int                       FrameScalarDecimalDigits;
@@ -66,14 +66,14 @@ public:
   std::string               FrameTransformIndexFieldName;
 };
 
-PlusStatus TrimSequenceFile(vtkPlusTrackedFrameList* trackedFrameList, unsigned int firstFrameIndex, unsigned int lastFrameIndex);
-PlusStatus DecimateSequenceFile(vtkPlusTrackedFrameList* trackedFrameList, unsigned int decimationFactor);
+PlusStatus TrimSequenceFile(vtkigsioTrackedFrameList* trackedFrameList, unsigned int firstFrameIndex, unsigned int lastFrameIndex);
+PlusStatus DecimateSequenceFile(vtkigsioTrackedFrameList* trackedFrameList, unsigned int decimationFactor);
 PlusStatus UpdateFrameFieldValue(FrameFieldUpdate& fieldUpdate);
-PlusStatus DeleteFrameField(vtkPlusTrackedFrameList* trackedFrameList, std::string fieldName);
+PlusStatus DeleteFrameField(vtkigsioTrackedFrameList* trackedFrameList, std::string fieldName);
 PlusStatus ConvertStringToMatrix(std::string& strMatrix, vtkMatrix4x4* matrix);
-PlusStatus AddTransform(vtkPlusTrackedFrameList* trackedFrameList, std::vector<std::string> transformNamesToAdd, std::string deviceSetConfigurationFileName);
-PlusStatus FillRectangle(vtkPlusTrackedFrameList* trackedFrameList, const std::vector<unsigned int>& fillRectOrigin, const std::vector<unsigned int>& fillRectSize, int fillGrayLevel);
-PlusStatus CropRectangle(vtkPlusTrackedFrameList* trackedFrameList, PlusVideoFrame::FlipInfoType& flipInfo, const std::vector<int>& cropRectOrigin, const std::vector<int>& cropRectSize);
+PlusStatus AddTransform(vtkigsioTrackedFrameList* trackedFrameList, std::vector<std::string> transformNamesToAdd, std::string deviceSetConfigurationFileName);
+PlusStatus FillRectangle(vtkigsioTrackedFrameList* trackedFrameList, const std::vector<unsigned int>& fillRectOrigin, const std::vector<unsigned int>& fillRectSize, int fillGrayLevel);
+PlusStatus CropRectangle(vtkigsioTrackedFrameList* trackedFrameList, PlusVideoFrame::FlipInfoType& flipInfo, const std::vector<int>& cropRectOrigin, const std::vector<int>& cropRectSize);
 
 namespace
 {
@@ -83,7 +83,7 @@ namespace
 
 // Fuse all fields in sequence files into the first sequence
 //----------------------------------------------------------------------------
-PlusStatus MixTrackedFrameLists(vtkPlusTrackedFrameList* trackedFrameList, std::vector<std::string> inputFileNames)
+PlusStatus MixTrackedFrameLists(vtkigsioTrackedFrameList* trackedFrameList, std::vector<std::string> inputFileNames)
 {
   if (inputFileNames.size() == 0)
   {
@@ -106,7 +106,7 @@ PlusStatus MixTrackedFrameLists(vtkPlusTrackedFrameList* trackedFrameList, std::
   for (unsigned int i = 1; i < inputFileNames.size(); i++)
   {
     LOG_INFO("Read input sequence file: " << inputFileNames[i]);
-    vtkSmartPointer<vtkPlusTrackedFrameList> additionalTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+    vtkSmartPointer<vtkigsioTrackedFrameList> additionalTrackedFrameList = vtkSmartPointer<vtkigsioTrackedFrameList>::New();
     if (vtkPlusSequenceIO::Read(inputFileNames[i], additionalTrackedFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Couldn't read sequence file: " << inputFileNames[0]);
@@ -125,7 +125,7 @@ PlusStatus MixTrackedFrameLists(vtkPlusTrackedFrameList* trackedFrameList, std::
     }
     for (unsigned int f = 0; f < trackedFrameList->GetNumberOfTrackedFrames(); ++f)
     {
-      PlusTrackedFrame* masterTrackedFrame = trackedFrameList->GetTrackedFrame(f);
+      igsioTrackedFrame* masterTrackedFrame = trackedFrameList->GetTrackedFrame(f);
 
       // Determine which additional frame belongs to this master frame
       while (masterTrackedFrame->GetTimestamp() > maxTimestampValueForCurrentAdditionalFrame
@@ -143,7 +143,7 @@ PlusStatus MixTrackedFrameLists(vtkPlusTrackedFrameList* trackedFrameList, std::
       }
 
       // Copy frame fields
-      PlusTrackedFrame* additionalFrame = additionalTrackedFrameList->GetTrackedFrame(additionalFrameIndex);
+      igsioTrackedFrame* additionalFrame = additionalTrackedFrameList->GetTrackedFrame(additionalFrameIndex);
       auto customFrameFields = additionalFrame->GetCustomFields();
       for (auto fieldIter = customFrameFields.begin(); fieldIter != customFrameFields.end(); ++fieldIter)
       {
@@ -164,13 +164,13 @@ PlusStatus MixTrackedFrameLists(vtkPlusTrackedFrameList* trackedFrameList, std::
 
 //----------------------------------------------------------------------------
 // Append tracked frame list (one after the other)
-PlusStatus AppendTrackedFrameLists(vtkPlusTrackedFrameList* trackedFrameList, std::vector<std::string> inputFileNames, bool incrementTimestamps)
+PlusStatus AppendTrackedFrameLists(vtkigsioTrackedFrameList* trackedFrameList, std::vector<std::string> inputFileNames, bool incrementTimestamps)
 {
   double lastTimestamp = 0;
   for (unsigned int i = 0; i < inputFileNames.size(); i++)
   {
     LOG_INFO("Read input sequence file: " << inputFileNames[i]);
-    vtkSmartPointer<vtkPlusTrackedFrameList> timestampFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+    vtkSmartPointer<vtkigsioTrackedFrameList> timestampFrameList = vtkSmartPointer<vtkigsioTrackedFrameList>::New();
     if (vtkPlusSequenceIO::Read(inputFileNames[i], timestampFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Couldn't read sequence file: " << inputFileNames[0]);
@@ -179,10 +179,10 @@ PlusStatus AppendTrackedFrameLists(vtkPlusTrackedFrameList* trackedFrameList, st
 
     if (incrementTimestamps)
     {
-      vtkPlusTrackedFrameList* tfList = timestampFrameList;
+      vtkigsioTrackedFrameList* tfList = timestampFrameList;
       for (unsigned int f = 0; f < tfList->GetNumberOfTrackedFrames(); ++f)
       {
-        PlusTrackedFrame* tf = tfList->GetTrackedFrame(f);
+        igsioTrackedFrame* tf = tfList->GetTrackedFrame(f);
         tf->SetTimestamp(lastTimestamp + tf->GetTimestamp());
       }
 
@@ -454,7 +454,7 @@ int main(int argc, char** argv)
   ///////////////////////////////////////////////////////////////////
   // Read input files
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkigsioTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkigsioTrackedFrameList>::New();
 
   if (!inputFileName.empty())
   {
@@ -680,7 +680,7 @@ int main(int argc, char** argv)
 
     for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
     {
-      PlusTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
+      igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
 
       vtkSmartPointer<vtkMatrix4x4> referenceToTrackerMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
       if (trackedFrame->GetFrameTransform(referenceTransformName, referenceToTrackerMatrix) != PLUS_SUCCESS)
@@ -777,7 +777,7 @@ int main(int argc, char** argv)
 }
 
 //-------------------------------------------------------
-PlusStatus TrimSequenceFile(vtkPlusTrackedFrameList* aTrackedFrameList, unsigned int aFirstFrameIndex, unsigned int aLastFrameIndex)
+PlusStatus TrimSequenceFile(vtkigsioTrackedFrameList* aTrackedFrameList, unsigned int aFirstFrameIndex, unsigned int aLastFrameIndex)
 {
   LOG_INFO("Trim sequence file from frame #: " << aFirstFrameIndex << " to frame #" << aLastFrameIndex);
   if (aLastFrameIndex >= aTrackedFrameList->GetNumberOfTrackedFrames() || aFirstFrameIndex > aLastFrameIndex)
@@ -800,7 +800,7 @@ PlusStatus TrimSequenceFile(vtkPlusTrackedFrameList* aTrackedFrameList, unsigned
 }
 
 //-------------------------------------------------------
-PlusStatus DecimateSequenceFile(vtkPlusTrackedFrameList* aTrackedFrameList, unsigned int decimationFactor)
+PlusStatus DecimateSequenceFile(vtkigsioTrackedFrameList* aTrackedFrameList, unsigned int decimationFactor)
 {
   LOG_INFO("Decimate sequence file: keep 1 frame out of every " << decimationFactor << " frames");
   if (decimationFactor < 2)
@@ -826,7 +826,7 @@ PlusStatus DecimateSequenceFile(vtkPlusTrackedFrameList* aTrackedFrameList, unsi
 }
 
 //-------------------------------------------------------
-PlusStatus DeleteFrameField(vtkPlusTrackedFrameList* trackedFrameList, std::string fieldName)
+PlusStatus DeleteFrameField(vtkigsioTrackedFrameList* trackedFrameList, std::string fieldName)
 {
   if (trackedFrameList == NULL)
   {
@@ -844,7 +844,7 @@ PlusStatus DeleteFrameField(vtkPlusTrackedFrameList* trackedFrameList, std::stri
   int numberOfErrors(0);
   for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
-    PlusTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
+    igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
 
     /////////////////////////////////
     // Delete field name
@@ -879,7 +879,7 @@ PlusStatus UpdateFrameFieldValue(FrameFieldUpdate& fieldUpdate)
 
   for (unsigned int i = 0; i < fieldUpdate.TrackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
-    PlusTrackedFrame* trackedFrame = fieldUpdate.TrackedFrameList->GetTrackedFrame(i);
+    igsioTrackedFrame* trackedFrame = fieldUpdate.TrackedFrameList->GetTrackedFrame(i);
 
     /////////////////////////////////
     // Update field name
@@ -993,7 +993,7 @@ PlusStatus ConvertStringToMatrix(std::string& strMatrix, vtkMatrix4x4* matrix)
 }
 
 //-------------------------------------------------------
-PlusStatus AddTransform(vtkPlusTrackedFrameList* trackedFrameList, std::vector<std::string> transformNamesToAdd, std::string deviceSetConfigurationFileName)
+PlusStatus AddTransform(vtkigsioTrackedFrameList* trackedFrameList, std::vector<std::string> transformNamesToAdd, std::string deviceSetConfigurationFileName)
 {
   if (trackedFrameList == NULL)
   {
@@ -1023,7 +1023,7 @@ PlusStatus AddTransform(vtkPlusTrackedFrameList* trackedFrameList, std::vector<s
 
   for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
-    PlusTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
+    igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
 
     // Set up transform repository
     vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
@@ -1066,7 +1066,7 @@ PlusStatus AddTransform(vtkPlusTrackedFrameList* trackedFrameList, std::vector<s
 }
 
 //-------------------------------------------------------
-PlusStatus FillRectangle(vtkPlusTrackedFrameList* trackedFrameList, const std::vector<unsigned int>& fillRectOrigin, const std::vector<unsigned int>& fillRectSize, int fillGrayLevel)
+PlusStatus FillRectangle(vtkigsioTrackedFrameList* trackedFrameList, const std::vector<unsigned int>& fillRectOrigin, const std::vector<unsigned int>& fillRectSize, int fillGrayLevel)
 {
   if (trackedFrameList == NULL)
   {
@@ -1081,7 +1081,7 @@ PlusStatus FillRectangle(vtkPlusTrackedFrameList* trackedFrameList, const std::v
 
   for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
-    PlusTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
+    igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
     PlusVideoFrame* videoFrame = trackedFrame->GetImageData();
     FrameSizeType frameSize = { 0, 0, 0 };
     if (videoFrame == NULL || videoFrame->GetFrameSize(frameSize) != PLUS_SUCCESS)
@@ -1130,7 +1130,7 @@ PlusStatus FillRectangle(vtkPlusTrackedFrameList* trackedFrameList, const std::v
 }
 
 //-------------------------------------------------------
-PlusStatus CropRectangle(vtkPlusTrackedFrameList* trackedFrameList, PlusVideoFrame::FlipInfoType& flipInfo, const std::vector<int>& cropRectOrigin, const std::vector<int>& cropRectSize)
+PlusStatus CropRectangle(vtkigsioTrackedFrameList* trackedFrameList, PlusVideoFrame::FlipInfoType& flipInfo, const std::vector<int>& cropRectOrigin, const std::vector<int>& cropRectSize)
 {
   if (trackedFrameList == NULL)
   {
@@ -1149,7 +1149,7 @@ PlusStatus CropRectangle(vtkPlusTrackedFrameList* trackedFrameList, PlusVideoFra
 
   for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
-    PlusTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
+    igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
     PlusVideoFrame* videoFrame = trackedFrame->GetImageData();
 
     FrameSizeType frameSize = { 0, 0, 0 };

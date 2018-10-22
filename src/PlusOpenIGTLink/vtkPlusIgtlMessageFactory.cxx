@@ -6,14 +6,14 @@ See License.txt for details.
 
 #include "PlusConfigure.h"
 
-#include "PlusTrackedFrame.h"
-#include "PlusVideoFrame.h"
+#include "igsioTrackedFrame.h"
+#include "igsioVideoFrame.h"
 #include "vtkImageData.h"
 #include "vtkMatrix4x4.h"
 #include "vtkObjectFactory.h"
 #include "vtkPlusIgtlMessageCommon.h"
 #include "vtkPlusIgtlMessageFactory.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusTransformRepository.h"
 #include "vtksys/SystemTools.hxx"
 #include <typeinfo>
@@ -138,7 +138,7 @@ igtl::MessageBase::Pointer vtkPlusIgtlMessageFactory::CreateSendMessage(const st
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlClientInfo& clientInfo, std::vector<igtl::MessageBase::Pointer>& igtlMessages, PlusTrackedFrame& trackedFrame,
+PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlClientInfo& clientInfo, std::vector<igtl::MessageBase::Pointer>& igtlMessages, igsioTrackedFrame& trackedFrame,
     bool packValidTransformsOnly, vtkPlusTransformRepository* transformRepository/*=NULL*/)
 {
   int numberOfErrors(0);
@@ -194,15 +194,15 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
         if (imageStream.VideoParameters.EncodingFourCC.empty())
         {
           igtl::ImageMessage::Pointer imageMessage = dynamic_cast<igtl::ImageMessage*>(igtlMessage->Clone().GetPointer());
-          if (trackedFrame.IsFrameFieldDefined(PlusTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME))
+          if (trackedFrame.IsFrameFieldDefined(igsioTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME))
           {
             // Allow overriding of device name with something human readable
             // The transform name is passed in the metadata
-            deviceName = trackedFrame.GetFrameField(PlusTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME);
+            deviceName = trackedFrame.GetFrameField(igsioTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME);
           }
           imageMessage->SetDeviceName(deviceName.c_str());
 
-          // Send PlusTrackedFrame::CustomFrameFields as meta data in the image message.
+          // Send igsioTrackedFrame::CustomFrameFields as meta data in the image message.
           std::vector<std::string> frameFields;
           trackedFrame.GetFrameFieldNameList(frameFields);
           for (std::vector<std::string>::const_iterator stringNameIterator = frameFields.begin(); stringNameIterator != frameFields.end(); ++stringNameIterator)

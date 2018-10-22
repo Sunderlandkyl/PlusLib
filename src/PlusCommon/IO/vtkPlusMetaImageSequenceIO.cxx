@@ -21,8 +21,8 @@ See License.txt for details.
 
 #include "vtksys/SystemTools.hxx"
 #include "vtkObjectFactory.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "PlusTrackedFrame.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "igsioTrackedFrame.h"
 
 namespace
 {
@@ -239,7 +239,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::ReadImageHeader()
   // Only check image related settings if dimensions are not 0 0 0
   if (this->Dimensions[0] != 0 && this->Dimensions[1] != 0 && this->Dimensions[2] != 0)
   {
-    this->ImageOrientationInFile = PlusVideoFrame::GetUsImageOrientationFromString(GetCustomString(SEQMETA_FIELD_US_IMG_ORIENT));
+    this->ImageOrientationInFile = igsioVideoFrame::GetUsImageOrientationFromString(GetCustomString(SEQMETA_FIELD_US_IMG_ORIENT));
 
     const char* imgTypeStr = GetCustomString(SEQMETA_FIELD_US_IMG_TYPE);
     if (imgTypeStr == NULL)
@@ -249,7 +249,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::ReadImageHeader()
     }
     else
     {
-      this->ImageType = PlusVideoFrame::GetUsImageTypeFromString(imgTypeStr);
+      this->ImageType = igsioVideoFrame::GetUsImageTypeFromString(imgTypeStr);
     }
 
     const char* binaryDataFieldValue = this->TrackedFrameList->GetCustomString("BinaryData");
@@ -340,7 +340,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::ReadImagePixels()
   unsigned int frameSizeInBytes = 0;
   if (this->Dimensions[0] > 0 && this->Dimensions[1] > 0 && this->Dimensions[2] > 0)
   {
-    frameSizeInBytes = this->Dimensions[0] * this->Dimensions[1] * this->Dimensions[2] * PlusVideoFrame::GetNumberOfBytesPerScalar(this->PixelType) * this->NumberOfScalarComponents;
+    frameSizeInBytes = this->Dimensions[0] * this->Dimensions[1] * this->Dimensions[2] * igsioVideoFrame::GetNumberOfBytesPerScalar(this->PixelType) * this->NumberOfScalarComponents;
   }
 
   if (frameSizeInBytes == 0)
@@ -409,7 +409,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::ReadImagePixels()
   for (int frameNumber = 0; frameNumber < frameCount; frameNumber++)
   {
     CreateTrackedFrameIfNonExisting(frameNumber);
-    PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
+    igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
 
     // Allocate frame only if it is valid
     const char* imgStatus = trackedFrame->GetFrameField(SEQMETA_FIELD_IMG_STATUS.c_str());
@@ -443,11 +443,11 @@ PlusStatus vtkPlusMetaImageSequenceIO::ReadImagePixels()
     std::array<int, 3> clipRectOrigin = {PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP};
     std::array<int, 3> clipRectSize = {PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP};
 
-    PlusVideoFrame::FlipInfoType flipInfo;
-    if (PlusVideoFrame::GetFlipAxes(this->ImageOrientationInFile, this->ImageType, this->ImageOrientationInMemory, flipInfo) != PLUS_SUCCESS)
+    igsioVideoFrame::FlipInfoType flipInfo;
+    if (igsioVideoFrame::GetFlipAxes(this->ImageOrientationInFile, this->ImageType, this->ImageOrientationInMemory, flipInfo) != PLUS_SUCCESS)
     {
-      LOG_ERROR("Failed to convert image data to the requested orientation, from " << PlusVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile) <<
-                " to " << PlusVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInMemory));
+      LOG_ERROR("Failed to convert image data to the requested orientation, from " << igsioVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile) <<
+                " to " << igsioVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInMemory));
       return PLUS_FAIL;
     }
 
@@ -461,7 +461,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::ReadImagePixels()
         //numberOfErrors++;
       }
       FrameSizeType frameSize = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2] };
-      if (PlusVideoFrame::GetOrientedClippedImage(&(pixelBuffer[0]), flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
+      if (igsioVideoFrame::GetOrientedClippedImage(&(pixelBuffer[0]), flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
       {
         LOG_ERROR("Failed to get oriented image from sequence metafile (frame number: " << frameNumber << ")!");
         numberOfErrors++;
@@ -471,7 +471,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::ReadImagePixels()
     else
     {
       FrameSizeType frameSize = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2] };
-      if (PlusVideoFrame::GetOrientedClippedImage(&(allFramesPixelBuffer[0]) + frameNumber * frameSizeInBytes, flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
+      if (igsioVideoFrame::GetOrientedClippedImage(&(allFramesPixelBuffer[0]) + frameNumber * frameSizeInBytes, flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
       {
         LOG_ERROR("Failed to get oriented image from sequence metafile (frame number: " << frameNumber << ")!");
         numberOfErrors++;
@@ -690,18 +690,18 @@ PlusStatus vtkPlusMetaImageSequenceIO::WriteInitialImageHeader()
     SetCustomString("ElementNumberOfChannels", this->NumberOfScalarComponents);
   }
 
-  SetCustomString(SEQMETA_FIELD_US_IMG_ORIENT, PlusVideoFrame::GetStringFromUsImageOrientation(US_IMG_ORIENT_MF));
+  SetCustomString(SEQMETA_FIELD_US_IMG_ORIENT, igsioVideoFrame::GetStringFromUsImageOrientation(US_IMG_ORIENT_MF));
   // Image orientation
   if (this->EnableImageDataWrite)
   {
-    std::string orientationStr = PlusVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile);
+    std::string orientationStr = igsioVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile);
     SetCustomString(SEQMETA_FIELD_US_IMG_ORIENT, orientationStr.c_str());
   }
 
   // Image type
   if (this->EnableImageDataWrite)
   {
-    std::string typeStr = PlusVideoFrame::GetStringFromUsImageType(this->ImageType);
+    std::string typeStr = igsioVideoFrame::GetStringFromUsImageType(this->ImageType);
     SetCustomString(SEQMETA_FIELD_US_IMG_TYPE, typeStr.c_str());
   }
 
@@ -858,7 +858,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::AppendImagesToHeader()
   {
     LOG_DEBUG("Writing frame " << frameNumber);
     unsigned int adjustedFrameNumber = frameNumber - this->CurrentFrameOffset;
-    PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(adjustedFrameNumber);
+    igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(adjustedFrameNumber);
 
     std::ostringstream frameIndexStr;
     frameIndexStr << std::setfill('0') << std::setw(4) << frameNumber;
@@ -946,7 +946,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::WriteCompressedImagePixelsToFile(int& com
   }
 
   // Create a blank frame if we have to write an invalid frame to metafile
-  PlusVideoFrame blankFrame;
+  igsioVideoFrame blankFrame;
   FrameSizeType frameSize = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2] };
   if (blankFrame.AllocateFrame(frameSize, this->PixelType, this->NumberOfScalarComponents) != PLUS_SUCCESS)
   {
@@ -957,7 +957,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::WriteCompressedImagePixelsToFile(int& com
 
   for (unsigned int frameNumber = 0; frameNumber < this->TrackedFrameList->GetNumberOfTrackedFrames(); frameNumber++)
   {
-    PlusTrackedFrame* trackedFrame(NULL);
+    igsioTrackedFrame* trackedFrame(NULL);
 
     if (this->EnableImageDataWrite)
     {
@@ -970,7 +970,7 @@ PlusStatus vtkPlusMetaImageSequenceIO::WriteCompressedImagePixelsToFile(int& com
       }
     }
 
-    PlusVideoFrame* videoFrame = &blankFrame;
+    igsioVideoFrame* videoFrame = &blankFrame;
     if (this->EnableImageDataWrite)
     {
       if (trackedFrame->GetImageData()->IsImageValid())

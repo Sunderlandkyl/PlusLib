@@ -26,9 +26,9 @@
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkXMLUtilities.h"
 
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusTransformRepository.h"
 #include "vtkPlusVolumeReconstructor.h"
 
@@ -82,7 +82,7 @@ int main( int argc, char** argv )
 
   // Read input tracked ultrasound data.
   LOG_DEBUG( "Reading input... " );
-  vtkSmartPointer< vtkPlusTrackedFrameList > trackedFrameList = vtkSmartPointer< vtkPlusTrackedFrameList >::New();
+  vtkSmartPointer< vtkIGSIOTrackedFrameList > trackedFrameList = vtkSmartPointer< vtkIGSIOTrackedFrameList >::New();
   if( vtkPlusSequenceIO::Read( inputMetaFilename, trackedFrameList ) != PLUS_SUCCESS )
   {
     LOG_ERROR( "Unable to load input sequences file." );
@@ -156,7 +156,7 @@ int main( int argc, char** argv )
   // Loop over each tracked image slice.
   for ( unsigned int frameIndex = 0; frameIndex < trackedFrameList->GetNumberOfTrackedFrames(); ++ frameIndex )
   {
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame( frameIndex );
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame( frameIndex );
 
     // Update transform repository
     if ( transformRepository->SetTransforms( *frame ) != PLUS_SUCCESS )

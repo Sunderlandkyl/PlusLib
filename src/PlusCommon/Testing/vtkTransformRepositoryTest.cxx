@@ -13,7 +13,7 @@
 
 #include "PlusMath.h"
 #include "vtkPlusTransformRepository.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkXMLUtilities.h"
 
 int main(int argc, char **argv)
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   transformRepository->SetTransformPersistent(tnProbeToTracker, true); 
   transformRepository->SetTransformError(tnProbeToTracker, dProbeToTrackerError); 
 
-  PlusTrackedFrame trackedFrame; 
+  igsioTrackedFrame trackedFrame; 
   vtkSmartPointer<vtkMatrix4x4> mxStylusToTracker=vtkSmartPointer<vtkMatrix4x4>::New();  
   mxStylusToTracker->Element[1][3]=25;
   mxStylusToTracker->Element[0][0]=0.1;
