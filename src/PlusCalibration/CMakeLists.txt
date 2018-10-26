@@ -79,6 +79,7 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}/vtkProbeCalibrationAlgo
   ${CMAKE_CURRENT_SOURCE_DIR}/vtkSpacingCalibAlgo
   ${CMAKE_CURRENT_SOURCE_DIR}/vtkTemporalCalibrationAlgo
+  ${vtkIGSIOCommon_INCLUDES}
   CACHE INTERNAL "" FORCE)
 
 # --------------------------------------------------------------------------
@@ -93,6 +94,7 @@ SET(${PROJECT_NAME}_LIBS
   vtkFiltersStatistics
   vtkPlusRendering
   vtkPlusCommon
+  vtkIGSIOCommon
   )
 
 GENERATE_EXPORT_DIRECTIVE_FILE(vtk${PROJECT_NAME})

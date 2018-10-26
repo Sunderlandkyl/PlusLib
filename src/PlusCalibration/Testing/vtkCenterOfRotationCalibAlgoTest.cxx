@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 
   LOG_INFO("Read center of rotation data from metafile...");
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (vtkPlusSequenceIO::Read(inputSequenceMetafile, trackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to read sequence metafile: " << inputSequenceMetafile);

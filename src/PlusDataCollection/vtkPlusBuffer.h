@@ -19,8 +19,10 @@ See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 #include "PlusConfigure.h"
 #include "vtkPlusDataCollectionExport.h"
 #include "PlusStreamBufferItem.h"
-#include "PlusTrackedFrame.h"
 #include "vtkPlusTimestampedCircularBuffer.h"
+
+// IGSIO includes
+#include <igsioTrackedFrame.h>
 
 // VTK includes
 #include <vtkObject.h>
@@ -28,7 +30,7 @@ See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 class vtkPlusDevice;
 enum ToolStatus;
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 class vtkPlusDataCollectionExport vtkPlusBuffer : public vtkObject
 {
@@ -75,7 +77,7 @@ public:
                              const std::array<int, 3>& clipRectangleSize,
                              double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
                              double filteredTimestamp = UNDEFINED_TIMESTAMP,
-                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
+                             const igsioTrackedFrame::FieldMapType* customFields = NULL);
   /*!
     Add a frame plus a timestamp to the buffer with frame index.
     If the timestamp is  less than or equal to the previous timestamp,
@@ -83,13 +85,13 @@ public:
     then the frame is not added to the buffer. If a clip rectangle is defined
     then only that portion of the frame is extracted.
   */
-  virtual PlusStatus AddItem(const PlusVideoFrame* frame,
+  virtual PlusStatus AddItem(const igsioVideoFrame* frame,
                              long frameNumber,
                              const std::array<int, 3>& clipRectangleOrigin,
                              const std::array<int, 3>& clipRectangleSize,
                              double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
                              double filteredTimestamp = UNDEFINED_TIMESTAMP,
-                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
+                             const igsioTrackedFrame::FieldMapType* customFields = NULL);
   /*!
     Add a frame plus a timestamp to the buffer with frame index.
     Additionally an optional field name&value can be added,
@@ -111,7 +113,7 @@ public:
                              const std::array<int, 3>& clipRectangleSize,
                              double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
                              double filteredTimestamp = UNDEFINED_TIMESTAMP,
-                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
+                             const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
     Add a frame plus a timestamp to the buffer with frame index.
@@ -129,7 +131,7 @@ public:
                              long frameNumber,
                              double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
                              double filteredTimestamp = UNDEFINED_TIMESTAMP,
-                             const PlusTrackedFrame::FieldMapType* customFields = NULL);
+                             const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
     Add custom fields to the new item
@@ -137,7 +139,7 @@ public:
     or if the frame's format doesn't match the buffer's frame format,
     then the frame is not added to the buffer.
   */
-  virtual PlusStatus AddItem(const PlusTrackedFrame::FieldMapType& fields,
+  virtual PlusStatus AddItem(const igsioTrackedFrame::FieldMapType& fields,
                              long frameNumber,
                              double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
                              double filteredTimestamp = UNDEFINED_TIMESTAMP);
@@ -147,7 +149,7 @@ public:
     If the timestamp is less than or equal to the previous timestamp, then nothing  will be done.
     If filteredTimestamp argument is undefined then the filtered timestamp will be computed from the input unfiltered timestamp.
   */
-  PlusStatus AddTimeStampedItem(vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredTimestamp, double filteredTimestamp = UNDEFINED_TIMESTAMP, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+  PlusStatus AddTimeStampedItem(vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredTimestamp, double filteredTimestamp = UNDEFINED_TIMESTAMP, const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*! Get a frame with the specified frame uid from the buffer */
   virtual ItemStatus GetStreamBufferItem(BufferItemUidType uid, StreamBufferItem* bufferItem);
@@ -242,7 +244,7 @@ public:
   will be copied to the tracker buffer. If useFilteredTimestamps is false, then only unfiltered timestamps
   will be copied to the tracker buffer and the tracker buffer will compute the filtered timestamps.
   */
-  PlusStatus CopyTransformFromTrackedFrameList(vtkPlusTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, PlusTransformName& transformName);
+  PlusStatus CopyTransformFromTrackedFrameList(vtkIGSIOTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, igsioTransformName& transformName);
 
 
   /*! Make this buffer into a copy of another buffer.  You should Lock both of the buffers before doing this. */
@@ -307,7 +309,7 @@ public:
   int GetNumberOfBytesPerPixel();
 
   /*! Copy images from a tracked frame buffer. It is useful when data is stored in a metafile and the data is needed as a vtkPlusDataBuffer. */
-  PlusStatus CopyImagesFromTrackedFrameList(vtkPlusTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, bool copyFrameFields);
+  PlusStatus CopyImagesFromTrackedFrameList(vtkIGSIOTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, bool copyFrameFields);
 
   /*! Dump the current state of the video buffer to metafile */
   virtual PlusStatus WriteToSequenceFile(const char* filename, bool useCompression = false);

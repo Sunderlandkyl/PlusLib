@@ -8,10 +8,10 @@ See License.txt for details.
 #include "PlusConfigure.h"
 #include "PlusCommon.h"
 #include "PlusMath.h"
-#include "PlusTrackedFrame.h"
-#include "PlusVideoFrame.h"
+#include "igsioTrackedFrame.h"
+#include "igsioVideoFrame.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusVolumeReconstructor.h"
 
 // VTK includes
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
   }
 
   // Read the image sequence
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (vtkPlusSequenceIO::Read(inputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to load input sequences file.");
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
   LOG_INFO("Processing " << numberOfFrames << " frames...");
   for (int frameIndex = 0; frameIndex < numberOfFrames; frameIndex++)
   {
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
     vtkImageData* imageData = frame->GetImageData()->GetImage();
     DrawClipRectangle(imageData, reconstructor);
     DrawClipFan(imageData, reconstructor);

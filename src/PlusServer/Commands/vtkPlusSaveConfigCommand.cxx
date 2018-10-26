@@ -9,7 +9,7 @@ See License.txt for details.
 #include "vtkPlusCommandProcessor.h"
 #include "vtkPlusCommandResponse.h"
 #include "vtkPlusSaveConfigCommand.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtkPlusVirtualCapture.h"
 
 vtkStandardNewMacro(vtkPlusSaveConfigCommand);

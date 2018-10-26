@@ -15,11 +15,13 @@ compares the results to a baseline
 #include "vtkPlusLineSegmentationAlgo.h"
 #include "vtkMath.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
 #include "vtksys/SystemTools.hxx"
+
+// IGSIO includes
+#include <vtkIGSIOTrackedFrameList.h>
 
 const double MAX_ORIGIN_DISTANCE_PIXEL = 10;
 const double MAX_LINE_ANGLE_DIFFERENCE_DEG = 3;
@@ -249,7 +251,7 @@ int main( int argc, char** argv )
   }
 
   LOG_DEBUG( "Read input sequence" );
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if ( vtkPlusSequenceIO::Read( inputSequenceMetafile, trackedFrameList ) != PLUS_SUCCESS )
   {
     LOG_ERROR( "Failed to read sequence metafile: " << inputSequenceMetafile );

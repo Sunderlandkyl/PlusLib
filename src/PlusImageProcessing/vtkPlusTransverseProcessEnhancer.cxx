@@ -7,12 +7,14 @@ See License.txt for details.
 // Local includes
 #include "PlusConfigure.h"
 #include "PlusMath.h"
-#include "PlusTrackedFrame.h"
-#include "PlusVideoFrame.h"
-#include "vtkPlusTrackedFrameList.h"
 #include "vtkPlusTransverseProcessEnhancer.h"
 #include "vtkPlusUsScanConvertCurvilinear.h"
 #include "vtkPlusUsScanConvertLinear.h"
+
+// IGSIO includes
+#include <igsioTrackedFrame.h>
+#include <igsioVideoFrame.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 // VTK includes
 #include <vtkImageAccumulate.h>
@@ -240,7 +242,7 @@ void vtkPlusTransverseProcessEnhancer::CompareShadowAreas(vtkSmartPointer<vtkIma
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusTransverseProcessEnhancer::ProcessFrame(PlusTrackedFrame* inputFrame, PlusTrackedFrame* outputFrame)
+PlusStatus vtkPlusTransverseProcessEnhancer::ProcessFrame(igsioTrackedFrame* inputFrame, igsioTrackedFrame* outputFrame)
 {
 
   this->BoneAreasInfo.clear();

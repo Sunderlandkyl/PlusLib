@@ -25,8 +25,9 @@ IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
 ENDIF()
 
 SET(${PROJECT_NAME}_INCLUDE_DIRS 
-  ${CMAKE_CURRENT_SOURCE_DIR} 
-  ${CMAKE_CURRENT_BINARY_DIR} 
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${vtkIGSIOCommon_INCLUDES}
   CACHE INTERNAL "" FORCE)
 
 # --------------------------------------------------------------------------
@@ -35,6 +36,7 @@ SET(${PROJECT_NAME}_LIBS
   vtkPlusCommon
   OpenIGTLink
   igtlioConverter
+  vtkIGSIOCommon
   )
 
 GENERATE_EXPORT_DIRECTIVE_FILE(vtk${PROJECT_NAME})

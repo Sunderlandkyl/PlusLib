@@ -5,13 +5,13 @@ See License.txt for details.
 =========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusMetaImageSequenceIO.h"
 #include "vtkObjectFactory.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusVirtualCapture.h"
 #include "vtksys/SystemTools.hxx"
 
@@ -35,7 +35,7 @@ namespace
 //----------------------------------------------------------------------------
 vtkPlusVirtualCapture::vtkPlusVirtualCapture()
   : vtkPlusDevice()
-  , RecordedFrames(vtkPlusTrackedFrameList::New())
+  , RecordedFrames(vtkIGSIOTrackedFrameList::New())
   , LastAlreadyRecordedFrameTimestamp(UNDEFINED_TIMESTAMP)
   , NextFrameToBeRecordedTimestamp(0.0)
   , RequestedFrameRate(15.0)
@@ -361,8 +361,8 @@ PlusStatus vtkPlusVirtualCapture::InternalUpdate()
   }
   if (frame1Index > frame2Index)
   {
-    PlusTrackedFrame* frame1 = this->RecordedFrames->GetTrackedFrame(frame1Index);
-    PlusTrackedFrame* frame2 = this->RecordedFrames->GetTrackedFrame(frame2Index);
+    igsioTrackedFrame* frame1 = this->RecordedFrames->GetTrackedFrame(frame1Index);
+    igsioTrackedFrame* frame2 = this->RecordedFrames->GetTrackedFrame(frame2Index);
     if (frame1 != NULL && frame2 != NULL)
     {
       double frameTimeDiff = frame1->GetTimestamp() - frame2->GetTimestamp();
@@ -546,7 +546,7 @@ PlusStatus vtkPlusVirtualCapture::TakeSnapshot()
     return PLUS_FAIL;
   }
 
-  PlusTrackedFrame trackedFrame;
+  igsioTrackedFrame trackedFrame;
   if (this->GetInputTrackedFrame(trackedFrame) != PLUS_SUCCESS)
   {
     LOG_ERROR(this->GetDeviceId() << ": Failed to get tracked frame for the snapshot!");
@@ -554,7 +554,7 @@ PlusStatus vtkPlusVirtualCapture::TakeSnapshot()
   }
 
   // Check if there are any valid transforms
-  std::vector<PlusTransformName> transformNames;
+  std::vector<igsioTransformName> transformNames;
   trackedFrame.GetFrameTransformNameList(transformNames);
   bool validFrame = false;
 
@@ -564,7 +564,7 @@ PlusStatus vtkPlusVirtualCapture::TakeSnapshot()
   }
   else
   {
-    for (std::vector<PlusTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
+    for (std::vector<igsioTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
     {
       TrackedFrameFieldStatus status = FIELD_INVALID;
       trackedFrame.GetFrameTransformStatus(*it, status);
@@ -585,7 +585,7 @@ PlusStatus vtkPlusVirtualCapture::TakeSnapshot()
 
   // Add tracked frame to the list
   // Snapshots are triggered manually, so the additional copying in AddTrackedFrame compared to TakeTrackedFrame is not relevant.
-  if (this->RecordedFrames->AddTrackedFrame(&trackedFrame, vtkPlusTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
+  if (this->RecordedFrames->AddTrackedFrame(&trackedFrame, vtkIGSIOTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
   {
     LOG_WARNING(this->GetDeviceId() << ": Frame could not be added because validation failed");
     return PLUS_FAIL;
@@ -654,7 +654,7 @@ int vtkPlusVirtualCapture::OutputChannelCount() const
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVirtualCapture::GetInputTrackedFrame(PlusTrackedFrame& aFrame)
+PlusStatus vtkPlusVirtualCapture::GetInputTrackedFrame(igsioTrackedFrame& aFrame)
 {
   if (this->OutputChannels.empty())
   {
@@ -666,7 +666,7 @@ PlusStatus vtkPlusVirtualCapture::GetInputTrackedFrame(PlusTrackedFrame& aFrame)
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusVirtualCapture::GetInputTrackedFrameListSampled(double& lastAlreadyRecordedFrameTimestamp, double& nextFrameToBeRecordedTimestamp, vtkPlusTrackedFrameList* recordedFrames, double requestedFramePeriodSec, double maxProcessingTimeSec)
+PlusStatus vtkPlusVirtualCapture::GetInputTrackedFrameListSampled(double& lastAlreadyRecordedFrameTimestamp, double& nextFrameToBeRecordedTimestamp, vtkIGSIOTrackedFrameList* recordedFrames, double requestedFramePeriodSec, double maxProcessingTimeSec)
 {
   if (this->OutputChannels.empty())
   {

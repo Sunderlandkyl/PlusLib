@@ -8,16 +8,20 @@ See License.txt for details.
 
 #include "PlusFidPatternRecognition.h"
 #include "PlusPatternLocResultFile.h"
-#include "PlusTrackedFrame.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
+
+// STD includes
 #include <fstream> 
 #include <iostream>
 #include <sstream>
+
+// IGSIO includes
+#include <igsioTrackedFrame.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 ///////////////////////////////////////////////////////////////////
 // Other constants
@@ -31,7 +35,7 @@ static const double FIDUCIAL_POSITION_TOLERANCE = 0.1;  // in pixel
 static const double BASELINE_TO_ALGORITHM_TOLERANCE = 5; 
 ///////////////////////////////////////////////////////////////////
 
-void SegmentImageSequence( vtkPlusTrackedFrameList* trackedFrameList, std::ofstream &outFile, const std::string &inputTestcaseName, const std::string &inputImageSequenceFileName, PlusFidPatternRecognition& patternRecognition, const char* fidPositionOutputFilename)
+void SegmentImageSequence( vtkIGSIOTrackedFrameList* trackedFrameList, std::ofstream &outFile, const std::string &inputTestcaseName, const std::string &inputImageSequenceFileName, PlusFidPatternRecognition& patternRecognition, const char* fidPositionOutputFilename)
 {
   double sumFiducialNum = 0;// divide by framenum
   double sumFiducialCandidate = 0;// divide by framenum
@@ -422,7 +426,7 @@ int main(int argc, char **argv)
 
   LOG_INFO("Read from metafile");
   std::string inputImageSequencePath=inputTestDataDir+"/"+inputImageSequenceFileName;
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New(); 
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New(); 
   if( vtkPlusSequenceIO::Read(inputImageSequencePath, trackedFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to read sequence metafile: " << inputImageSequencePath); 

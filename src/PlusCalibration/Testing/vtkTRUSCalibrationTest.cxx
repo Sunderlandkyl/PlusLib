@@ -21,12 +21,14 @@
 #include "vtkPlusProbeCalibrationAlgo.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkPlusSpacingCalibAlgo.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "vtkPlusTransformRepository.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx" 
 #include "vtksys/SystemTools.hxx"
+
+// IGSIO includes
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 
 ///////////////////////////////////////////////////////////////////
 const double ERROR_THRESHOLD = 0.05; // error threshold is 5% 
@@ -85,7 +87,7 @@ int main (int argc, char* argv[])
   patternRecognition.ReadConfiguration(configRootElement);
 
   LOG_INFO("Reading probe rotation data from sequence metafile..."); 
-  vtkSmartPointer<vtkPlusTrackedFrameList> probeRotationTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New(); 
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> probeRotationTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New(); 
   if( vtkPlusSequenceIO::Read(inputProbeRotationSeqMetafile, probeRotationTrackedFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to read sequence metafile: " << inputProbeRotationSeqMetafile); 
@@ -138,7 +140,7 @@ int main (int argc, char* argv[])
   }
 
   // Read coordinate definitions
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   if ( transformRepository->ReadConfiguration(configRootElement) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to read CoordinateDefinitions!"); 
@@ -162,7 +164,7 @@ int main (int argc, char* argv[])
   }
 
   // Load and segment validation tracked frame list
-  vtkSmartPointer<vtkPlusTrackedFrameList> validationTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> validationTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if( vtkPlusSequenceIO::Read(inputValidationSeqMetafile, validationTrackedFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to read tracked frames from sequence metafile from: " << inputValidationSeqMetafile ); 
@@ -177,7 +179,7 @@ int main (int argc, char* argv[])
   }
 
   // Load and segment calibration tracked frame list
-  vtkSmartPointer<vtkPlusTrackedFrameList> calibrationTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> calibrationTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if( vtkPlusSequenceIO::Read(inputCalibrationSeqMetafile, calibrationTrackedFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to read tracked frames from sequence metafile from: " << inputCalibrationSeqMetafile ); 

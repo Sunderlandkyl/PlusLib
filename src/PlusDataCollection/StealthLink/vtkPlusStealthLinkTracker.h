@@ -12,7 +12,7 @@
 #include "vtkPlusDevice.h"
 #include <string>
 
-class vtkPlusTransformRepository;
+class vtkIGSIOTransformRepository;
 
 /*!
 \class StealthServer
@@ -51,7 +51,7 @@ public:
   std::string GetDicomImagesOutputDirectory();
 
   /*! Deep copies the transform repository from the server into the TransformRepository attribute */
-  PlusStatus UpdateTransformRepository( vtkPlusTransformRepository* sharedTransformRepository );
+  PlusStatus UpdateTransformRepository( vtkIGSIOTransformRepository* sharedTransformRepository );
 
   /*! Set the dicom directory where the dicom images will be saved when acquired from the server */
   void SetDicomImagesOutputDirectory( std::string dicomImagesOutputDirectory );

@@ -16,7 +16,7 @@
 #include "vtkPlusSequenceIOBase.h"
 #include "vtk_zlib.h"
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 /*!
   \class vtkPlusNrrdSequenceIO

@@ -14,9 +14,9 @@ See License.txt for details.
 // OpenIGTLink includes
 #include <igtlCodecCommonClasses.h>
 
-// PlusLib includes
-#include "PlusTrackedFrame.h"
-#include "vtkPlusTrackedFrameList.h"
+// IGSIO includes
+#include "igsioTrackedFrame.h"
+#include "vtkIGSIOTrackedFrameList.h"
 
 #ifdef PLUS_USE_OpenIGTLink
 #include "igtlCommon.h"
@@ -171,7 +171,7 @@ PlusStatus vtkPlusMkvSequenceIO::ReadImagePixels()
     for (vtkMKVUtil::FrameInfoList::iterator frameIt = videoTrackIt->second.Frames.begin(); frameIt != videoTrackIt->second.Frames.end(); ++frameIt)
     {
       this->CreateTrackedFrameIfNonExisting(totalFrameNumber);
-      PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(totalFrameNumber);
+      igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(totalFrameNumber);
       trackedFrame->GetImageData()->SetImageOrientation(US_IMG_ORIENT_MF); // TODO: save orientation and type
       trackedFrame->GetImageData()->SetImageType(US_IMG_RGB_COLOR);
       trackedFrame->GetImageData()->AllocateFrame(frameSize, VTK_UNSIGNED_CHAR, 3);
@@ -205,7 +205,7 @@ PlusStatus vtkPlusMkvSequenceIO::ReadImagePixels()
     {
       for (unsigned int i = 0; i < this->TrackedFrameList->GetNumberOfTrackedFrames(); ++i)
       {
-        PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(i);
+        igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(i);
         if (trackedFrame->GetTimestamp() != frameIt->TimestampSeconds)
         {
           continue;
@@ -280,7 +280,7 @@ PlusStatus vtkPlusMkvSequenceIO::WriteInitialImageHeader()
   // All desired custom frame field names must be availiable starting from frame 0
   for (unsigned int frameNumber = 0; frameNumber < this->TrackedFrameList->GetNumberOfTrackedFrames(); frameNumber++)
   {
-    PlusTrackedFrame* trackedFrame(NULL);
+    igsioTrackedFrame* trackedFrame(NULL);
     trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
     std::vector<std::string> fieldNames;
     trackedFrame->GetFrameFieldNameList(fieldNames);
@@ -336,7 +336,7 @@ PlusStatus vtkPlusMkvSequenceIO::WriteImages()
 
   for (unsigned int frameNumber = 0; frameNumber < this->TrackedFrameList->GetNumberOfTrackedFrames(); frameNumber++)
   {
-    PlusTrackedFrame* trackedFrame(NULL);
+    igsioTrackedFrame* trackedFrame(NULL);
 
     if (this->EnableImageDataWrite)
     {

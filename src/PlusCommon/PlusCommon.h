@@ -14,6 +14,9 @@
 #include "vtkPlusMacro.h"
 #include "vtkPlusRecursiveCriticalSection.h"
 
+// ITK includes
+#include "itkImage.h"
+
 // VTK includes
 #include <vtkImageData.h>
 #include <vtksys/SystemTools.hxx>
@@ -28,7 +31,7 @@
 #include <sstream>
 
 class vtkPlusUsScanConvert;
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 enum PlusStatus
 {
@@ -374,7 +377,7 @@ virtual void Set##name (type _arg) \
   } \
 }
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 class vtkXMLDataElement;
 
 namespace PlusCommon
@@ -509,8 +512,8 @@ namespace PlusCommon
   typedef std::array<int, 3> PixelPoint;
   typedef std::pair<PixelPoint, PixelPoint> PixelLine;
   typedef std::vector<PixelLine> PixelLineList;
-  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList);
-  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList);
+  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList);
+  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList);
   vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkImageData* imageData);
   vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkImageData* imageData);
 
@@ -579,103 +582,20 @@ namespace PlusCommon
     template<typename T> vtkPlusCommonExport PlusStatus SafeGetAttributeValueInsensitive(vtkXMLDataElement& element, const std::wstring& attributeName, T& value);
   }
 
+#ifdef PLUS_USE_OpenIGTLink
+  /*! Convert between ITK and IGTL scalar pixel types */
+  vtkPlusCommonExport IGTLScalarPixelType GetIGTLScalarPixelTypeFromVTK(VTKScalarPixelType vtkScalarPixelType);
+
+  /*! Convert between IGTL and ITK scalar pixel types */
+  vtkPlusCommonExport VTKScalarPixelType GetVTKScalarPixelTypeFromIGTL(IGTLScalarPixelType igtlPixelType);
+#endif
+
+  /*! Convert 3D vtkImageData to 3D itkImage */
+  template<typename ScalarType> static PlusStatus DeepCopyVtkVolumeToItkVolume(vtkImageData* inFrame, typename itk::Image< ScalarType, 3 >::Pointer outFrame);
+  /*! Convert 2D/3D vtkImageData to 2D itkImage (take only first slice if 3D) */
+  template<typename ScalarType> static PlusStatus DeepCopyVtkVolumeToItkImage(vtkImageData* inFrame, typename itk::Image< ScalarType, 2 >::Pointer outFrame);
+
 };
-
-/*!
-  \class PlusTransformName
-  \brief Stores the from and to coordinate frame names for transforms
-
-  The PlusTransformName stores and generates the from and to coordinate frame names for transforms.
-  To enable robust serialization to/from a simple string (...To...Transform), the coordinate frame names must
-  start with an uppercase character and it shall not contain "To" followed by an uppercase character. E.g., valid
-  coordinate frame names are Tracker, TrackerBase, Tool; invalid names are tracker, trackerBase, ToImage.
-
-  Example usage:
-  Setting a transform name:
-  \code
-  PlusTransformName tnImageToProbe("Image", "Probe");
-  \endcode
-  or
-  \code
-  PlusTransformName tnImageToProbe;
-  if ( tnImageToProbe->SetTransformName("ImageToProbe") != PLUS_SUCCESS )
-  {
-    LOG_ERROR("Failed to set transform name!");
-    return PLUS_FAIL;
-  }
-  \endcode
-  Getting coordinate frame or transform names:
-  \code
-  std::string fromFrame = tnImageToProbe->From();
-  std::string toFrame = tnImageToProbe->To();
-  \endcode
-  or
-  \code
-  std::string strImageToProbe;
-  if ( tnImageToProbe->GetTransformName(strImageToProbe) != PLUS_SUCCESS )
-  {
-    LOG_ERROR("Failed to get transform name!");
-    return PLUS_FAIL;
-  }
-  \endcode
-
-  \ingroup PlusLibCommon
-*/
-class vtkPlusCommonExport PlusTransformName
-{
-public:
-  PlusTransformName();
-  ~PlusTransformName();
-  PlusTransformName(std::string aFrom, std::string aTo);
-  PlusTransformName(const std::string& transformName);
-
-  /*!
-    Set 'From' and 'To' coordinate frame names from a combined transform name with the following format [FrameFrom]To[FrameTo].
-    The combined transform name might contain only one 'To' phrase followed by a capital letter (e.g. ImageToToProbe is not allowed)
-    and the coordinate frame names should be in camel case format starting with capitalized letters.
-  */
-  PlusStatus SetTransformName(const char* aTransformName);
-  PlusStatus SetTransformName(const std::string& aTransformName);
-
-  /*! Return combined transform name between 'From' and 'To' coordinate frames: [From]To[To] */
-  PlusStatus GetTransformName(std::string& aTransformName) const;
-  std::string GetTransformName() const;
-
-  /*! Return 'From' coordinate frame name, give a warning if it's not capitalized and capitalize it*/
-  std::string From() const;
-
-  /*! Return 'To' coordinate frame name, give a warning if it's not capitalized and capitalize it */
-  std::string To() const;
-
-  /*! Clear the 'From' and 'To' fields */
-  void Clear();
-
-  /*! Check if the current transform name is valid */
-  bool IsValid() const;
-
-  inline bool operator== (const PlusTransformName& in) const
-  {
-    return (in.m_From == m_From && in.m_To == m_To);
-  }
-
-  inline bool operator!= (const PlusTransformName& in) const
-  {
-    return !(in == *this);
-  }
-
-  friend std::ostream& operator<< (std::ostream& os, const PlusTransformName& transformName)
-  {
-    os << transformName.GetTransformName();
-    return os;
-  }
-
-private:
-  /*! Check if the input string is capitalized, if not capitalize it */
-  void Capitalize(std::string& aString);
-  std::string m_From; /*! From coordinate frame name */
-  std::string m_To; /*! To coordinate frame name */
-};
-
 
 #define RETRY_UNTIL_TRUE(command_, numberOfRetryAttempts_, delayBetweenRetryAttemptsSec_) \
   { \

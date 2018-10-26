@@ -187,7 +187,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
     std::string igtlTransformName = tdataElem->GetName();
 
     // Set internal transform name
-    PlusTransformName transformName;
+    igsioTransformName transformName;
     if (igtlTransformName.find("To") != std::string::npos)
     {
       // Plus style transform name sent
@@ -196,7 +196,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
     else
     {
       // Brainlab style transform name sent
-      transformName = PlusTransformName(igtlTransformName.c_str(), this->ToolReferenceFrameName);
+      transformName = igsioTransformName(igtlTransformName.c_str(), this->ToolReferenceFrameName);
     }
 
     if (this->ToolTimeStampedUpdateWithoutFiltering(transformName.GetTransformName().c_str(), toolMatrix, TOOL_OK, unfilteredTimestamp, filteredTimestamp) == PLUS_SUCCESS)
@@ -328,7 +328,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::ProcessTransformMessageGeneral(bool& moreM
   }
 
   // Set transform name
-  PlusTransformName transformName;
+  igsioTransformName transformName;
   if (transformName.SetTransformName(igtlTransformName.c_str()) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to update tracker tool - unrecognized transform name: " << igtlTransformName);

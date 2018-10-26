@@ -11,6 +11,9 @@
 #include "PlusConfigure.h"
 #include "vtkPlusOpenIGTLinkExport.h"
 
+// IGSIO includes
+#include "igsioCommon.h"
+
 // IGTL includes
 #include <igtlClientSocket.h>
 
@@ -99,7 +102,7 @@ public:
   std::vector<std::string> IgtlMessageTypes;
 
   /*! Transform names to send with IGT transform, position message */
-  std::vector<PlusTransformName> TransformNames;
+  std::vector<igsioTransformName> TransformNames;
 
   /*! String field names to send with IGT STRING message */
   std::vector<std::string> StringNames;

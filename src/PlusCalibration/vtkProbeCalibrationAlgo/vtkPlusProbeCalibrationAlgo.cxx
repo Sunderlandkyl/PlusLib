@@ -10,9 +10,9 @@ See License.txt for details.
 #include "float.h"
 #include <vnl/vnl_inverse.h>
 
-#include "vtkPlusTrackedFrameList.h"
-#include "PlusTrackedFrame.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "igsioTrackedFrame.h"
+#include "vtkIGSIOTransformRepository.h"
 
 #include "PlusMath.h"
 #include "PlusFidPatternRecognitionCommon.h"
@@ -86,7 +86,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::ReadConfiguration(vtkXMLDataElement* aCo
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* validationTrackedFrameList, vtkPlusTrackedFrameList* calibrationTrackedFrameList, vtkPlusTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
+PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkIGSIOTrackedFrameList* validationTrackedFrameList, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, vtkIGSIOTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::Calibrate");
 
@@ -205,7 +205,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::ComputeImageToProbeTransformByLinearLeas
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkPlusTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkPlusTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
+PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkIGSIOTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkIGSIOTransformRepository* transformRepository, const std::vector<PlusNWire>& nWires)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::Calibrate(validation: " << validationStartFrame << "-" << validationEndFrame << ", calibration: " << calibrationStartFrame << "-" << calibrationEndFrame << ")");
 
@@ -216,12 +216,12 @@ PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* valid
   }
 
   // Check if TrackedFrameLists are MF oriented BRIGHTNESS images
-  if (vtkPlusTrackedFrameList::VerifyProperties(validationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
+  if (vtkIGSIOTrackedFrameList::VerifyProperties(validationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to perform calibration - validation tracked frame list is invalid");
     return PLUS_FAIL;
   }
-  if (vtkPlusTrackedFrameList::VerifyProperties(calibrationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
+  if (vtkIGSIOTrackedFrameList::VerifyProperties(calibrationTrackedFrameList, US_IMG_ORIENT_MF, US_IMG_BRIGHTNESS) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to perform calibration - calibration tracked frame list is invalid");
     return PLUS_FAIL;
@@ -314,7 +314,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* valid
     return PLUS_FAIL;
   }
 
-  PlusTransformName imageToProbeTransformName(this->ImageCoordinateFrame, this->ProbeCoordinateFrame);
+  igsioTransformName imageToProbeTransformName(this->ImageCoordinateFrame, this->ProbeCoordinateFrame);
   transformRepository->SetTransformError(imageToProbeTransformName, this->PreProcessedWirePositions[VALIDATION_ALL].NWireErrors.ReprojectionError3DMean);
   LOG_INFO("Validation 3D Reprojection Error (OPE): Mean: " << this->PreProcessedWirePositions[VALIDATION_ALL].NWireErrors.ReprojectionError3DMean << "mm, StDdev: " << this->PreProcessedWirePositions[VALIDATION_ALL].NWireErrors.ReprojectionError3DStdDev << "mm");
 
@@ -366,7 +366,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::Calibrate(vtkPlusTrackedFrameList* valid
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(PlusTrackedFrame* trackedFrame, vtkPlusTransformRepository* transformRepository, PreProcessedWirePositionIdType datasetType)
+PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(igsioTrackedFrame* trackedFrame, vtkIGSIOTransformRepository* transformRepository, PreProcessedWirePositionIdType datasetType)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(type=" << datasetType << ")");
 
@@ -405,7 +405,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(PlusTrackedFrame* t
   // Compute PhantomToProbe transform
   vnl_matrix_fixed<double, 4, 4> phantomToProbeTransformMatrix;
   {
-    PlusTransformName probeToReferenceTransformName(this->ProbeCoordinateFrame, this->ReferenceCoordinateFrame);
+    igsioTransformName probeToReferenceTransformName(this->ProbeCoordinateFrame, this->ReferenceCoordinateFrame);
     vtkSmartPointer<vtkMatrix4x4> probeToReferenceVtkTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     transformRepository->SetTransforms(*trackedFrame);
     bool transformValid = false;
@@ -418,7 +418,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(PlusTrackedFrame* t
     }
 
     // Get phantom registration matrix and convert it to vnl
-    PlusTransformName phantomToReferenceTransformName(this->PhantomCoordinateFrame, this->ReferenceCoordinateFrame);
+    igsioTransformName phantomToReferenceTransformName(this->PhantomCoordinateFrame, this->ReferenceCoordinateFrame);
     vtkSmartPointer<vtkMatrix4x4> phantomToReferenceTransformMatrixVtk = vtkSmartPointer<vtkMatrix4x4>::New();
     if ((transformRepository->GetTransform(phantomToReferenceTransformName, phantomToReferenceTransformMatrixVtk, &transformValid) != PLUS_SUCCESS) || (!transformValid))
     {
@@ -449,7 +449,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(PlusTrackedFrame* t
 
   {
     // Store all the probe to phantom transforms, used only in 2D minimization
-    PlusTransformName probeToPhantomTransformName(this->ProbeCoordinateFrame, this->PhantomCoordinateFrame);
+    igsioTransformName probeToPhantomTransformName(this->ProbeCoordinateFrame, this->PhantomCoordinateFrame);
     vtkSmartPointer<vtkMatrix4x4> probeToPhantomVtkTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     bool transformValid = false;
@@ -515,7 +515,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::AddPositionsPerImage(PlusTrackedFrame* t
 }
 
 //-----------------------------------------------------------------------------
-void vtkPlusProbeCalibrationAlgo::SetAndValidateImageToProbeTransform(const vnl_matrix_fixed<double, 4, 4>& imageToProbeTransformMatrix, vtkPlusTransformRepository* transformRepository)
+void vtkPlusProbeCalibrationAlgo::SetAndValidateImageToProbeTransform(const vnl_matrix_fixed<double, 4, 4>& imageToProbeTransformMatrix, vtkIGSIOTransformRepository* transformRepository)
 {
   // Check orthogonality
   vnl_matrix_fixed<double, 3, 3> imageToProbeTransformMatrixRot = imageToProbeTransformMatrix.extract(3, 3);
@@ -537,7 +537,7 @@ void vtkPlusProbeCalibrationAlgo::SetAndValidateImageToProbeTransform(const vnl_
   // Save results into transform repository
   vtkSmartPointer<vtkMatrix4x4> imageToProbeMatrixVtk = vtkSmartPointer<vtkMatrix4x4>::New();
   PlusMath::ConvertVnlMatrixToVtkMatrix(imageToProbeTransformMatrix, imageToProbeMatrixVtk);
-  PlusTransformName imageToProbeTransformName(this->ImageCoordinateFrame, this->ProbeCoordinateFrame);
+  igsioTransformName imageToProbeTransformName(this->ImageCoordinateFrame, this->ProbeCoordinateFrame);
   transformRepository->SetTransform(imageToProbeTransformName, imageToProbeMatrixVtk);
   transformRepository->SetTransformPersistent(imageToProbeTransformName, true);
   transformRepository->SetTransformDate(imageToProbeTransformName, vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
@@ -656,7 +656,7 @@ std::string vtkPlusProbeCalibrationAlgo::GetResultString(int precision/* = 3*/)
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::SaveCalibrationResultAndErrorReportToXML(vtkPlusTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkPlusTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame)
+PlusStatus vtkPlusProbeCalibrationAlgo::SaveCalibrationResultAndErrorReportToXML(vtkIGSIOTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::SaveCalibrationResultsAndErrorReportsToXML");
 
@@ -687,7 +687,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::SaveCalibrationResultAndErrorReportToXML
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport(vtkPlusTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkPlusTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkXMLDataElement* probeCalibrationResult)
+PlusStatus vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport(vtkIGSIOTrackedFrameList* validationTrackedFrameList, int validationStartFrame, int validationEndFrame, vtkIGSIOTrackedFrameList* calibrationTrackedFrameList, int calibrationStartFrame, int calibrationEndFrame, vtkXMLDataElement* probeCalibrationResult)
 {
   LOG_TRACE("vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport");
 
@@ -844,7 +844,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport(vt
     frame->AddNestedElement(reprojectionError2Ds);
 
     vtkSmartPointer<vtkXMLDataElement> trackedFrame = vtkSmartPointer<vtkXMLDataElement>::New();
-    if (validationTrackedFrameList->GetTrackedFrame(frameNumber)->PrintToXML(trackedFrame, std::vector<PlusTransformName>()) == PLUS_SUCCESS)
+    if (validationTrackedFrameList->GetTrackedFrame(frameNumber)->PrintToXML(trackedFrame, std::vector<igsioTransformName>()) == PLUS_SUCCESS)
     {
       frame->AddNestedElement(trackedFrame);
     }
@@ -959,7 +959,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::GetXMLCalibrationResultAndErrorReport(vt
     frame->AddNestedElement(reprojectionError2Ds);
 
     vtkSmartPointer<vtkXMLDataElement> trackedFrame = vtkSmartPointer<vtkXMLDataElement>::New();
-    if (calibrationTrackedFrameList->GetTrackedFrame(frameNumber)->PrintToXML(trackedFrame, std::vector<PlusTransformName>()) == PLUS_SUCCESS)
+    if (calibrationTrackedFrameList->GetTrackedFrame(frameNumber)->PrintToXML(trackedFrame, std::vector<igsioTransformName>()) == PLUS_SUCCESS)
     {
       frame->AddNestedElement(trackedFrame);
     }

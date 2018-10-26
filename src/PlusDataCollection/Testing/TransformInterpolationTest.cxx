@@ -12,7 +12,7 @@
 #include "vtkPlusBuffer.h"
 #include "vtkPlusDevice.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtksys/CommandLineArguments.hxx"
 #include "vtksys/SystemTools.hxx"
 
@@ -63,13 +63,13 @@ int main(int argc, char **argv)
 
   // Read buffer 
   LOG_INFO("Reading tracker meta file..."); 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackerFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New(); 
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackerFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New(); 
   if( vtkPlusSequenceIO::Read(inputMetafile, trackerFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to read sequence metafile from file: " << inputMetafile ); 
   }
 
-  PlusTransformName transformName; 
+  igsioTransformName transformName; 
   if ( transformName.SetTransformName(inputTransformName.c_str())!= PLUS_SUCCESS )
   {
     LOG_ERROR("Invalid transform name: " << inputTransformName ); 

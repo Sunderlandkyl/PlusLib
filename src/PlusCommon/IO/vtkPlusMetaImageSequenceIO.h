@@ -16,7 +16,7 @@
 #include "vtkPlusSequenceIOBase.h"
 #include "itk_zlib.h"
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 /*!
   \class vtkPlusMetaImageSequenceIO

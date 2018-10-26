@@ -12,8 +12,8 @@
 #include "vtkMatrix4x4.h"
 
 #include "PlusMath.h"
-#include "vtkPlusTransformRepository.h"
-#include "PlusTrackedFrame.h"
+#include "vtkIGSIOTransformRepository.h"
+#include "igsioTrackedFrame.h"
 #include "vtkXMLUtilities.h"
 
 int main(int argc, char **argv)
@@ -44,34 +44,34 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////
   // Set up coordinate transforms
 
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository=vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository=vtkSmartPointer<vtkIGSIOTransformRepository>::New();
 
   double dProbeToTrackerError(0.1235); 
   vtkSmartPointer<vtkMatrix4x4> mxProbeToTracker=vtkSmartPointer<vtkMatrix4x4>::New();  
   mxProbeToTracker->Element[0][3]=15;
   mxProbeToTracker->Element[0][0]=-0.5;
   mxProbeToTracker->Element[1][1]=-0.8;
-  PlusTransformName tnProbeToTracker("Probe", "Tracker"); 
+  igsioTransformName tnProbeToTracker("Probe", "Tracker"); 
   transformRepository->SetTransform(tnProbeToTracker, mxProbeToTracker, false );
   transformRepository->SetTransformPersistent(tnProbeToTracker, true); 
   transformRepository->SetTransformError(tnProbeToTracker, dProbeToTrackerError); 
 
-  PlusTrackedFrame trackedFrame; 
+  igsioTrackedFrame trackedFrame; 
   vtkSmartPointer<vtkMatrix4x4> mxStylusToTracker=vtkSmartPointer<vtkMatrix4x4>::New();  
   mxStylusToTracker->Element[1][3]=25;
   mxStylusToTracker->Element[0][0]=0.1;
   mxStylusToTracker->Element[1][0]=0.2;
   mxStylusToTracker->Element[2][0]=-0.4;
-  trackedFrame.SetFrameTransform(PlusTransformName("Stylus", "Tracker"), mxStylusToTracker); 
-  trackedFrame.SetFrameTransformStatus(PlusTransformName("Stylus", "Tracker"), FIELD_OK); 
+  trackedFrame.SetFrameTransform(igsioTransformName("Stylus", "Tracker"), mxStylusToTracker); 
+  trackedFrame.SetFrameTransformStatus(igsioTransformName("Stylus", "Tracker"), FIELD_OK); 
 
   vtkSmartPointer<vtkMatrix4x4> mxPhantomToTracker=vtkSmartPointer<vtkMatrix4x4>::New();    
   mxPhantomToTracker->Element[2][2]=-4;
   mxPhantomToTracker->Element[0][3]=2;
   mxPhantomToTracker->Element[1][3]=2;
   mxPhantomToTracker->Element[2][3]=20;
-  trackedFrame.SetFrameTransform(PlusTransformName("Phantom", "Tracker"), mxPhantomToTracker); 
-  trackedFrame.SetFrameTransformStatus(PlusTransformName("Phantom", "Tracker"), FIELD_OK); 
+  trackedFrame.SetFrameTransform(igsioTransformName("Phantom", "Tracker"), mxPhantomToTracker); 
+  trackedFrame.SetFrameTransformStatus(igsioTransformName("Phantom", "Tracker"), FIELD_OK); 
 
   vtkSmartPointer<vtkMatrix4x4> mxStylusTipToStylus=vtkSmartPointer<vtkMatrix4x4>::New();    
   mxStylusTipToStylus->Element[2][3]=4;
@@ -79,8 +79,8 @@ int main(int argc, char **argv)
   mxStylusTipToStylus->Element[2][0]=-0.2;
   mxStylusTipToStylus->Element[2][1]=0.4;
   mxStylusTipToStylus->Element[2][2]=-0.2;
-  trackedFrame.SetFrameTransform(PlusTransformName("StylusTip", "Stylus"), mxStylusTipToStylus); 
-  trackedFrame.SetFrameTransformStatus(PlusTransformName("StylusTip", "Stylus"), FIELD_OK); 
+  trackedFrame.SetFrameTransform(igsioTransformName("StylusTip", "Stylus"), mxStylusTipToStylus); 
+  trackedFrame.SetFrameTransformStatus(igsioTransformName("StylusTip", "Stylus"), FIELD_OK); 
 
   if ( transformRepository->SetTransforms(trackedFrame) != PLUS_SUCCESS )
   {
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
   // Compute with transform Repository 
   vtkSmartPointer<vtkMatrix4x4> mxProbeToProbe=vtkSmartPointer<vtkMatrix4x4>::New();    
   bool isValid(false);
-  transformRepository->GetTransform(PlusTransformName("Probe", "Probe"), mxProbeToProbe, &isValid);
+  transformRepository->GetTransform(igsioTransformName("Probe", "Probe"), mxProbeToProbe, &isValid);
   LOG_INFO("ProbeToProbe (computed by transformRepository):");
   mxProbeToProbe->PrintSelf(std::cout, vtkIndent());
   // Compute manually
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
   // Compute with transform Repository 
   vtkSmartPointer<vtkMatrix4x4> mxStylusTipToTracker=vtkSmartPointer<vtkMatrix4x4>::New();    
   isValid=false;
-  transformRepository->GetTransform(PlusTransformName("StylusTip", "Tracker"), mxStylusTipToTracker, &isValid);
+  transformRepository->GetTransform(igsioTransformName("StylusTip", "Tracker"), mxStylusTipToTracker, &isValid);
   LOG_INFO("StylusTipToTracker (computed by transformRepository):");
   mxStylusTipToTracker->PrintSelf(std::cout, vtkIndent());
   // Compute manually
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
   // Compute with transform Repository 
   vtkSmartPointer<vtkMatrix4x4> mxPhantomToStylusTip=vtkSmartPointer<vtkMatrix4x4>::New();    
   isValid=false;
-  transformRepository->GetTransform(PlusTransformName("Phantom", "StylusTip"), mxPhantomToStylusTip, &isValid);
+  transformRepository->GetTransform(igsioTransformName("Phantom", "StylusTip"), mxPhantomToStylusTip, &isValid);
   LOG_INFO("PhantomToStylusTip (computed by transformRepository):");
   mxPhantomToStylusTip->PrintSelf(std::cout, vtkIndent());
   // Compute manually
@@ -189,9 +189,9 @@ int main(int argc, char **argv)
   // Test PhantomToStylusTip computation after update of an existing transform
   // Update transform
   mxStylusToTracker->Element[0][0]=0.9;
-  transformRepository->SetTransform(PlusTransformName("Stylus", "Tracker"), mxStylusToTracker);
+  transformRepository->SetTransform(igsioTransformName("Stylus", "Tracker"), mxStylusToTracker);
   // Compute with transform Repository 
-  transformRepository->GetTransform(PlusTransformName("Phantom", "StylusTip"), mxPhantomToStylusTip, &isValid);
+  transformRepository->GetTransform(igsioTransformName("Phantom", "StylusTip"), mxPhantomToStylusTip, &isValid);
   LOG_INFO("PhantomToStylusTip (computed by transformRepository):");
   mxPhantomToStylusTip->PrintSelf(std::cout, vtkIndent());
   // Compute manually
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
 
   /////////////////////////////////////////////////////////////////////////////
   // Check if invalid transform flag is correctly propagated
-  if (transformRepository->GetTransformValid(PlusTransformName("Probe", "Stylus"), isValid)!=PLUS_SUCCESS)
+  if (transformRepository->GetTransformValid(igsioTransformName("Probe", "Stylus"), isValid)!=PLUS_SUCCESS)
   {
     LOG_ERROR("Cannot get ProbeToStylus transform valid status");
     return EXIT_FAILURE;
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  if (transformRepository->GetTransformValid(PlusTransformName("Stylus", "Probe"), isValid)!=PLUS_SUCCESS)
+  if (transformRepository->GetTransformValid(igsioTransformName("Stylus", "Probe"), isValid)!=PLUS_SUCCESS)
   {
     LOG_ERROR("Cannot get StylusToProbe transform valid status");
     return EXIT_FAILURE;
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 
   transformRepository->SetTransform(tnProbeToTracker, mxProbeToTracker, true );
 
-  if (transformRepository->GetTransformValid(PlusTransformName("Probe", "Stylus"), isValid)!=PLUS_SUCCESS)
+  if (transformRepository->GetTransformValid(igsioTransformName("Probe", "Stylus"), isValid)!=PLUS_SUCCESS)
   {
     LOG_ERROR("Cannot get ProbeToStylus transform valid status");
     return EXIT_FAILURE;
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  if (transformRepository->GetTransformValid(PlusTransformName("Stylus", "Probe"), isValid)!=PLUS_SUCCESS)
+  if (transformRepository->GetTransformValid(igsioTransformName("Stylus", "Probe"), isValid)!=PLUS_SUCCESS)
   {
     LOG_ERROR("Cannot get StylusToProbe transform valid status");
     return EXIT_FAILURE;
@@ -272,7 +272,7 @@ int main(int argc, char **argv)
 
   /////////////////////////////////////////////////////////////////////////////
   // Check if non-existing transforms are handled properly
-  if (transformRepository->GetTransformValid(PlusTransformName("Probe", "StylusNonExisting"), isValid)==PLUS_SUCCESS)
+  if (transformRepository->GetTransformValid(igsioTransformName("Probe", "StylusNonExisting"), isValid)==PLUS_SUCCESS)
   {
     LOG_ERROR("A non-existing transform has been reported to be found");
     return EXIT_FAILURE;  
@@ -281,13 +281,13 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////
   // Check circle detection
   vtkSmartPointer<vtkMatrix4x4> mxProbeToPhantom=vtkSmartPointer<vtkMatrix4x4>::New();    
-  if (transformRepository->SetTransform(PlusTransformName("Probe", "Phantom"), mxProbeToPhantom)==PLUS_SUCCESS)
+  if (transformRepository->SetTransform(igsioTransformName("Probe", "Phantom"), mxProbeToPhantom)==PLUS_SUCCESS)
   {
     LOG_ERROR("Circular reference between transforms is not detected");
     return EXIT_FAILURE;
   }
 
-  if (transformRepository->SetTransform(PlusTransformName("Probe", "Probe"), mxProbeToProbe)==PLUS_SUCCESS)
+  if (transformRepository->SetTransform(igsioTransformName("Probe", "Probe"), mxProbeToProbe)==PLUS_SUCCESS)
   {
     LOG_ERROR("Circular reference between transforms (transform to self) is not detected");
     return EXIT_FAILURE;
@@ -354,12 +354,12 @@ int main(int argc, char **argv)
 
   /////////////////////////////////////////////////////////////////////////////
   // Check delete
-  if (transformRepository->DeleteTransform(PlusTransformName("Tracker", "Probe"))==PLUS_SUCCESS)
+  if (transformRepository->DeleteTransform(igsioTransformName("Tracker", "Probe"))==PLUS_SUCCESS)
   {
     LOG_ERROR("Only the inverse of the transform has been set, delete should not have been allowed");
     return EXIT_FAILURE;
   }
-  if (transformRepository->DeleteTransform(PlusTransformName("Probe", "Tracker"))!=PLUS_SUCCESS)
+  if (transformRepository->DeleteTransform(igsioTransformName("Probe", "Tracker"))!=PLUS_SUCCESS)
   {
     LOG_ERROR("Transform delete failed");
     return EXIT_FAILURE;
@@ -367,7 +367,7 @@ int main(int argc, char **argv)
 
   /////////////////////////////////////////////////////////////////////////////
   // Check circle detection - after delete
-  if (transformRepository->SetTransform(PlusTransformName("Probe", "Phantom"), mxProbeToPhantom)!=PLUS_SUCCESS)
+  if (transformRepository->SetTransform(igsioTransformName("Probe", "Phantom"), mxProbeToPhantom)!=PLUS_SUCCESS)
   {
     LOG_ERROR("Set transform should have been succeeded");
     return EXIT_FAILURE;
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////
   // Check clear
   transformRepository->Clear();
-  if (transformRepository->GetTransform(PlusTransformName("StylusTip", "Tracker"), mxStylusTipToTracker, &isValid)==PLUS_SUCCESS)
+  if (transformRepository->GetTransform(igsioTransformName("StylusTip", "Tracker"), mxStylusTipToTracker, &isValid)==PLUS_SUCCESS)
   {
     LOG_ERROR("GetTransform should have failed after clearing the transform repository");
     return EXIT_FAILURE;

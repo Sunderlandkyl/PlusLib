@@ -1068,7 +1068,7 @@ PlusStatus vtkPlusNDITracker::ReadConfiguration(vtkXMLDataElement* rootConfigEle
       LOG_ERROR("Failed to initialize NDI tool: DataSource Id is missing");
       continue;
     }
-    PlusTransformName toolTransformName(toolId, this->GetToolReferenceFrameName());
+    igsioTransformName toolTransformName(toolId, this->GetToolReferenceFrameName());
     std::string toolSourceId = toolTransformName.GetTransformName();
     vtkPlusDataSource* trackerTool = NULL;
     if (this->GetTool(toolSourceId, trackerTool) != PLUS_SUCCESS || trackerTool == NULL)

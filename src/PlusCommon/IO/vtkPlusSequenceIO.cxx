@@ -9,14 +9,14 @@
 #include "vtkPlusMetaImageSequenceIO.h"
 #include "vtkPlusNrrdSequenceIO.h"
 #include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 
 #ifdef PLUS_USE_VTKVIDEOIO_MKV
 #include "vtkPlusMkvSequenceIO.h"
 #endif
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusSequenceIO::Write(const std::string& filename, vtkPlusTrackedFrameList* frameList, US_IMAGE_ORIENTATION orientationInFile/*=US_IMG_ORIENT_MF*/, bool useCompression/*=true*/, bool enableImageDataWrite/*=true*/)
+PlusStatus vtkPlusSequenceIO::Write(const std::string& filename, vtkIGSIOTrackedFrameList* frameList, US_IMAGE_ORIENTATION orientationInFile/*=US_IMG_ORIENT_MF*/, bool useCompression/*=true*/, bool enableImageDataWrite/*=true*/)
 {
   // Convert local filename to plus output filename
   if (vtksys::SystemTools::FileExists(filename.c_str()))
@@ -49,11 +49,11 @@ PlusStatus vtkPlusSequenceIO::Write(const std::string& filename, vtkPlusTrackedF
 #ifdef PLUS_USE_VTKVIDEOIO_MKV
   else if (vtkPlusMkvSequenceIO::CanWriteFile(filename))
   {
-    if (frameList->SaveToMatroskaFile(filename, orientationInFile, useCompression, enableImageDataWrite) != PLUS_SUCCESS)
-    {
-      LOG_ERROR("Unable to save file: " << filename << " as MKV file.");
-      return PLUS_FAIL;
-    }
+    //if (frameList->SaveToMatroskaFile(filename, orientationInFile, useCompression, enableImageDataWrite) != PLUS_SUCCESS)
+    //{
+    //  LOG_ERROR("Unable to save file: " << filename << " as MKV file.");
+    //  return PLUS_FAIL;
+    //}
   }
 #endif
 
@@ -62,7 +62,7 @@ PlusStatus vtkPlusSequenceIO::Write(const std::string& filename, vtkPlusTrackedF
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusSequenceIO::Read(const std::string& filename, vtkPlusTrackedFrameList* frameList)
+PlusStatus vtkPlusSequenceIO::Read(const std::string& filename, vtkIGSIOTrackedFrameList* frameList)
 {
   if (!vtksys::SystemTools::FileExists(filename.c_str()))
   {
@@ -96,12 +96,12 @@ PlusStatus vtkPlusSequenceIO::Read(const std::string& filename, vtkPlusTrackedFr
 #ifdef PLUS_USE_VTKVIDEOIO_MKV
   else if (vtkPlusMkvSequenceIO::CanReadFile(filename))
   {
-    // Attempt MKV read
-    if (frameList->ReadFromMatroskaFile(filename.c_str()) != PLUS_SUCCESS)
-    {
-      LOG_ERROR("Failed to read video buffer from MKV file: " << filename);
-      return PLUS_FAIL;
-    }
+    //// Attempt MKV read
+    //if (frameList->ReadFromMatroskaFile(filename.c_str()) != PLUS_SUCCESS)
+    //{
+    //  LOG_ERROR("Failed to read video buffer from MKV file: " << filename);
+    //  return PLUS_FAIL;
+    //}
 
     return PLUS_SUCCESS;
   }

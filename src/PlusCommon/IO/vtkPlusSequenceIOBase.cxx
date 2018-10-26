@@ -7,9 +7,9 @@ See License.txt for details.
 #include "PlusConfigure.h"
 #include "vtkObjectFactory.h"
 #include "vtkPlusSequenceIOBase.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtksys/SystemTools.hxx"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 
 #if _WIN32
   #include <errno.h>
@@ -23,11 +23,11 @@ See License.txt for details.
 
 //----------------------------------------------------------------------------
 
-vtkCxxSetObjectMacro(vtkPlusSequenceIOBase, TrackedFrameList, vtkPlusTrackedFrameList);
+vtkCxxSetObjectMacro(vtkPlusSequenceIOBase, TrackedFrameList, vtkIGSIOTrackedFrameList);
 
 //----------------------------------------------------------------------------
 vtkPlusSequenceIOBase::vtkPlusSequenceIOBase()
-  : TrackedFrameList(vtkPlusTrackedFrameList::New())
+  : TrackedFrameList(vtkIGSIOTrackedFrameList::New())
   , UseCompression(false)
   , CompressedBytesWritten(0)
   , EnableImageDataWrite(true)
@@ -87,14 +87,14 @@ PlusStatus vtkPlusSequenceIOBase::Read()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusSequenceIOBase::DeleteFrameString(int frameNumber, const char* fieldName)
 {
-  PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
+  igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
   if (trackedFrame == NULL)
   {
     LOG_ERROR("Cannot access frame " << frameNumber);
     return PLUS_FAIL;
   }
 
-  return trackedFrame->DeleteFrameField(fieldName);
+  return trackedFrame->DeleteFrameField(fieldName) == igsioStatus::IGSIO_SUCCESS ? PLUS_SUCCESS : PLUS_FAIL;
 }
 
 //----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ PlusStatus vtkPlusSequenceIOBase::SetFrameString(int frameNumber, const char* fi
     return PLUS_FAIL;
   }
   this->CreateTrackedFrameIfNonExisting(frameNumber);
-  PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
+  igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
   if (trackedFrame == NULL)
   {
     LOG_ERROR("Cannot access frame " << frameNumber);
@@ -179,10 +179,10 @@ void vtkPlusSequenceIOBase::CreateTrackedFrameIfNonExisting(unsigned int frameNu
     // frame is already created
     return;
   }
-  PlusTrackedFrame emptyFrame;
+  igsioTrackedFrame emptyFrame;
   for (unsigned int i = this->TrackedFrameList->GetNumberOfTrackedFrames(); i < frameNumber + 1; i++)
   {
-    this->TrackedFrameList->AddTrackedFrame(&emptyFrame, vtkPlusTrackedFrameList::ADD_INVALID_FRAME);
+    this->TrackedFrameList->AddTrackedFrame(&emptyFrame, vtkIGSIOTrackedFrameList::ADD_INVALID_FRAME);
   }
 }
 
@@ -345,7 +345,7 @@ PlusStatus vtkPlusSequenceIOBase::WriteImages()
     if (imageDataAvailable)
     {
       // Create a blank frame if we have to write an invalid frame to sequence file
-      PlusVideoFrame blankFrame;
+      igsioVideoFrame blankFrame;
       FrameSizeType frameSize = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2] };
       if (blankFrame.AllocateFrame(frameSize, this->PixelType, this->NumberOfScalarComponents) != PLUS_SUCCESS)
       {
@@ -357,9 +357,9 @@ PlusStatus vtkPlusSequenceIOBase::WriteImages()
       // not compressed
       for (unsigned int frameNumber = 0; frameNumber < this->TrackedFrameList->GetNumberOfTrackedFrames(); frameNumber++)
       {
-        PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
+        igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
 
-        PlusVideoFrame* videoFrame = &blankFrame;
+        igsioVideoFrame* videoFrame = &blankFrame;
         if (this->EnableImageDataWrite && trackedFrame->GetImageData()->IsImageValid())
         {
           videoFrame = trackedFrame->GetImageData();
@@ -473,9 +473,9 @@ PlusStatus vtkPlusSequenceIOBase::Discard()
 }
 
 //----------------------------------------------------------------------------
-PlusTrackedFrame* vtkPlusSequenceIOBase::GetTrackedFrame(int frameNumber)
+igsioTrackedFrame* vtkPlusSequenceIOBase::GetTrackedFrame(int frameNumber)
 {
-  PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
+  igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
   return trackedFrame;
 }
 

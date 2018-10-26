@@ -14,7 +14,6 @@ See License.txt for details.
 
 #include "PlusFidPatternRecognition.h"
 #include "PlusMath.h"
-#include "PlusTrackedFrame.h"
 #include "vtkCallbackCommand.h"
 #include "vtkCommand.h"
 #include "vtkMath.h"
@@ -22,10 +21,7 @@ See License.txt for details.
 #include "vtkPlusProbeCalibrationAlgo.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
 #include "vtkTransform.h"
-#include "vtkPlusTransformRepository.h"
-#include "vtkPlusTransformRepository.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
@@ -33,7 +29,12 @@ See License.txt for details.
 #include <iostream>
 #include <stdlib.h>
 
-PlusStatus SubSequenceMetafile(vtkPlusTrackedFrameList* aTrackedFrameList, std::vector<unsigned int> selectedFrames);
+// IGSIO includes
+#include <igsioTrackedFrame.h>
+#include <vtkIGSIOTrackedFrameList.h>
+#include <vtkIGSIOTransformRepository.h>
+
+PlusStatus SubSequenceMetafile(vtkIGSIOTrackedFrameList* aTrackedFrameList, std::vector<unsigned int> selectedFrames);
 PlusStatus SetOptimizationMethod(vtkPlusProbeCalibrationAlgo* freehandCalibration, std::string method);
 
 enum OperationType
@@ -98,7 +99,7 @@ int main(int argc, char* argv[])
   vtkPlusConfig::GetInstance()->SetDeviceSetConfigurationData(configRootElement);
 
   // Read coordinate definitions
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   if (transformRepository->ReadConfiguration(configRootElement) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to read CoordinateDefinitions!");
@@ -116,7 +117,7 @@ int main(int argc, char* argv[])
   patternRecognition.GetFidSegmentation()->SetDebugOutput(debugOutput);
 
   // Load and segment calibration image
-  vtkSmartPointer<vtkPlusTrackedFrameList> calibrationTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> calibrationTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (vtkPlusSequenceIO::Read(inputCalibrationSeqMetafile, calibrationTrackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Reading calibration images from '" << inputCalibrationSeqMetafile << "' failed!");
@@ -134,7 +135,7 @@ int main(int argc, char* argv[])
   LOG_INFO("Segmentation success rate of calibration images: " << numberOfSuccessfullySegmentedCalibrationImages << " out of " << calibrationTrackedFrameList->GetNumberOfTrackedFrames());
 
   // Load and segment validation image
-  vtkSmartPointer<vtkPlusTrackedFrameList> validationTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> validationTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (vtkPlusSequenceIO::Read(inputValidationSeqMetafile, validationTrackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Reading validation images from '" << inputValidationSeqMetafile << "' failed!");
@@ -267,7 +268,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> sequenceTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> sequenceTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
 
   std::string methods[] = {"NO_OPTIMIZATION", "7param2D", "7param3D", "8param2D", "8param3D"};
   int numberOfMethods = sizeof(methods) / sizeof(methods[0]);
@@ -344,7 +345,7 @@ int main(int argc, char* argv[])
 
 //-------------------------------------------------------------------------------------------------
 
-PlusStatus SubSequenceMetafile(vtkPlusTrackedFrameList* aTrackedFrameList, std::vector<unsigned int> selectedFrames)
+PlusStatus SubSequenceMetafile(vtkIGSIOTrackedFrameList* aTrackedFrameList, std::vector<unsigned int> selectedFrames)
 {
   LOG_INFO("Create a sub sequence using" << selectedFrames.size() << " frames");
   std::sort(selectedFrames.begin(), selectedFrames.end());

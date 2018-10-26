@@ -25,8 +25,8 @@
 #include "PlusIgtlClientInfo.h"
 
 class vtkXMLDataElement;
-class PlusTrackedFrame;
-class vtkPlusTransformRepository;
+class igsioTrackedFrame;
+class vtkIGSIOTransformRepository;
 
 /*!
   \class vtkPlusIgtlMessageFactory
@@ -81,8 +81,8 @@ public:
   \param trackedFrame Input tracked frame data used for IGTL message generation
   \param transformRepository Transform repository used for computing the selected transforms
   */
-  PlusStatus PackMessages(int clientId, const PlusIgtlClientInfo& clientInfo, std::vector<igtl::MessageBase::Pointer>& igtMessages, PlusTrackedFrame& trackedFrame,
-    bool packValidTransformsOnly, vtkPlusTransformRepository* transformRepository=NULL);
+  PlusStatus PackMessages(int clientId, const PlusIgtlClientInfo& clientInfo, std::vector<igtl::MessageBase::Pointer>& igtMessages, igsioTrackedFrame& trackedFrame,
+    bool packValidTransformsOnly, vtkIGSIOTransformRepository* transformRepository=NULL);
 
 #if defined(OpenIGTLink_ENABLE_VIDEOSTREAMING)
   /*!

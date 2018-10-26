@@ -12,6 +12,9 @@ See License.txt for details.
 #include <vtkSmartPointer.h>
 #include <vtksys/CommandLineArguments.hxx>
 
+// IGSIO includes
+#include <igsioCommon.h>
+
 namespace
 {
   static const double DOUBLE_THRESHOLD = 0.0001;
@@ -118,7 +121,7 @@ namespace
 
   PlusStatus TestValidTransformName(std::string from, std::string to)
   {
-    PlusTransformName transformName;
+    igsioTransformName transformName;
     std::string strName = std::string(from) + std::string("To") + std::string(to);
     if (transformName.SetTransformName(strName.c_str()) != PLUS_SUCCESS)
     {
@@ -141,7 +144,7 @@ namespace
     std::string outTransformName;
     if (transformName.GetTransformName(outTransformName) != PLUS_SUCCESS)
     {
-      LOG_ERROR("Failed to get transform name from PlusTransformName!");
+      LOG_ERROR("Failed to get transform name from igsioTransformName!");
       return PLUS_FAIL;
     }
 
@@ -158,7 +161,7 @@ namespace
 
   PlusStatus TestInvalidTransformName(std::string from, std::string to)
   {
-    PlusTransformName transformName;
+    igsioTransformName transformName;
     std::string strName = std::string(from) + std::string("To") + std::string(to);
     transformName.SetTransformName(strName.c_str());
 
@@ -243,10 +246,10 @@ int main(int argc, char** argv)
   }
 
   // ***********************************************
-  // Test PlusTransformName
+  // Test igsioTransformName
   // ***********************************************
 
-  PlusTransformName trName("tr1", "tr2");
+  igsioTransformName trName("tr1", "tr2");
   if (trName.From().compare("Tr1") != 0)
   {
     LOG_ERROR("Capitalization test failed: " << trName.From() << " != Tr1");

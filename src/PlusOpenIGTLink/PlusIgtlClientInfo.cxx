@@ -103,7 +103,7 @@ PlusStatus PlusIgtlClientInfo::SetClientInfoFromXmlData(vtkXMLDataElement* xmlda
         continue;
       }
 
-      PlusTransformName tName;
+      igsioTransformName tName;
       if (tName.SetTransformName(name) != PLUS_SUCCESS)
       {
         LOG_WARNING("Invalid transform name: " << name);

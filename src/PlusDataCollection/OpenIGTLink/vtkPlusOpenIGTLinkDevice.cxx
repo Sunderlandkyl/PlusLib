@@ -191,7 +191,7 @@ PlusStatus vtkPlusOpenIGTLinkDevice::SendRequestedMessageTypes()
   // We need the following tool names from the server
   for (DataSourceContainerConstIterator it = this->GetToolIteratorBegin(); it != this->GetToolIteratorEnd(); ++it)
   {
-    PlusTransformName tName(it->second->GetId());
+    igsioTransformName tName(it->second->GetId());
     clientInfo.TransformNames.push_back(tName);
   }
 

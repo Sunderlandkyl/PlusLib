@@ -5,8 +5,8 @@ See License.txt for details.
 =========================================================Plus=header=end*/ 
 
 #include "PlusConfigure.h"
-#include "PlusVideoFrame.h"
-#include "PlusTrackedFrame.h"
+#include "igsioVideoFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusForoughiBoneSurfaceProbability.h"
 #include "vtkImageCast.h"
 #include "vtkImageData.h"
@@ -14,7 +14,7 @@ See License.txt for details.
 #include "vtkMetaImageWriter.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
 
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
   }
 
   // Read the image sequence
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if( vtkPlusSequenceIO::Read(inputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Unable to read sequence file: " << inputImgSeqFileName);

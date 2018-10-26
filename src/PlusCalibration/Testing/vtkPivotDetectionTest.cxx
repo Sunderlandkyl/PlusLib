@@ -12,7 +12,6 @@ and compares the results to a baseline
 
 #include "PlusConfigure.h"
 #include "PlusMath.h"
-#include "PlusTrackedFrame.h"
 #include "vtkPlusDataCollector.h"
 #include "vtkMatrix4x4.h"
 #include "vtkMinimalStandardRandomSequence.h"
@@ -21,15 +20,17 @@ and compares the results to a baseline
 #include "vtkPivotDetectionAlgo.h"
 #include "vtkPlusChannel.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
 #include "vtkTransform.h"
-#include "vtkPlusTransformRepository.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx" 
 #include "vtksys/SystemTools.hxx"
 #include <iostream>
 #include <stdlib.h>
+
+#include "igsioTrackedFrame.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 
 ///////////////////////////////////////////////////////////////////
 const double ERROR_THRESHOLD_MM=0.001;
@@ -87,7 +88,7 @@ int main (int argc, char* argv[])
   }
 
   // Read stylus tracker data
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedStylusTipFrames = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedStylusTipFrames = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if( !stylusTipToStylusTransformNameStr.empty() )
   {
     trackedStylusTipFrames->SetValidationRequirements(REQUIRE_UNIQUE_TIMESTAMP | REQUIRE_TRACKING_OK);
@@ -100,12 +101,12 @@ int main (int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
 
   // Check stylus tool
-  PlusTransformName stylusToReferenceTransformName(PivotDetection->GetObjectMarkerCoordinateFrame(), PivotDetection->GetReferenceCoordinateFrame());
+  igsioTransformName stylusToReferenceTransformName(PivotDetection->GetObjectMarkerCoordinateFrame(), PivotDetection->GetReferenceCoordinateFrame());
 
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepositoryCalibration = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepositoryCalibration = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   if ( transformRepositoryCalibration->ReadConfiguration(configRootElement) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to read CoordinateDefinitions!"); 

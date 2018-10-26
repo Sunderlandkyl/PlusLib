@@ -11,8 +11,8 @@ See License.txt for details.
 #include "vtkPlusChannel.h"
 #include "vtkPlusCommandProcessor.h"
 #include "vtkPlusReconstructVolumeCommand.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtkPlusVolumeReconstructor.h"
 #include "vtkPlusVirtualVolumeReconstructor.h"
 #include <limits>

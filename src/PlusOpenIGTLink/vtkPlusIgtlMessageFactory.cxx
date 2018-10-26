@@ -6,15 +6,15 @@ See License.txt for details.
 
 #include "PlusConfigure.h"
 
-#include "PlusTrackedFrame.h"
-#include "PlusVideoFrame.h"
+#include "igsioTrackedFrame.h"
+#include "igsioVideoFrame.h"
 #include "vtkImageData.h"
 #include "vtkMatrix4x4.h"
 #include "vtkObjectFactory.h"
 #include "vtkPlusIgtlMessageCommon.h"
 #include "vtkPlusIgtlMessageFactory.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtksys/SystemTools.hxx"
 #include <typeinfo>
 
@@ -138,8 +138,8 @@ igtl::MessageBase::Pointer vtkPlusIgtlMessageFactory::CreateSendMessage(const st
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlClientInfo& clientInfo, std::vector<igtl::MessageBase::Pointer>& igtlMessages, PlusTrackedFrame& trackedFrame,
-    bool packValidTransformsOnly, vtkPlusTransformRepository* transformRepository/*=NULL*/)
+PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlClientInfo& clientInfo, std::vector<igtl::MessageBase::Pointer>& igtlMessages, igsioTrackedFrame& trackedFrame,
+    bool packValidTransformsOnly, vtkIGSIOTransformRepository* transformRepository/*=NULL*/)
 {
   int numberOfErrors(0);
   igtlMessages.clear();
@@ -178,7 +178,7 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
         PlusIgtlClientInfo::ImageStream imageStream = (*imageStreamIterator);
 
         // Set transform name to [Name]To[CoordinateFrame]
-        PlusTransformName imageTransformName = PlusTransformName(imageStream.Name, imageStream.EmbeddedTransformToFrame);
+        igsioTransformName imageTransformName = igsioTransformName(imageStream.Name, imageStream.EmbeddedTransformToFrame);
 
         vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
         bool isValid;
@@ -194,15 +194,15 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
         if (imageStream.VideoParameters.EncodingFourCC.empty())
         {
           igtl::ImageMessage::Pointer imageMessage = dynamic_cast<igtl::ImageMessage*>(igtlMessage->Clone().GetPointer());
-          if (trackedFrame.IsFrameFieldDefined(PlusTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME))
+          if (trackedFrame.IsFrameFieldDefined(igsioTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME))
           {
             // Allow overriding of device name with something human readable
             // The transform name is passed in the metadata
-            deviceName = trackedFrame.GetFrameField(PlusTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME);
+            deviceName = trackedFrame.GetFrameField(igsioTrackedFrame::FIELD_FRIENDLY_DEVICE_NAME);
           }
           imageMessage->SetDeviceName(deviceName.c_str());
 
-          // Send PlusTrackedFrame::CustomFrameFields as meta data in the image message.
+          // Send igsioTrackedFrame::CustomFrameFields as meta data in the image message.
           std::vector<std::string> frameFields;
           trackedFrame.GetFrameFieldNameList(frameFields);
           for (std::vector<std::string>::const_iterator stringNameIterator = frameFields.begin(); stringNameIterator != frameFields.end(); ++stringNameIterator)
@@ -286,9 +286,9 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
     // Transform message
     else if (typeid(*igtlMessage) == typeid(igtl::TransformMessage))
     {
-      for (std::vector<PlusTransformName>::const_iterator transformNameIterator = clientInfo.TransformNames.begin(); transformNameIterator != clientInfo.TransformNames.end(); ++transformNameIterator)
+      for (std::vector<igsioTransformName>::const_iterator transformNameIterator = clientInfo.TransformNames.begin(); transformNameIterator != clientInfo.TransformNames.end(); ++transformNameIterator)
       {
-        PlusTransformName transformName = (*transformNameIterator);
+        igsioTransformName transformName = (*transformNameIterator);
         bool isValid = false;
         transformRepository->GetTransformValid(transformName, isValid);
 
@@ -312,9 +312,9 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
       if (clientInfo.GetTDATARequested() && clientInfo.GetLastTDATASentTimeStamp() + clientInfo.GetTDATAResolution() < trackedFrame.GetTimestamp())
       {
         std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > transforms;
-        for (std::vector<PlusTransformName>::const_iterator transformNameIterator = clientInfo.TransformNames.begin(); transformNameIterator != clientInfo.TransformNames.end(); ++transformNameIterator)
+        for (std::vector<igsioTransformName>::const_iterator transformNameIterator = clientInfo.TransformNames.begin(); transformNameIterator != clientInfo.TransformNames.end(); ++transformNameIterator)
         {
-          PlusTransformName transformName = (*transformNameIterator);
+          igsioTransformName transformName = (*transformNameIterator);
 
           bool isValid = false;
           vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -340,7 +340,7 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
     // Position message
     else if (typeid(*igtlMessage) == typeid(igtl::PositionMessage))
     {
-      for (std::vector<PlusTransformName>::const_iterator transformNameIterator = clientInfo.TransformNames.begin(); transformNameIterator != clientInfo.TransformNames.end(); ++transformNameIterator)
+      for (std::vector<igsioTransformName>::const_iterator transformNameIterator = clientInfo.TransformNames.begin(); transformNameIterator != clientInfo.TransformNames.end(); ++transformNameIterator)
       {
         /*
           Advantage of using position message type:
@@ -348,7 +348,7 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
           the POSITION data type has the advantage of smaller data size (19%). It is therefore more suitable for
           pushing high frame-rate data from tracking devices.
         */
-        PlusTransformName transformName = (*transformNameIterator);
+        igsioTransformName transformName = (*transformNameIterator);
         igtl::Matrix4x4 igtlMatrix;
         vtkPlusIgtlMessageCommon::GetIgtlMatrix(igtlMatrix, transformRepository, transformName);
 
@@ -380,7 +380,7 @@ PlusStatus vtkPlusIgtlMessageFactory::PackMessages(int clientId, const PlusIgtlC
       if (!clientInfo.ImageStreams.empty())
       {
         bool isValid;
-        if (transformRepository->GetTransform(PlusTransformName(clientInfo.ImageStreams[0].Name, clientInfo.ImageStreams[0].EmbeddedTransformToFrame), imageMatrix, &isValid) != PLUS_SUCCESS)
+        if (transformRepository->GetTransform(igsioTransformName(clientInfo.ImageStreams[0].Name, clientInfo.ImageStreams[0].EmbeddedTransformToFrame), imageMatrix, &isValid) != PLUS_SUCCESS)
         {
           LOG_ERROR("Unable to retrieve embedded image transform: " << clientInfo.ImageStreams[0].Name << "To" << clientInfo.ImageStreams[0].EmbeddedTransformToFrame << ".");
           continue;

@@ -19,10 +19,10 @@ See License.txt for details.
 
 // Local includes
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkPlusTemporalCalibrationAlgo.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 
 // VTK includes
 #include <vtkAxis.h>
@@ -252,8 +252,8 @@ int main(int argc, char** argv)
   vtkPlusTemporalCalibrationAlgo* testTemporalCalibrationObject = vtkPlusTemporalCalibrationAlgo::New();
   vtkPlusTemporalCalibrationAlgo::FRAME_TYPE movingType(vtkPlusTemporalCalibrationAlgo::FRAME_TYPE_NONE);
   vtkPlusTemporalCalibrationAlgo::FRAME_TYPE fixedType(vtkPlusTemporalCalibrationAlgo::FRAME_TYPE_NONE);
-  vtkSmartPointer<vtkPlusTrackedFrameList> movingFrames = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
-  vtkSmartPointer<vtkPlusTrackedFrameList> fixedFrames = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> movingFrames = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> fixedFrames = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (!fixedProbeToReferenceTransformNameStr.empty())
   {
     fixedFrames->SetValidationRequirements(REQUIRE_UNIQUE_TIMESTAMP | REQUIRE_TRACKING_OK);

@@ -9,10 +9,6 @@ SET(${PROJECT_NAME}_SRCS
   vtkPlusHTMLGenerator.cxx
   vtkPlusConfig.cxx
   PlusMath.cxx
-  vtkPlusTransformRepository.cxx
-  PlusVideoFrame.cxx
-  vtkPlusTrackedFrameList.cxx
-  PlusTrackedFrame.cxx
   IO/vtkPlusMetaImageSequenceIO.cxx
   IO/vtkPlusNrrdSequenceIO.cxx
   IO/vtkPlusSequenceIOBase.cxx
@@ -30,11 +26,6 @@ IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
     vtkPlusConfig.h
     vtkPlusMacro.h
     PlusMath.h
-    vtkPlusTransformRepository.h
-    vtkPlusTrackedFrameList.h
-    PlusTrackedFrame.h
-    PlusVideoFrame.h
-    PlusVideoFrame.txx
     IO/vtkPlusMetaImageSequenceIO.h
     IO/vtkPlusNrrdSequenceIO.h
     IO/vtkPlusSequenceIO.h
@@ -51,6 +42,7 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_BINARY_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/IO
+  ${vtkIGSIOCommon_INCLUDES}
   CACHE INTERNAL "" FORCE)
 
 IF(IGSIO_BUILD_VTKVIDEOIO)
@@ -102,6 +94,7 @@ SET(${PROJECT_NAME}_LIBS
   itkvnl
   itkvnl_algo
   igtlioConverter
+  vtkIGSIOCommon
   )
 
 IF(WIN32)

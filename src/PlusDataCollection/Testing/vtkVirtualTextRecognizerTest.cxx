@@ -109,7 +109,7 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  PlusTrackedFrame frame;
+  igsioTrackedFrame frame;
   (*device->GetOutputChannelsStart())->GetTrackedFrame(frame);
 
   if( frame.GetFrameField((*it)->ParameterName) == NULL || STRCASECMP(frame.GetFrameField((*it)->ParameterName), fieldValue.c_str()) != 0 )

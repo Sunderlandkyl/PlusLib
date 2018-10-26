@@ -14,8 +14,8 @@ See License.txt for details.
 #include "vtkPlusMetaImageSequenceIO.h"
 #include "itkImage.h"
 
-#include "vtkPlusTrackedFrameList.h"
-#include "PlusTrackedFrame.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "igsioTrackedFrame.h"
 
 
 ///////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     LOG_ERROR("Couldn't read sequence metafile: " <<  inputImageSequenceFileName);
     return EXIT_FAILURE;
   }
-  vtkPlusTrackedFrameList* trackedFrameList = reader->GetTrackedFrameList();
+  vtkIGSIOTrackedFrameList* trackedFrameList = reader->GetTrackedFrameList();
 
   if (trackedFrameList == NULL)
   {
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
     vtkSmartPointer<vtkMatrix4x4> transMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     transMatrix->SetElement(0, 0, i);
     writer->GetTrackedFrame(i)->SetFrameTransform(
-      PlusTransformName("Tool", "Tracker"),
+      igsioTransformName("Tool", "Tracker"),
       transMatrix);
   }
 
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 
   const double highPrecTimeOffset = 0.123456789012345678901234567890;
 
-  PlusTransformName highPrecTransformName("HighPrecTool", "Tracker");
+  igsioTransformName highPrecTransformName("HighPrecTool", "Tracker");
   for (int i = 0 ; i < numberOfFrames; i++)
   {
     vtkSmartPointer<vtkMatrix4x4> transMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  PlusTransformName tnToolToTracker("Tool", "Tracker");
+  igsioTransformName tnToolToTracker("Tool", "Tracker");
   LOG_INFO("Test GetFrameTransform method ...");
   for (int i = 0; i < numberOfFrames; i++)
   {
@@ -216,21 +216,21 @@ int main(int argc, char** argv)
   matrix->SetElement(0, 3, -50);
   matrix->SetElement(0, 3, 150);
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> dummyTrackedFrame = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
-  PlusTrackedFrame validFrame;
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> dummyTrackedFrame = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
+  igsioTrackedFrame validFrame;
   FrameSizeType frameSize = {200, 200, 1};
   validFrame.GetImageData()->AllocateFrame(frameSize, VTK_UNSIGNED_CHAR, 1);
   validFrame.GetImageData()->FillBlank();
-  validFrame.SetFrameTransform(PlusTransformName("Image", "Probe"), matrix);
+  validFrame.SetFrameTransform(igsioTransformName("Image", "Probe"), matrix);
   validFrame.SetFrameField("FrameNumber", "0");
   validFrame.SetTimestamp(1.0);
 
-  PlusTrackedFrame invalidFrame;
-  invalidFrame.SetFrameTransform(PlusTransformName("Image", "Probe"), matrix);
+  igsioTrackedFrame invalidFrame;
+  invalidFrame.SetFrameTransform(igsioTransformName("Image", "Probe"), matrix);
   invalidFrame.SetFrameField("FrameNumber", "1");
   invalidFrame.SetTimestamp(2.0);
 
-  PlusTrackedFrame validFrame_copy(validFrame);
+  igsioTrackedFrame validFrame_copy(validFrame);
   validFrame_copy.SetTimestamp(3.0);
   validFrame_copy.SetFrameField("FrameNumber", "3");
 
@@ -256,7 +256,7 @@ int main(int argc, char** argv)
     LOG_ERROR("Couldn't read sequence metafile: " <<  outputImageSequenceFileName);
     return EXIT_FAILURE;
   }
-  vtkPlusTrackedFrameList* trackedFrameListImageStatus = readerImageStatus->GetTrackedFrameList();
+  vtkIGSIOTrackedFrameList* trackedFrameListImageStatus = readerImageStatus->GetTrackedFrameList();
   if (trackedFrameListImageStatus == NULL)
   {
     LOG_ERROR("Unable to get trackedFrameList!");
@@ -272,11 +272,11 @@ int main(int argc, char** argv)
 
   // Test metafile writting with different sized images
 
-  PlusTrackedFrame differentSizeFrame;
+  igsioTrackedFrame differentSizeFrame;
   FrameSizeType frameSizeSmaller = {150, 150, 1};
   differentSizeFrame.GetImageData()->AllocateFrame(frameSizeSmaller, VTK_UNSIGNED_CHAR, 1);
   differentSizeFrame.GetImageData()->FillBlank();
-  differentSizeFrame.SetFrameTransform(PlusTransformName("Image", "Probe"), matrix);
+  differentSizeFrame.SetFrameTransform(igsioTransformName("Image", "Probe"), matrix);
   differentSizeFrame.SetFrameField("FrameNumber", "6");
   differentSizeFrame.SetTimestamp(6.0);
   dummyTrackedFrame->AddTrackedFrame(&differentSizeFrame);

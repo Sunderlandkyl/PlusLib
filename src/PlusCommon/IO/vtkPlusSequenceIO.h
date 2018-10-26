@@ -8,11 +8,11 @@
 #define __vtkPlusSequenceIO_h
 
 #include "PlusCommon.h"
-#include "PlusVideoFrame.h"
+#include "igsioVideoFrame.h"
 #include "vtkPlusCommonExport.h"
 #include "vtkPlusSequenceIOBase.h"
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 /*!
   \class vtkPlusSequenceIO
@@ -23,10 +23,10 @@ class vtkPlusCommonExport vtkPlusSequenceIO : public vtkObject
 {
 public:
   /*! Write object contents into file */
-  static PlusStatus Write(const std::string& filename, vtkPlusTrackedFrameList* frameList, US_IMAGE_ORIENTATION orientationInFile=US_IMG_ORIENT_MF, bool useCompression=true, bool EnableImageDataWrite=true);
+  static PlusStatus Write(const std::string& filename, vtkIGSIOTrackedFrameList* frameList, US_IMAGE_ORIENTATION orientationInFile=US_IMG_ORIENT_MF, bool useCompression=true, bool EnableImageDataWrite=true);
 
   /*! Read file contents into the object */
-  static PlusStatus Read(const std::string& filename, vtkPlusTrackedFrameList* frameList);
+  static PlusStatus Read(const std::string& filename, vtkIGSIOTrackedFrameList* frameList);
 
   /*! Create a handler for a given filetype */
   static vtkPlusSequenceIOBase* CreateSequenceHandlerForFile(const std::string& filename);

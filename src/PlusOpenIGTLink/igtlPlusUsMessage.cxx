@@ -5,7 +5,7 @@ See License.txt for details.
 =========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "igtlPlusUsMessage.h"
 #include "igtl_image.h"
 #include "igtl_header.h"
@@ -87,13 +87,13 @@ namespace igtl
   }
 
   //----------------------------------------------------------------------------
-  PlusTrackedFrame& PlusUsMessage::GetTrackedFrame()
+  igsioTrackedFrame& PlusUsMessage::GetTrackedFrame()
   {
     return this->m_TrackedFrame;
   }
 
   //----------------------------------------------------------------------------
-  PlusStatus PlusUsMessage::SetTrackedFrame(const PlusTrackedFrame& trackedFrame)
+  PlusStatus PlusUsMessage::SetTrackedFrame(const igsioTrackedFrame& trackedFrame)
   {
     this->m_TrackedFrame = trackedFrame;
 
@@ -113,7 +113,7 @@ namespace igtl
     imageSizePixels[1] = size[0];
     imageSizePixels[2] = 1;
 
-    int scalarType = PlusVideoFrame::GetIGTLScalarPixelTypeFromVTK(this->m_TrackedFrame.GetImageData()->GetVTKScalarPixelType());
+    int scalarType = PlusCommon::GetIGTLScalarPixelTypeFromVTK(this->m_TrackedFrame.GetImageData()->GetVTKScalarPixelType());
 
     this->SetDimensions(static_cast<int>(imageSizePixels[0]), static_cast<int>(imageSizePixels[1]), static_cast<int>(imageSizePixels[2]));
     this->SetSubVolume(static_cast<int>(imageSizePixels[0]), static_cast<int>(imageSizePixels[1]), static_cast<int>(imageSizePixels[2]), offset[0], offset[1], offset[2]);

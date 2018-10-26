@@ -43,7 +43,7 @@ void vtkPlusWinProbeVideoSource::PrintSelf(ostream& os, vtkIndent indent)
 
     os << indent << "CustomFields: " << std::endl;
     vtkIndent indent2 = indent.GetNextIndent();
-    PlusTrackedFrame::FieldMapType::iterator it;
+    igsioTrackedFrame::FieldMapType::iterator it;
     for (it = m_customFields.begin(); it != m_customFields.end(); ++it)
     {
         os << indent2 << it->first << ": " << it->second << std::endl;
@@ -211,7 +211,7 @@ void vtkPlusWinProbeVideoSource::AdjustBufferSize()
     LOG_INFO("Frame size: " << frameSize[0] << "x" << frameSize[1]
         << ", pixel type: " << vtkImageScalarTypeNameMacro(aSource->GetPixelType())
         << ", buffer image orientation: "
-        << PlusVideoFrame::GetStringFromUsImageOrientation(aSource->GetInputImageOrientation()));
+        << igsioVideoFrame::GetStringFromUsImageOrientation(aSource->GetInputImageOrientation()));
 }
 
 //----------------------------------------------------------------------------

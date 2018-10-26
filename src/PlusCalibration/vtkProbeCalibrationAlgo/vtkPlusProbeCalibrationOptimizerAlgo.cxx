@@ -13,7 +13,7 @@ See License.txt for details.
 #include "vtkPlusProbeCalibrationOptimizerAlgo.h"
 #include "vtkPlusProbeCalibrationAlgo.h"
 #include "vtkTransform.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtkXMLUtilities.h"
 
 #include "vtksys/SystemTools.hxx"

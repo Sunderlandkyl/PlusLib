@@ -21,16 +21,17 @@ compares the results to a baseline
 #include "vtkPlusProbeCalibrationAlgo.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
 #include "vtkTransform.h"
-#include "vtkPlusTransformRepository.h"
-#include "vtkPlusTransformRepository.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
 #include "vtksys/SystemTools.hxx"
 #include <iostream>
 #include <stdlib.h>
+
+// IGSIO includes
+#include <vtkIGSIOTransformRepository.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 #ifndef _WIN32
 const double ERROR_THRESHOLD = LINUXTOLERANCEPERCENT;
@@ -106,7 +107,7 @@ int main(int argc, char* argv[])
   vtkPlusConfig::GetInstance()->SetDeviceSetConfigurationData(configRootElement);
 
   // Read coordinate definitions
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   if (transformRepository->ReadConfiguration(configRootElement) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to read CoordinateDefinitions!");
@@ -122,7 +123,7 @@ int main(int argc, char* argv[])
 
   // Load and segment calibration image
   LOG_INFO("Read calibration sequence file...");
-  vtkSmartPointer<vtkPlusTrackedFrameList> calibrationTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> calibrationTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (vtkPlusSequenceIO::Read(inputCalibrationSeqMetafile, calibrationTrackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Reading calibration images from '" << inputCalibrationSeqMetafile << "' failed!");
@@ -143,7 +144,7 @@ int main(int argc, char* argv[])
   {
     // Load and segment validation image
     LOG_INFO("Read validation sequence file...");
-    vtkSmartPointer<vtkPlusTrackedFrameList> validationTrackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+    vtkSmartPointer<vtkIGSIOTrackedFrameList> validationTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
     if (vtkPlusSequenceIO::Read(inputValidationSeqMetafile, validationTrackedFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Reading validation images from '" << inputValidationSeqMetafile << "' failed!");

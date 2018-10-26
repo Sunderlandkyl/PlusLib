@@ -7,9 +7,9 @@ See License.txt for details.
 // Local includes
 #include "PlusConfigure.h"
 #include "PlusMath.h"
-#include "PlusTrackedFrame.h"
-#include "PlusVideoFrame.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "igsioTrackedFrame.h"
+#include "igsioVideoFrame.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusBoneEnhancer.h"
 #include "vtkPlusUsScanConvertCurvilinear.h"
 #include "vtkPlusUsScanConvertLinear.h"
@@ -621,7 +621,7 @@ void vtkPlusBoneEnhancer::ImageConjunction(vtkSmartPointer<vtkImageData> InputIm
 
 //----------------------------------------------------------------------------
 // Processes a given frame and marks potential bone areas.
-PlusStatus vtkPlusBoneEnhancer::ProcessFrame(PlusTrackedFrame* inputFrame, PlusTrackedFrame* outputFrame)
+PlusStatus vtkPlusBoneEnhancer::ProcessFrame(igsioTrackedFrame* inputFrame, igsioTrackedFrame* outputFrame)
 {
   //Process the input into a linear image
   vtkSmartPointer<vtkImageData> intermediateImage = this->UnprocessedFrameToLinearImage(inputFrame);
@@ -632,12 +632,12 @@ PlusStatus vtkPlusBoneEnhancer::ProcessFrame(PlusTrackedFrame* inputFrame, PlusT
   return PLUS_SUCCESS;
 }
 
-void vtkPlusBoneEnhancer::LinearToFanImage(vtkSmartPointer<vtkImageData> inputImage, PlusTrackedFrame* outputFrame)
+void vtkPlusBoneEnhancer::LinearToFanImage(vtkSmartPointer<vtkImageData> inputImage, igsioTrackedFrame* outputFrame)
 {
 
   //Setup so that the image can be converted into a fan-image
   this->ProcessedLinesImage->DeepCopy(inputImage);
-  PlusVideoFrame* outputImage = outputFrame->GetImageData();
+  igsioVideoFrame* outputImage = outputFrame->GetImageData();
   this->ScanConverter->SetInputData(this->ProcessedLinesImage);
   this->ScanConverter->SetOutput(inputImage);
   this->ScanConverter->Update();
@@ -647,7 +647,7 @@ void vtkPlusBoneEnhancer::LinearToFanImage(vtkSmartPointer<vtkImageData> inputIm
 
 //----------------------------------------------------------------------------
 // takes an unprocessed frame image and returns it as a linear image
-vtkSmartPointer<vtkImageData> vtkPlusBoneEnhancer::UnprocessedFrameToLinearImage(PlusTrackedFrame* inputFrame)
+vtkSmartPointer<vtkImageData> vtkPlusBoneEnhancer::UnprocessedFrameToLinearImage(igsioTrackedFrame* inputFrame)
 {
   if (this->FirstFrame == true)
   {
@@ -657,7 +657,7 @@ vtkSmartPointer<vtkImageData> vtkPlusBoneEnhancer::UnprocessedFrameToLinearImage
   }
   this->BoneAreasInfo.clear();
 
-  PlusVideoFrame* inputImage = inputFrame->GetImageData();
+  igsioVideoFrame* inputImage = inputFrame->GetImageData();
   //an image used to transport output between filters
   vtkSmartPointer<vtkImageData> intermediateImage = vtkSmartPointer<vtkImageData>::New();
 
@@ -783,7 +783,7 @@ Returns PLUS_FAIL if an error occured during this process, returns PLUS_SUCCESS 
 */
 PlusStatus vtkPlusBoneEnhancer::SaveIntermediateResultToFile(char* fileNamePostfix)
 {
-  std::map<char*, vtkSmartPointer<vtkPlusTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
+  std::map<char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
   if (indexIterator != this->IntermediateImageMap.end())
   {
 
@@ -811,20 +811,20 @@ void vtkPlusBoneEnhancer::AddIntermediateImage(char* fileNamePostfix, vtkSmartPo
   }
 
   // See if the intermediate image should be created
-  std::map<char*, vtkSmartPointer<vtkPlusTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
+  std::map<char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
   if (indexIterator != this->IntermediateImageMap.end()){}
   else
   {
     // Create if not found
-    this->IntermediateImageMap[fileNamePostfix] = vtkPlusTrackedFrameList::New();
+    this->IntermediateImageMap[fileNamePostfix] = vtkIGSIOTrackedFrameList::New();
 
     this->IntermediatePostfixes.push_back(fileNamePostfix);
   }
 
-  //Add the current frame to its vtkPlusTrackedFrameList
-  PlusVideoFrame linesVideoFrame;
+  //Add the current frame to its vtkIGSIOTrackedFrameList
+  igsioVideoFrame linesVideoFrame;
   linesVideoFrame.DeepCopyFrom(image);
-  PlusTrackedFrame linesTrackedFrame;
+  igsioTrackedFrame linesTrackedFrame;
   linesTrackedFrame.SetImageData(linesVideoFrame);
   this->IntermediateImageMap[fileNamePostfix]->AddTrackedFrame(&linesTrackedFrame);
 }

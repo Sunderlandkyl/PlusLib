@@ -17,8 +17,8 @@ This is a program meant to test vtkPlusTransverseProcessEnhancer.cxx from the co
 #include <vtksys/CommandLineArguments.hxx>
 
 
-#include "PlusTrackedFrame.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "igsioTrackedFrame.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkImageCast.h"
 
 
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkPlusTransverseProcessEnhancer> enhancer = vtkSmartPointer<vtkPlusTransverseProcessEnhancer>::New();
 
   // Read input sequence
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (trackedFrameList->ReadFromSequenceMetafile(inputFileName) == PLUS_FAIL)
   {
     return EXIT_FAILURE;

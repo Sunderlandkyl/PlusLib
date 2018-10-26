@@ -7,17 +7,19 @@
 #include "PlusConfigure.h"
 
 #include "PlusFidPatternRecognition.h"
-#include "PlusTrackedFrame.h"
 #include "vtkCommand.h"
 #include "vtkMath.h"
 #include "vtkMatrix4x4.h"
 #include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
 #include "vtkTransform.h"
 #include "vtksys/CommandLineArguments.hxx" 
 #include <iostream>
 #include <stdlib.h>
+
+// IGSIO includes
+#include <igsioTrackedFrame.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 ///////////////////////////////////////////////////////////////////
 
@@ -63,7 +65,7 @@ int main (int argc, char* argv[])
   }  
 
   LOG_INFO( "Reading sequence meta file");  
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New(); 
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New(); 
   if( vtkPlusSequenceIO::Read(inputSequenceMetafile, trackedFrameList) != PLUS_SUCCESS )
   {
       LOG_ERROR("Failed to read sequence metafile: " << inputSequenceMetafile); 
@@ -101,7 +103,7 @@ int main (int argc, char* argv[])
       continue; 
     }
 
-    PlusTransformName transformName; 
+    igsioTransformName transformName; 
     if ( transformName.SetTransformName(inputTransformName.c_str()) != PLUS_SUCCESS )
     {
       LOG_ERROR("Invalid transform name: " << inputTransformName ); 

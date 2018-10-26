@@ -9,11 +9,11 @@
 
 #include "PlusCommon.h"
 #include "vtkPlusCommonExport.h"
-#include "PlusVideoFrame.h"
+#include "igsioVideoFrame.h"
 #include "vtkObject.h"
 
-class vtkPlusTrackedFrameList;
-class PlusTrackedFrame;
+class vtkIGSIOTrackedFrameList;
+class igsioTrackedFrame;
 
 #ifndef Z_BUFSIZE
   #ifdef MAXSEG_64K
@@ -49,9 +49,9 @@ public:
   virtual PlusStatus AppendImagesToHeader() = 0;
 
   /*! Set the TrackedFrameList where the images are stored */
-  virtual void SetTrackedFrameList(vtkPlusTrackedFrameList* trackedFrameList);
+  virtual void SetTrackedFrameList(vtkIGSIOTrackedFrameList* trackedFrameList);
   /*! Get the TrackedFrameList where the images are stored */
-  vtkGetObjectMacro(TrackedFrameList, vtkPlusTrackedFrameList);
+  vtkGetObjectMacro(TrackedFrameList, vtkIGSIOTrackedFrameList);
 
   /*!
     Set/get the ultrasound image orientation for file storage (as the result of writing).
@@ -93,7 +93,7 @@ public:
   virtual PlusStatus FinalizeHeader() = 0;
 
   /*! Returns a pointer to a single frame */
-  virtual PlusTrackedFrame* GetTrackedFrame(int frameNumber);
+  virtual igsioTrackedFrame* GetTrackedFrame(int frameNumber);
 
   /*! Close the sequence */
   virtual PlusStatus Close();
@@ -202,7 +202,7 @@ protected:
 #endif
 
   /*! Custom frame fields and image data are stored in the TrackedFrameList for each frame */
-  vtkPlusTrackedFrameList* TrackedFrameList;
+  vtkIGSIOTrackedFrameList* TrackedFrameList;
 
   /*! Name of the file that contains the image header (*.nrrd or *.nhdr) */
   std::string FileName;

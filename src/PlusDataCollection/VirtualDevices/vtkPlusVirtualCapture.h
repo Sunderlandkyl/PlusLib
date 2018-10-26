@@ -12,7 +12,7 @@ See License.txt for details.
 #include "vtkPlusSequenceIOBase.h"
 #include <string>
 
-class vtkPlusTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 
 /*!
 \class vtkPlusVirtualCapture
@@ -116,7 +116,7 @@ protected:
 
 protected:
   /*! Recorded tracked frame list */
-  vtkPlusTrackedFrameList* RecordedFrames;
+  vtkIGSIOTrackedFrameList* RecordedFrames;
 
   /*! Timestamp of last recorded frame (only frames that have more recent timestamp will be added) */
   double LastAlreadyRecordedFrameTimestamp;
@@ -180,8 +180,8 @@ protected:
 
   vtkPlusLogger::LogLevelType GracePeriodLogLevel;
 
-  PlusStatus GetInputTrackedFrame(PlusTrackedFrame& aFrame);
-  PlusStatus GetInputTrackedFrameListSampled(double& lastAlreadyRecordedFrameTimestamp, double& nextFrameToBeRecordedTimestamp, vtkPlusTrackedFrameList* recordedFrames, double requestedFramePeriodSec, double maxProcessingTimeSec);
+  PlusStatus GetInputTrackedFrame(igsioTrackedFrame& aFrame);
+  PlusStatus GetInputTrackedFrameListSampled(double& lastAlreadyRecordedFrameTimestamp, double& nextFrameToBeRecordedTimestamp, vtkIGSIOTrackedFrameList* recordedFrames, double requestedFramePeriodSec, double maxProcessingTimeSec);
   PlusStatus GetLatestInputItemTimestamp(double& timestamp);
 
 private:

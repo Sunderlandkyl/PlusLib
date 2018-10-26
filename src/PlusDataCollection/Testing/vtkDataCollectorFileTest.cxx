@@ -10,19 +10,19 @@ See License.txt for details.
 */ 
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusDataCollector.h"
 #include "vtkMatrix4x4.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
 
 static const int COMPARE_TRANSFORM_TOLERANCE=0.001;
 
-PlusStatus CompareTransform(PlusTransformName &transformName, vtkPlusTransformRepository* transformRepository, double xExpected, double yExpected, double zExpected)
+PlusStatus CompareTransform(igsioTransformName &transformName, vtkIGSIOTransformRepository* transformRepository, double xExpected, double yExpected, double zExpected)
 {
   vtkSmartPointer<vtkMatrix4x4> transformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   bool valid=false;
@@ -108,13 +108,13 @@ int main( int argc, char** argv )
   }
 
   // Create the used objects
-  PlusTrackedFrame trackedFrame;
+  igsioTrackedFrame trackedFrame;
 
-  PlusTransformName referenceToTrackerTransformName("Reference", "Tracker");
-  PlusTransformName probeToTrackerTransformName("Probe", "Tracker");
-  PlusTransformName stylusToTrackerTransformName("Stylus", "Tracker");
+  igsioTransformName referenceToTrackerTransformName("Reference", "Tracker");
+  igsioTransformName probeToTrackerTransformName("Probe", "Tracker");
+  igsioTransformName stylusToTrackerTransformName("Stylus", "Tracker");
 
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
 
   PlusStatus compareStatus=PLUS_SUCCESS;
 

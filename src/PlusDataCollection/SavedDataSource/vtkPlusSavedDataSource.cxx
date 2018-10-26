@@ -13,7 +13,7 @@ See License.txt for details.
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
 #include "vtkPlusSavedDataSource.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtksys/SystemTools.hxx"
 
 vtkStandardNewMacro(vtkPlusSavedDataSource);
@@ -379,7 +379,7 @@ PlusStatus vtkPlusSavedDataSource::InternalConnect()
     return PLUS_FAIL;
   }
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> savedDataBuffer = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> savedDataBuffer = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
 
   // Read sequence file into tracked frame list
   vtkPlusSequenceIO::Read(foundAbsoluteImagePath, savedDataBuffer);
@@ -457,7 +457,7 @@ PlusStatus vtkPlusSavedDataSource::InternalConnect()
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusSavedDataSource::InternalConnectVideo(vtkPlusTrackedFrameList* savedDataBuffer)
+PlusStatus vtkPlusSavedDataSource::InternalConnectVideo(vtkIGSIOTrackedFrameList* savedDataBuffer)
 {
   // Set buffer parameters based on the input tracked frame list
   vtkPlusDataSource* outputDataSource = this->GetOutputDataSource();
@@ -543,9 +543,9 @@ PlusStatus vtkPlusSavedDataSource::InternalConnectVideo(vtkPlusTrackedFrameList*
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusSavedDataSource::InternalConnectTracker(vtkPlusTrackedFrameList* savedDataBuffer)
+PlusStatus vtkPlusSavedDataSource::InternalConnectTracker(vtkIGSIOTrackedFrameList* savedDataBuffer)
 {
-  PlusTrackedFrame* frame = savedDataBuffer->GetTrackedFrame(0);
+  igsioTrackedFrame* frame = savedDataBuffer->GetTrackedFrame(0);
   if (frame == NULL)
   {
     LOG_ERROR("The tracked frame buffer doesn't seem to contain any frames");
@@ -566,7 +566,7 @@ PlusStatus vtkPlusSavedDataSource::InternalConnectTracker(vtkPlusTrackedFrameLis
       continue;
     }
 
-    PlusTransformName toolTransformName(tool->GetId());
+    igsioTransformName toolTransformName(tool->GetId());
     if (!frame->IsFrameTransformNameDefined(toolTransformName))
     {
       std::string strTransformName;

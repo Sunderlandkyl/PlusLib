@@ -20,9 +20,9 @@ See License.txt for details.
   #define FTELL ftell
 #endif
 
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkObjectFactory.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtksys/SystemTools.hxx"
 
 #if defined(_WIN32)
@@ -276,10 +276,10 @@ PlusStatus vtkPlusNrrdSequenceIO::ReadImageHeader()
     }
     else
     {
-      imgOrientStr = PlusVideoFrame::GetStringFromUsImageOrientation(US_IMG_ORIENT_MF);
+      imgOrientStr = igsioVideoFrame::GetStringFromUsImageOrientation(US_IMG_ORIENT_MF);
       LOG_WARNING(SEQUENCE_FIELD_US_IMG_ORIENT << " field not found in header. Defaulting to " << imgOrientStr << ".");
     }
-    this->ImageOrientationInFile = PlusVideoFrame::GetUsImageOrientationFromString(imgOrientStr.c_str());
+    this->ImageOrientationInFile = igsioVideoFrame::GetUsImageOrientationFromString(imgOrientStr.c_str());
 
     // TODO: handle detection of image orientation in file from space/space dimensions, space origin and space directions
     // handle only orthogonal rotations
@@ -293,7 +293,7 @@ PlusStatus vtkPlusNrrdSequenceIO::ReadImageHeader()
     }
     else
     {
-      this->ImageType = PlusVideoFrame::GetUsImageTypeFromString(imgTypeStr);
+      this->ImageType = igsioVideoFrame::GetUsImageTypeFromString(imgTypeStr);
     }
 
     // If no specific image orientation is requested then determine it automatically from the image type
@@ -360,7 +360,7 @@ PlusStatus vtkPlusNrrdSequenceIO::ReadImagePixels()
   unsigned int frameSizeInBytes = 0;
   if (this->Dimensions[0] > 0 && this->Dimensions[1] > 0 && this->Dimensions[2] > 0)
   {
-    frameSizeInBytes = this->Dimensions[0] * this->Dimensions[1] * this->Dimensions[2] * PlusVideoFrame::GetNumberOfBytesPerScalar(this->PixelType) * this->NumberOfScalarComponents;
+    frameSizeInBytes = this->Dimensions[0] * this->Dimensions[1] * this->Dimensions[2] * igsioVideoFrame::GetNumberOfBytesPerScalar(this->PixelType) * this->NumberOfScalarComponents;
   }
 
   if (frameSizeInBytes == 0)
@@ -435,7 +435,7 @@ PlusStatus vtkPlusNrrdSequenceIO::ReadImagePixels()
   for (int frameNumber = 0; frameNumber < frameCount; frameNumber++)
   {
     this->CreateTrackedFrameIfNonExisting(frameNumber);
-    PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
+    igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(frameNumber);
 
     // Allocate frame only if it is valid
     const char* imgStatus = trackedFrame->GetFrameField(SEQUENCE_FIELD_IMG_STATUS.c_str());
@@ -470,11 +470,11 @@ PlusStatus vtkPlusNrrdSequenceIO::ReadImagePixels()
     std::array<int, 3> clipRectOrigin = {PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP};
     std::array<int, 3> clipRectSize = {PlusCommon::NO_CLIP, PlusCommon::NO_CLIP, PlusCommon::NO_CLIP};
 
-    PlusVideoFrame::FlipInfoType flipInfo;
-    if (PlusVideoFrame::GetFlipAxes(this->ImageOrientationInFile, this->ImageType, this->ImageOrientationInMemory, flipInfo) != PLUS_SUCCESS)
+    igsioVideoFrame::FlipInfoType flipInfo;
+    if (igsioVideoFrame::GetFlipAxes(this->ImageOrientationInFile, this->ImageType, this->ImageOrientationInMemory, flipInfo) != PLUS_SUCCESS)
     {
-      LOG_ERROR("Failed to convert image data to the requested orientation, from " << PlusVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile) <<
-                " to " << PlusVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInMemory));
+      LOG_ERROR("Failed to convert image data to the requested orientation, from " << igsioVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile) <<
+                " to " << igsioVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInMemory));
       return PLUS_FAIL;
     }
 
@@ -488,7 +488,7 @@ PlusStatus vtkPlusNrrdSequenceIO::ReadImagePixels()
         //numberOfErrors++;
       }
       FrameSizeType frameSize = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2] };
-      if (PlusVideoFrame::GetOrientedClippedImage(&(pixelBuffer[0]), flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
+      if (igsioVideoFrame::GetOrientedClippedImage(&(pixelBuffer[0]), flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
       {
         LOG_ERROR("Failed to get oriented image from sequence file (frame number: " << frameNumber << ")!");
         numberOfErrors++;
@@ -498,7 +498,7 @@ PlusStatus vtkPlusNrrdSequenceIO::ReadImagePixels()
     else
     {
       FrameSizeType frameSize = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2] };
-      if (PlusVideoFrame::GetOrientedClippedImage(gzAllFramesPixelBuffer + frameNumber * frameSizeInBytes, flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
+      if (igsioVideoFrame::GetOrientedClippedImage(gzAllFramesPixelBuffer + frameNumber * frameSizeInBytes, flipInfo, this->ImageType, this->PixelType, this->NumberOfScalarComponents, frameSize, *trackedFrame->GetImageData(), clipRectOrigin, clipRectSize) != PLUS_SUCCESS)
       {
         LOG_ERROR("Failed to get oriented image from sequence file (frame number: " << frameNumber << ")!");
         numberOfErrors++;
@@ -761,7 +761,7 @@ PlusStatus vtkPlusNrrdSequenceIO::WriteInitialImageHeader()
   // Image orientation
   if (this->EnableImageDataWrite)
   {
-    std::string orientationStr = SEQUENCE_FIELD_US_IMG_ORIENT + ":=" + PlusVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile) + "\n";
+    std::string orientationStr = SEQUENCE_FIELD_US_IMG_ORIENT + ":=" + igsioVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientationInFile) + "\n";
     fputs(orientationStr.c_str(), stream);
     this->TotalBytesWritten += orientationStr.length();
   }
@@ -769,7 +769,7 @@ PlusStatus vtkPlusNrrdSequenceIO::WriteInitialImageHeader()
   // Image type
   if (this->EnableImageDataWrite)
   {
-    std::string orientationStr = SEQUENCE_FIELD_US_IMG_TYPE + ":=" + PlusVideoFrame::GetStringFromUsImageType(this->ImageType) + "\n";
+    std::string orientationStr = SEQUENCE_FIELD_US_IMG_TYPE + ":=" + igsioVideoFrame::GetStringFromUsImageType(this->ImageType) + "\n";
     fputs(orientationStr.c_str(), stream);
     this->TotalBytesWritten += orientationStr.length();
   }
@@ -795,7 +795,7 @@ PlusStatus vtkPlusNrrdSequenceIO::AppendImagesToHeader()
   {
     LOG_DEBUG("Writing frame " << frameNumber);
     unsigned int adjustedFrameNumber = frameNumber - CurrentFrameOffset;
-    PlusTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(adjustedFrameNumber);
+    igsioTrackedFrame* trackedFrame = this->TrackedFrameList->GetTrackedFrame(adjustedFrameNumber);
 
     std::ostringstream frameIndexStr;
     frameIndexStr << std::setfill('0') << std::setw(4) << frameNumber;
@@ -875,7 +875,7 @@ PlusStatus vtkPlusNrrdSequenceIO::WriteCompressedImagePixelsToFile(int& compress
   compressedDataSize = 0;
 
   // Create a blank frame if we have to write an invalid frame to file
-  PlusVideoFrame blankFrame;
+  igsioVideoFrame blankFrame;
   FrameSizeType frameSize = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2] };
   if (blankFrame.AllocateFrame(frameSize, this->PixelType, this->NumberOfScalarComponents) != PLUS_SUCCESS)
   {
@@ -886,7 +886,7 @@ PlusStatus vtkPlusNrrdSequenceIO::WriteCompressedImagePixelsToFile(int& compress
 
   for (unsigned int frameNumber = 0; frameNumber < this->TrackedFrameList->GetNumberOfTrackedFrames(); frameNumber++)
   {
-    PlusTrackedFrame* trackedFrame(NULL);
+    igsioTrackedFrame* trackedFrame(NULL);
 
     if (this->EnableImageDataWrite)
     {
@@ -899,7 +899,7 @@ PlusStatus vtkPlusNrrdSequenceIO::WriteCompressedImagePixelsToFile(int& compress
       }
     }
 
-    PlusVideoFrame* videoFrame = &blankFrame;
+    igsioVideoFrame* videoFrame = &blankFrame;
     if (this->EnableImageDataWrite)
     {
       if (trackedFrame->GetImageData()->IsImageValid())

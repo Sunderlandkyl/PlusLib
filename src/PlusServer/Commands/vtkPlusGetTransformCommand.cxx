@@ -9,7 +9,7 @@ See License.txt for details.
 #include "vtkPlusCommandProcessor.h"
 #include "vtkPlusDataCollector.h"
 #include "vtkPlusGetTransformCommand.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 
 vtkStandardNewMacro(vtkPlusGetTransformCommand);
 
@@ -97,7 +97,7 @@ PlusStatus vtkPlusGetTransformCommand::Execute()
     return PLUS_FAIL;
   }
 
-  PlusTransformName aName;
+  igsioTransformName aName;
   aName.SetTransformName(this->GetTransformName());
 
   if (this->GetTransformRepository()->IsExistingTransform(aName) != PLUS_SUCCESS)
