@@ -9,7 +9,7 @@ See License.txt for details.
 // Local includes
 #include "PixelCodec.h"
 #include "PlusConfigure.h"
-#include "PlusVideoFrame.h"
+//#include "igsioVideoFrame.h"
 #include "vtkPlusDataSource.h"
 #include "vtkPlusOpticalMarkerTracker.h"
 
@@ -164,7 +164,7 @@ PlusStatus vtkPlusOpticalMarkerTracker::ReadConfiguration(vtkXMLDataElement* roo
       continue;
     }
 
-    PlusTransformName toolTransformName(toolId, this->GetToolReferenceFrameName());
+    igsioTransformName toolTransformName(toolId, this->GetToolReferenceFrameName());
     std::string toolSourceId = toolTransformName.GetTransformName();
 
     if (toolDataElement->GetAttribute("MarkerId") != NULL && toolDataElement->GetAttribute("MarkerSizeMm") != NULL)
@@ -345,7 +345,7 @@ PlusStatus vtkPlusOpticalMarkerTracker::InternalUpdate()
     }
   }
 
-  PlusTrackedFrame trackedFrame;
+  igsioTrackedFrame trackedFrame;
   if (this->InputChannels[0]->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
   {
     LOG_ERROR("Error while getting latest tracked frame. Last recorded timestamp: " << std::fixed << this->LastProcessedInputDataTimestamp << ". Device ID: " << this->GetDeviceId());
@@ -357,7 +357,7 @@ PlusStatus vtkPlusOpticalMarkerTracker::InternalUpdate()
 
   // get dimensions & data
   FrameSizeType dim = trackedFrame.GetFrameSize();
-  PlusVideoFrame* frame = trackedFrame.GetImageData();
+  igsioVideoFrame* frame = trackedFrame.GetImageData();
 
   // converting trackedFrame (vtkImageData) to cv::Mat
   cv::Mat image(dim[1], dim[0], CV_8UC3, cv::Scalar(0, 0, 255));

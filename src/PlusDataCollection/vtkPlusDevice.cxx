@@ -11,8 +11,8 @@ See License.txt for details.
 #include "vtkPlusDataSource.h"
 #include "vtkPlusDevice.h"
 #include "vtkPlusRecursiveCriticalSection.h"
-#include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOSequenceIO.h"
+#include "vtkIGSIOTrackedFrameList.h"
 
 // VTK includes
 #include <vtkImageData.h>
@@ -24,6 +24,9 @@ See License.txt for details.
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkWindows.h>
 #include <vtksys/SystemTools.hxx>
+
+// STD includes
+#include <set>
 
 // System includes
 #include <ctype.h>
@@ -682,7 +685,7 @@ PlusStatus vtkPlusDevice::WriteToolsToSequenceFile(const std::string& filename, 
     }
   }
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
 
   PlusStatus status = PLUS_SUCCESS;
 
@@ -692,8 +695,8 @@ PlusStatus vtkPlusDevice::WriteToolsToSequenceFile(const std::string& filename, 
   for (int i = 0 ; i < numberOfItems; i++)
   {
     // Create fake image
-    PlusTrackedFrame trackedFrame;
-    PlusVideoFrame videoFrame;
+    igsioTrackedFrame trackedFrame;
+    igsioVideoFrame videoFrame;
     FrameSizeType frameSize = {1, 1, 1};
     // Don't waste space, create a greyscale image
     videoFrame.AllocateFrame(frameSize, VTK_UNSIGNED_CHAR, 1);
@@ -742,7 +745,7 @@ PlusStatus vtkPlusDevice::WriteToolsToSequenceFile(const std::string& filename, 
         return PLUS_FAIL;
       }
 
-      PlusTransformName toolToTrackerTransform(it->second->GetId(), this->ToolReferenceFrameName);
+      igsioTransformName toolToTrackerTransform(it->second->GetId(), this->ToolReferenceFrameName);
       trackedFrame.SetFrameTransform(toolToTrackerTransform, toolMatrix);
 
       // Add source status
@@ -755,7 +758,7 @@ PlusStatus vtkPlusDevice::WriteToolsToSequenceFile(const std::string& filename, 
   }
 
   // Save tracked frames to metafile
-  if (vtkPlusSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
+  if (vtkIGSIOSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
   {
     LOCAL_LOG_ERROR("Failed to save tracked frames to sequence metafile!");
     return PLUS_FAIL;
@@ -1088,7 +1091,7 @@ PlusStatus vtkPlusDevice::WriteConfiguration(vtkXMLDataElement* config)
       bool isEqual(false);
       if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) == PLUS_SUCCESS && isEqual)
       {
-        PlusTransformName toolId(dataSourceElement->GetAttribute("Id"), this->GetToolReferenceFrameName());
+        igsioTransformName toolId(dataSourceElement->GetAttribute("Id"), this->GetToolReferenceFrameName());
         if (dataSourceElement->GetAttribute("Id") == NULL || this->GetTool(toolId.GetTransformName(), aDataSource) != PLUS_SUCCESS)
         {
           LOCAL_LOG_ERROR("Unable to retrieve tool when saving config.");
@@ -1499,7 +1502,7 @@ PlusStatus vtkPlusDevice::ForceUpdate()
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::ToolTimeStampedUpdateWithoutFiltering(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, double unfilteredtimestamp, double filteredtimestamp, const PlusTrackedFrame::FieldMapType* customFields /* = NULL */)
+PlusStatus vtkPlusDevice::ToolTimeStampedUpdateWithoutFiltering(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, double unfilteredtimestamp, double filteredtimestamp, const igsioTrackedFrame::FieldMapType* customFields /* = NULL */)
 {
   if (aToolSourceId.empty())
   {
@@ -1528,7 +1531,7 @@ PlusStatus vtkPlusDevice::ToolTimeStampedUpdateWithoutFiltering(const std::strin
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, const PlusVideoFrame& frame, long frameNumber, double unfilteredTimestamp/*=UNDEFINED_TIMESTAMP*/, double filteredTimestamp/*=UNDEFINED_TIMESTAMP*/, const PlusTrackedFrame::FieldMapType* customFields /*= NULL*/)
+PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, const igsioVideoFrame& frame, long frameNumber, double unfilteredTimestamp/*=UNDEFINED_TIMESTAMP*/, double filteredTimestamp/*=UNDEFINED_TIMESTAMP*/, const igsioTrackedFrame::FieldMapType* customFields /*= NULL*/)
 {
   PlusStatus result(PLUS_SUCCESS);
   for (std::vector<vtkPlusDataSource*>::const_iterator it = videoSources.begin(); it != videoSources.end(); ++it)
@@ -1543,7 +1546,7 @@ PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDa
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx, PlusCommon::VTKScalarPixelType pixelType, unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/, double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/, const PlusTrackedFrame::FieldMapType* customFields /*= NULL*/)
+PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx, PlusCommon::VTKScalarPixelType pixelType, unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/, double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/, const igsioTrackedFrame::FieldMapType* customFields /*= NULL*/)
 {
   PlusStatus result(PLUS_SUCCESS);
   for (std::vector<vtkPlusDataSource*>::const_iterator it = videoSources.begin(); it != videoSources.end(); ++it)
@@ -1558,7 +1561,7 @@ PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDa
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::ToolTimeStampedUpdate(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredtimestamp, const PlusTrackedFrame::FieldMapType* customFields/*= NULL*/)
+PlusStatus vtkPlusDevice::ToolTimeStampedUpdate(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredtimestamp, const igsioTrackedFrame::FieldMapType* customFields/*= NULL*/)
 {
   if (aToolSourceId.empty())
   {
@@ -2167,12 +2170,12 @@ ChannelContainerIterator vtkPlusDevice::GetOutputChannelsEnd()
 }
 
 //------------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::GetToolReferenceFrameFromTrackedFrame(PlusTrackedFrame& aFrame, std::string& aToolReferenceFrameName)
+PlusStatus vtkPlusDevice::GetToolReferenceFrameFromTrackedFrame(igsioTrackedFrame& aFrame, std::string& aToolReferenceFrameName)
 {
   LOG_TRACE("vtkPlusDataCollectorFile::GetTrackerToolReferenceFrame");
 
   // Try to find it out from the custom transforms that are stored in the tracked frame
-  std::vector<PlusTransformName> transformNames;
+  std::vector<igsioTransformName> transformNames;
   aFrame.GetFrameTransformNameList(transformNames);
 
   if (transformNames.size() == 0)
@@ -2182,7 +2185,7 @@ PlusStatus vtkPlusDevice::GetToolReferenceFrameFromTrackedFrame(PlusTrackedFrame
   }
 
   std::string frameName = "";
-  for (std::vector<PlusTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
+  for (std::vector<igsioTransformName>::iterator it = transformNames.begin(); it != transformNames.end(); ++it)
   {
     if (frameName == "")
     {

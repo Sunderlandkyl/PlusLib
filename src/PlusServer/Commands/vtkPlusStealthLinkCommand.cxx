@@ -14,7 +14,7 @@ See License.txt for details.
 #include "vtkObjectFactory.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusCommandProcessor.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusVolumeReconstructor.h"
 #include "vtkPlusVirtualVolumeReconstructor.h"
 #include <vtkImageFlip.h>

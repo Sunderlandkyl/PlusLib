@@ -5,13 +5,13 @@ See License.txt for details.
 =========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkObjectFactory.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
-#include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOSequenceIO.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtkPlusVirtualVolumeReconstructor.h"
 #include "vtkPlusVolumeReconstructor.h"
 #include "vtksys/SystemTools.hxx"
@@ -39,7 +39,7 @@ vtkPlusVirtualVolumeReconstructor::vtkPlusVirtualVolumeReconstructor()
   this->StartThreadForInternalUpdates = true;
 
   this->VolumeReconstructor = vtkSmartPointer<vtkPlusVolumeReconstructor>::New();
-  this->TransformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  this->TransformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
 }
 
 //----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::InternalUpdate()
   }
   vtkPlusChannel* outputChannel = this->OutputChannels[0];
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> recordedFrames = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> recordedFrames = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (outputChannel->GetTrackedFrameListSampled(m_LastAlreadyRecordedFrameTimestamp, m_NextFrameToBeRecordedTimestamp, recordedFrames, requestedFramePeriodSec, maxProcessingTimeSec) != PLUS_SUCCESS)
   {
     LOG_ERROR("Error while getting tracked frame list from data collector during volume reconstruction. Last recorded timestamp: " << std::fixed << m_NextFrameToBeRecordedTimestamp);
@@ -308,9 +308,9 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::GetReconstructedVolumeFromFile(con
     LOG_INFO(errorMessage);
     return PLUS_FAIL;
   }
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   std::string inputImageSeqFileFullPath = vtkPlusConfig::GetInstance()->GetOutputPath(inputSeqFilename);
-  if (vtkPlusSequenceIO::Read(inputImageSeqFileFullPath, trackedFrameList) != PLUS_SUCCESS)
+  if (vtkIGSIOSequenceIO::Read(inputImageSeqFileFullPath, trackedFrameList) != PLUS_SUCCESS)
   {
     errorMessage = "Volume reconstruction failed, unable to open input file specified in InputSeqFilename: " + inputImageSeqFileFullPath;
     LOG_INFO(errorMessage);
@@ -369,7 +369,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::GetReconstructedVolume(vtkImageDat
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusVirtualVolumeReconstructor::AddFrames(vtkPlusTrackedFrameList* trackedFrameList)
+PlusStatus vtkPlusVirtualVolumeReconstructor::AddFrames(vtkIGSIOTrackedFrameList* trackedFrameList)
 {
   PlusLockGuard<vtkPlusRecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
 
@@ -379,7 +379,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::AddFrames(vtkPlusTrackedFrameList*
   for (int frameIndex = 0; frameIndex < numberOfFrames; frameIndex += this->VolumeReconstructor->GetSkipInterval())
   {
     LOG_TRACE("Adding frame to volume reconstructor: " << frameIndex);
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
     if (this->TransformRepository->SetTransforms(*frame) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to update transform repository with frame #" << frameIndex);
@@ -422,7 +422,7 @@ double vtkPlusVirtualVolumeReconstructor::GetSamplingPeriodSec()
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusVirtualVolumeReconstructor::UpdateTransformRepository(vtkPlusTransformRepository* sharedTransformRepository)
+PlusStatus vtkPlusVirtualVolumeReconstructor::UpdateTransformRepository(vtkIGSIOTransformRepository* sharedTransformRepository)
 {
   if (sharedTransformRepository == NULL)
   {

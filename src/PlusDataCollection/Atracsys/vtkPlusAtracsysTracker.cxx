@@ -371,7 +371,7 @@ PlusStatus vtkPlusAtracsysTracker::InternalUpdate()
 
       // tool is seen with acceptable registration error
       toolUpdated = true;
-      PlusTransformName toolTransformName(it->second, this->GetToolReferenceFrameName());
+      igsioTransformName toolTransformName(it->second, this->GetToolReferenceFrameName());
       std::string toolSourceId = toolTransformName.GetTransformName();
       ToolTimeStampedUpdate(toolSourceId, mit->GetTransformToTracker(), TOOL_OK, this->FrameNumber, unfilteredTimestamp);
     }
@@ -380,7 +380,7 @@ PlusStatus vtkPlusAtracsysTracker::InternalUpdate()
     {
       // tool is not seen in this frame
       vtkNew<vtkMatrix4x4> emptyTransform;
-      PlusTransformName toolTransformName(it->second, this->GetToolReferenceFrameName());
+      igsioTransformName toolTransformName(it->second, this->GetToolReferenceFrameName());
       std::string toolSourceId = toolTransformName.GetTransformName();
       ToolTimeStampedUpdate(toolSourceId, emptyTransform.GetPointer(), TOOL_OUT_OF_VIEW, this->FrameNumber, unfilteredTimestamp);
     }

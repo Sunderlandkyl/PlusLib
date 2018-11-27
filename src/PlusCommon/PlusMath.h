@@ -17,6 +17,8 @@
 #include "vnl/vnl_sparse_matrix.h"
 #include "vtkMath.h"
 
+#include <igsioMath.h>
+
 class vtkMatrix4x4;
 class vtkTransform;
 
@@ -65,12 +67,6 @@ public:
     \param resultVector to store the results
   */
   static PlusStatus LSQRMinimize(const vnl_sparse_matrix<double> &sparseMatrixLeftSide, const vnl_vector<double> &vectorRightSide, vnl_vector<double> &resultVector, double* mean = NULL, double* stdev = NULL, vnl_vector<unsigned int>* notOutliersIndices=NULL); 
-
-  /*! Returns the Euclidean distance between two 4x4 homogeneous transformation matrix */
-  static double GetPositionDifference(vtkMatrix4x4* aMatrix, vtkMatrix4x4* bMatrix); 
-
-  /*! Returns the orientation difference in degrees between two 4x4 homogeneous transformation matrix, in degrees. */
-  static double GetOrientationDifference(vtkMatrix4x4* aMatrix, vtkMatrix4x4* bMatrix); 
 
   /*! Returns the distance between a line, defined by two point (x and y) and a point (z) */
   static double ComputeDistanceLinePoint(const double x[3], const double y[3], const double z[3]);

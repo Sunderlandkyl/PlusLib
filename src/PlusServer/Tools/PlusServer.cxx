@@ -21,7 +21,7 @@ happens between two threads. In real life, it happens between two programs.
 #include "vtkPlusDataSource.h"
 #include "vtkPlusOpenIGTLinkServer.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtksys/CommandLineArguments.hxx"
 
 // For catching Ctrl-C
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
   vtkXMLDataElement* configRootElement = vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData();
 
   // Create transform repository instance
-  vtkNew<vtkPlusTransformRepository> transformRepository;
+  vtkNew<vtkIGSIOTransformRepository> transformRepository;
   if (transformRepository->ReadConfiguration(configRootElement) != PLUS_SUCCESS)
   {
     LOG_ERROR("Transform repository failed to read configuration");

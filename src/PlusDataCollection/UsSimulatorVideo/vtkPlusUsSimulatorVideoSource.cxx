@@ -7,11 +7,11 @@
 #include "PlusConfigure.h"
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
 #include "vtkPlusUsSimulatorVideoSource.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtkPlusUsImagingParameters.h"
 #include "vtkPlusUsScanConvertLinear.h"
 #include "vtkPlusUsScanConvertCurvilinear.h"
@@ -29,7 +29,7 @@ vtkPlusUsSimulatorVideoSource::vtkPlusUsSimulatorVideoSource()
   this->SetUsSimulator(usSimulator);
 
   // Create transform repository
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   this->GetUsSimulator()->SetTransformRepository(transformRepository);
 
   this->RequireImageOrientationInConfiguration = true;
@@ -72,7 +72,7 @@ PlusStatus vtkPlusUsSimulatorVideoSource::InternalUpdate()
   }
 
   // Get image to tracker transform from the tracker (only request 1 frame, the latest)
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackingFrames = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackingFrames = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (!this->InputChannels[0]->GetTrackingDataAvailable())
   {
     LOG_DEBUG("Simulated US image is not generated, as no tracking data is available yet. Device ID: " << this->GetDeviceId());
@@ -99,7 +99,7 @@ PlusStatus vtkPlusUsSimulatorVideoSource::InternalUpdate()
     LOG_DYNAMIC("Simulated US image generation is skipped, as as no updated tracking data has become available since the last generated image (at " << this->LastProcessedTrackingDataTimestamp << "). Probably the tracker device acquisition rate is lower than the simulator acquisition rate. Device ID: " << this->GetDeviceId(), this->GracePeriodLogLevel);
     return PLUS_FAIL;
   }
-  PlusTrackedFrame* trackedFrame = trackingFrames->GetTrackedFrame(0);
+  igsioTrackedFrame* trackedFrame = trackingFrames->GetTrackedFrame(0);
   if (trackedFrame == NULL)
   {
     LOG_ERROR("Error while getting tracked frame from data collector during capturing. Last recorded timestamp: " << std::fixed << this->LastProcessedTrackingDataTimestamp << ". Device ID: " << this->GetDeviceId());

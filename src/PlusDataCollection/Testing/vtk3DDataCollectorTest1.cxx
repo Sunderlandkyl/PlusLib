@@ -10,7 +10,7 @@ See License.txt for details.
 */ 
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "itkMath.h"
 #include "vtkPlusDataCollector.h"
 #include "vtkImageData.h" 
@@ -20,7 +20,7 @@ See License.txt for details.
 #include "vtkPlusDataSource.h"
 #include "vtkPlusDevice.h"
 #include "vtkPlusSavedDataSource.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusVirtualMixer.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
   usleep(1 * 1000000);
 #endif
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> frameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> frameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   double timestamp(0.0);
   mixer->GetChannel()->GetOldestTimestamp(timestamp);
   if( mixer->GetChannel()->GetTrackedFrameList(timestamp, frameList, 20) != PLUS_SUCCESS )

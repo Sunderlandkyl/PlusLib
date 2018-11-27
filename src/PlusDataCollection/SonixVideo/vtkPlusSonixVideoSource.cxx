@@ -366,7 +366,7 @@ PlusStatus vtkPlusSonixVideoSource::AddFrameToBuffer(void* dataPtr, int type, in
     this->UpdateImagingParametersFromDevice();
   }
 
-  PlusTrackedFrame::FieldMapType customFields;
+  igsioTrackedFrame::FieldMapType customFields;
 
   if (this->ImageGeometryOutputEnabled)
   {

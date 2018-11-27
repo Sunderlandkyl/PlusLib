@@ -6,7 +6,7 @@ See License.txt for details.
 
 // Local includes
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusBuffer.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataCollector.h"
@@ -14,7 +14,10 @@ See License.txt for details.
 #include "vtkPlusDevice.h"
 #include "vtkPlusDeviceFactory.h"
 #include "vtkPlusSavedDataSource.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
+
+// STD includes
+#include <set>
 
 // VTK includes
 #include <vtkObjectFactory.h>
@@ -498,7 +501,7 @@ DeviceCollectionConstIterator vtkPlusDataCollector::GetDeviceConstIteratorEnd() 
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDataCollector::GetTrackingData(vtkPlusChannel* aRequestedChannel, double& aTimestampFrom, vtkPlusTrackedFrameList* aTrackedFrameList)
+PlusStatus vtkPlusDataCollector::GetTrackingData(vtkPlusChannel* aRequestedChannel, double& aTimestampFrom, vtkIGSIOTrackedFrameList* aTrackedFrameList)
 {
   LOG_TRACE("vtkPlusDataCollector::GetTrackingData(" << aRequestedChannel->GetChannelId() << ", " << aTimestampFrom << ")");
 
@@ -547,14 +550,14 @@ PlusStatus vtkPlusDataCollector::GetTrackingData(vtkPlusChannel* aRequestedChann
     }
     aTimestampFrom = itemTimestamp;
     // Get tracked frame from buffer
-    PlusTrackedFrame* trackedFrame = new PlusTrackedFrame;
+    igsioTrackedFrame* trackedFrame = new igsioTrackedFrame;
     if (aRequestedChannel->GetTrackedFrame(itemTimestamp, *trackedFrame, false /* get tracking data only */) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to get tracking data by time: " << std::fixed << itemTimestamp);
       status = PLUS_FAIL;
     }
     // Add tracked frame to the list
-    if (aTrackedFrameList->TakeTrackedFrame(trackedFrame, vtkPlusTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
+    if (aTrackedFrameList->TakeTrackedFrame(trackedFrame, vtkIGSIOTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to add tracking data to the list!");
       status = PLUS_FAIL;
@@ -565,7 +568,7 @@ PlusStatus vtkPlusDataCollector::GetTrackingData(vtkPlusChannel* aRequestedChann
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDataCollector::GetVideoData(vtkPlusChannel* aRequestedChannel, double& aTimestampFrom, vtkPlusTrackedFrameList* aTrackedFrameList)
+PlusStatus vtkPlusDataCollector::GetVideoData(vtkPlusChannel* aRequestedChannel, double& aTimestampFrom, vtkIGSIOTrackedFrameList* aTrackedFrameList)
 {
   LOG_TRACE("vtkPlusDataCollector::GetVideoData(" << aRequestedChannel->GetChannelId() << ", " << aTimestampFrom << ")");
 
@@ -601,7 +604,7 @@ PlusStatus vtkPlusDataCollector::GetVideoData(vtkPlusChannel* aRequestedChannel,
     }
     aTimestampFrom = itemTimestamp;
     // Get tracked frame from buffer
-    PlusTrackedFrame* trackedFrame = new PlusTrackedFrame;
+    igsioTrackedFrame* trackedFrame = new igsioTrackedFrame;
     StreamBufferItem currentStreamBufferItem;
     if (aSource->GetStreamBufferItem(itemUid, &currentStreamBufferItem) != ITEM_OK)
     {
@@ -623,7 +626,7 @@ PlusStatus vtkPlusDataCollector::GetVideoData(vtkPlusChannel* aRequestedChannel,
     }
 
     // Add tracked frame to the list
-    if (aTrackedFrameList->TakeTrackedFrame(trackedFrame, vtkPlusTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
+    if (aTrackedFrameList->TakeTrackedFrame(trackedFrame, vtkIGSIOTrackedFrameList::SKIP_INVALID_FRAME) != PLUS_SUCCESS)
     {
       LOG_ERROR("Unable to add video data to the list!");
       status = PLUS_FAIL;

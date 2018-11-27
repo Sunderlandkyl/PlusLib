@@ -8,8 +8,6 @@ See License.txt for details.
 #include "PlusConfigure.h"
 #include "PlusCommon.h"
 #include "PlusRevision.h"
-#include "PlusTrackedFrame.h"
-#include "vtkPlusTrackedFrameList.h"
 
 // VTK includes
 #include <vtkXMLDataElement.h>
@@ -18,6 +16,11 @@ See License.txt for details.
 // STL includes
 #include <algorithm>
 #include <string>
+
+#ifdef PLUS_USE_OpenIGTLink
+// IGTL includes
+#include <igtlImageMessage.h>
+#endif
 
 //-------------------------------------------------------
 bool vtkPlusLogHelper::ShouldWeLog(bool errorPresent)
@@ -45,188 +48,6 @@ bool vtkPlusLogHelper::ShouldWeLog(bool errorPresent)
     m_Count = -2;
     return false;
   }
-}
-
-//-------------------------------------------------------
-PlusTransformName::PlusTransformName()
-{
-}
-
-//-------------------------------------------------------
-PlusTransformName::~PlusTransformName()
-{
-}
-
-//-------------------------------------------------------
-PlusTransformName::PlusTransformName(std::string aFrom, std::string aTo)
-{
-  this->Capitalize(aFrom);
-  this->m_From = aFrom;
-
-  this->Capitalize(aTo);
-  this->m_To = aTo;
-}
-
-//-------------------------------------------------------
-PlusTransformName::PlusTransformName(const std::string& transformName)
-{
-  this->SetTransformName(transformName.c_str());
-}
-
-//-------------------------------------------------------
-bool PlusTransformName::IsValid() const
-{
-  if (this->m_From.empty())
-  {
-    return false;
-  }
-
-  if (this->m_To.empty())
-  {
-    return false;
-  }
-
-  return true;
-}
-
-//-------------------------------------------------------
-PlusStatus PlusTransformName::SetTransformName(const char* aTransformName)
-{
-  if (aTransformName == NULL)
-  {
-    LOG_ERROR("Failed to set transform name if it's NULL");
-    return PLUS_FAIL;
-  }
-
-  return this->SetTransformName(std::string(aTransformName));
-}
-
-//----------------------------------------------------------------------------
-PlusStatus PlusTransformName::SetTransformName(const std::string& aTransformName)
-{
-  if (aTransformName.empty())
-  {
-    LOG_ERROR("Failed to set transform name if it's empty");
-    return PLUS_FAIL;
-  }
-
-  this->m_From.clear();
-  this->m_To.clear();
-
-  size_t posTo = std::string::npos;
-
-  // Check if the string has only one valid 'To' phrase
-  int numOfMatch = 0;
-  std::string subString = aTransformName;
-  size_t posToTested = std::string::npos;
-  size_t numberOfRemovedChars = 0;
-  while (((posToTested = subString.find("To")) != std::string::npos) && (subString.length() > posToTested + 2))
-  {
-    if (toupper(subString[posToTested + 2]) == subString[posToTested + 2])
-    {
-      // there is a "To", and after that the next letter is uppercase, so it's really a match (e.g., the first To in TestToolToTracker would not be a real match)
-      numOfMatch++;
-      posTo = numberOfRemovedChars + posToTested;
-    }
-    // search in the rest of the string
-    subString = subString.substr(posToTested + 2);
-    numberOfRemovedChars += posToTested + 2;
-  }
-
-  if (numOfMatch != 1)
-  {
-    LOG_ERROR("Unable to parse transform name, there are " << numOfMatch
-              << " matching 'To' phrases in the transform name '" << aTransformName << "', while exactly one allowed.");
-    return PLUS_FAIL;
-  }
-
-  // Find <FrameFrom>To<FrameTo> matches
-  if (posTo == std::string::npos)
-  {
-    LOG_ERROR("Failed to set transform name - unable to find 'To' in '" << aTransformName << "'!");
-    return PLUS_FAIL;
-  }
-  else if (posTo == 0)
-  {
-    LOG_ERROR("Failed to set transform name - no coordinate frame name before 'To' in '" << aTransformName << "'!");
-    return PLUS_FAIL;
-  }
-  else if (posTo == aTransformName.length() - 2)
-  {
-    LOG_ERROR("Failed to set transform name - no coordinate frame name after 'To' in '" << aTransformName << "'!");
-    return PLUS_FAIL;
-  }
-
-  // Set From coordinate frame name
-  this->m_From = aTransformName.substr(0, posTo);
-
-  // Allow handling of To coordinate frame containing "Transform"
-  std::string postFrom(aTransformName.substr(posTo + 2));
-  if (postFrom.find("Transform") != std::string::npos)
-  {
-    postFrom = postFrom.substr(0, postFrom.find("Transform"));
-  }
-
-  this->m_To = postFrom;
-  this->Capitalize(this->m_From);
-  this->Capitalize(this->m_To);
-
-  return PLUS_SUCCESS;
-}
-
-//-------------------------------------------------------
-PlusStatus PlusTransformName::GetTransformName(std::string& aTransformName) const
-{
-  if (this->m_From.empty())
-  {
-    LOG_ERROR("Failed to get transform name - 'From' transform name is empty");
-    return PLUS_FAIL;
-  }
-
-  if (this->m_To.empty())
-  {
-    LOG_ERROR("Failed to get transform name - 'To' transform name is empty");
-    return PLUS_FAIL;
-  }
-
-  aTransformName = (this->m_From + std::string("To") + this->m_To);
-  return PLUS_SUCCESS;
-}
-
-//-------------------------------------------------------
-std::string PlusTransformName::GetTransformName() const
-{
-  return (this->m_From + std::string("To") + this->m_To);
-}
-
-//-------------------------------------------------------
-std::string PlusTransformName::From() const
-{
-  return this->m_From;
-}
-
-//-------------------------------------------------------
-std::string PlusTransformName::To() const
-{
-  return this->m_To;
-}
-
-//-------------------------------------------------------
-void PlusTransformName::Capitalize(std::string& aString)
-{
-  // Change first character to uppercase
-  if (aString.length() < 1)
-  {
-    return;
-  }
-  aString[0] = toupper(aString[0]);
-}
-
-//-------------------------------------------------------
-void PlusTransformName::Clear()
-{
-  this->m_From = "";
-  this->m_To = "";
 }
 
 //----------------------------------------------------------------------------
@@ -848,7 +669,7 @@ bool vtkPlusCommonExport PlusCommon::HasSubstrInsensitive(std::wstring const& a,
 }
 
 //----------------------------------------------------------------------------
-vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList)
+vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList)
 {
   std::array<float, 3> colour;
   colour[0] = colour[1] = colour[2] = greyValue;
@@ -857,7 +678,7 @@ vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, 
 }
 
 //----------------------------------------------------------------------------
-vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList)
+vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList)
 {
   LOG_DEBUG("Processing " << trackedFrameList->GetNumberOfTrackedFrames() << " frames...");
 
@@ -865,7 +686,7 @@ vtkPlusCommonExport PlusStatus PlusCommon::DrawScanLines(int* inputImageExtent, 
   for (unsigned int frameIndex = 0; frameIndex < trackedFrameList->GetNumberOfTrackedFrames(); frameIndex++)
   {
     LOG_DEBUG("Processing frame " << frameIndex);
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
     PlusCommon::DrawScanLines(inputImageExtent, colour, scanLineEndPoints, frame->GetImageData()->GetImage());
   }
 
@@ -1007,3 +828,62 @@ vtkPlusCommonExport PlusStatus PlusCommon::XML::SafeCheckAttributeValueInsensiti
 {
   return PlusCommon::XML::SafeCheckAttributeValueInsensitive(element, std::string(begin(attributeName), end(attributeName)), std::string(begin(value), end(value)), isEqual);
 }
+
+#ifdef PLUS_USE_OpenIGTLink
+//----------------------------------------------------------------------------
+// static
+PlusCommon::VTKScalarPixelType PlusCommon::GetVTKScalarPixelTypeFromIGTL(PlusCommon::IGTLScalarPixelType igtlPixelType)
+{
+  switch (igtlPixelType)
+  {
+  case igtl::ImageMessage::TYPE_INT8:
+    return VTK_CHAR;
+  case igtl::ImageMessage::TYPE_UINT8:
+    return VTK_UNSIGNED_CHAR;
+  case igtl::ImageMessage::TYPE_INT16:
+    return VTK_SHORT;
+  case igtl::ImageMessage::TYPE_UINT16:
+    return VTK_UNSIGNED_SHORT;
+  case igtl::ImageMessage::TYPE_INT32:
+    return VTK_INT;
+  case igtl::ImageMessage::TYPE_UINT32:
+    return VTK_UNSIGNED_INT;
+  case igtl::ImageMessage::TYPE_FLOAT32:
+    return VTK_FLOAT;
+  case igtl::ImageMessage::TYPE_FLOAT64:
+    return VTK_DOUBLE;
+  default:
+    return VTK_VOID;
+  }
+}
+
+//----------------------------------------------------------------------------
+// static
+PlusCommon::IGTLScalarPixelType PlusCommon::GetIGTLScalarPixelTypeFromVTK(PlusCommon::VTKScalarPixelType pixelType)
+{
+  switch (pixelType)
+  {
+  case VTK_CHAR:
+    return igtl::ImageMessage::TYPE_INT8;
+  case VTK_UNSIGNED_CHAR:
+    return igtl::ImageMessage::TYPE_UINT8;
+  case VTK_SHORT:
+    return igtl::ImageMessage::TYPE_INT16;
+  case VTK_UNSIGNED_SHORT:
+    return igtl::ImageMessage::TYPE_UINT16;
+  case VTK_INT:
+    return igtl::ImageMessage::TYPE_INT32;
+  case VTK_UNSIGNED_INT:
+    return igtl::ImageMessage::TYPE_UINT32;
+  case VTK_FLOAT:
+    return igtl::ImageMessage::TYPE_FLOAT32;
+  case VTK_DOUBLE:
+    return igtl::ImageMessage::TYPE_FLOAT64;
+  default:
+    // There is no unknown IGT scalar pixel type, so display an error message
+    //**LOG_ERROR("Unknown conversion between VTK scalar pixel type (" << pixelType << ") and IGT pixel type - return igtl::ImageMessage::TYPE_INT8 by default!");
+    return igtl::ImageMessage::TYPE_INT8;
+  }
+}
+
+#endif

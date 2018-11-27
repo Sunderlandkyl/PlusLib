@@ -5,12 +5,12 @@
 =========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkImageData.h"
 #include "vtkMatrix4x4.h"
-#include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOSequenceIO.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 #include "vtkPlusVolumeReconstructor.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
     reconstructor->SetImportanceMaskFilename(importanceMaskFileName);
   }
 
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   if (configRootElement->FindNestedElementWithName("CoordinateDefinitions") != NULL)
   {
     if (transformRepository->ReadConfiguration(configRootElement) != PLUS_SUCCESS)
@@ -149,15 +149,15 @@ int main(int argc, char* argv[])
 
   // Read image sequence
   LOG_INFO("Reading image sequence " << inputImgSeqFileName);
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
-  if (vtkPlusSequenceIO::Read(inputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS)
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
+  if (vtkIGSIOSequenceIO::Read(inputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to load input sequences file.");
     exit(EXIT_FAILURE);
   }
 
   // Reconstruct volume
-  PlusTransformName imageToReferenceTransformName;
+  igsioTransformName imageToReferenceTransformName;
   if (!inputImageToReferenceTransformName.empty())
   {
     // image to reference transform is specified at the command-line
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
     LOG_DEBUG("Frame: " << frameIndex);
     vtkPlusLogger::PrintProgressbar((100.0 * frameIndex) / numberOfFrames);
 
-    PlusTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
+    igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
 
     if (transformRepository->SetTransforms(*frame) != PLUS_SUCCESS)
     {

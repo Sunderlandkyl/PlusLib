@@ -14,7 +14,7 @@
 
 #include "PlusFidPatternRecognition.h"
 #include "vtkPlusHTMLGenerator.h"
-#include "vtkPlusSequenceIO.h"
+#include "vtkIGSIOSequenceIO.h"
 #include "vtkPlusSpacingCalibAlgo.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
@@ -86,12 +86,12 @@ int main(int argc, char **argv)
 
   LOG_INFO("Reading metafiles:");
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New(); 
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New(); 
   for ( unsigned int i = 0; i < inputSequenceMetafiles.size(); ++i )
   {
     LOG_INFO("Reading " << inputSequenceMetafiles[i] << " ..."); 
-    vtkSmartPointer<vtkPlusTrackedFrameList> tfList = vtkSmartPointer<vtkPlusTrackedFrameList>::New(); 
-    if( vtkPlusSequenceIO::Read(inputSequenceMetafiles[i], tfList) != PLUS_SUCCESS )
+    vtkSmartPointer<vtkIGSIOTrackedFrameList> tfList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New(); 
+    if( vtkIGSIOSequenceIO::Read(inputSequenceMetafiles[i], tfList) != PLUS_SUCCESS )
     {
       LOG_ERROR("Failed to read sequence metafile: " << inputSequenceMetafiles[i]); 
       return EXIT_FAILURE;

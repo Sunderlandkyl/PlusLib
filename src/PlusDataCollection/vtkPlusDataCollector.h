@@ -15,10 +15,10 @@ See License.txt for details.
 // VTK includes
 #include <vtkObject.h>
 
-class PlusTrackedFrame;
+//class igsioTrackedFrame; 
 class vtkPlusChannel;
 class vtkPlusDeviceFactory;
-class vtkPlusTrackedFrameList;
+//class vtkIGSIOTrackedFrameList;
 class vtkXMLDataElement;
 
 /*!
@@ -124,14 +124,14 @@ public:
     \param aTimestamp The oldest timestamp we search for in the buffer. If -1 get all frames in the time range since the most recent timestamp. Out parameter - changed to timestamp of last added frame
     \param aTrackedFrameList Tracked frame list used to get the newly acquired frames into. The new frames are appended to the tracked frame.
   */
-  PlusStatus GetTrackingData(vtkPlusChannel* aRequestedChannel, double& aTimestampFrom, vtkPlusTrackedFrameList* aTrackedFrameList);
+  PlusStatus GetTrackingData(vtkPlusChannel* aRequestedChannel, double& aTimestampFrom, vtkIGSIOTrackedFrameList* aTrackedFrameList);
 
   /*!
     Get video data in a tracked frame list since time specified
     \param aTimestamp The oldest timestamp we search for in the buffer. If -1 get all frames in the time range since the most recent timestamp. Out parameter - changed to timestamp of last added frame
     \param aTrackedFrameList Tracked frame list used to get the newly acquired frames into. The new frames are appended to the tracked frame.
   */
-  virtual PlusStatus GetVideoData(vtkPlusChannel* aRequestedChannel, double& aTimestamp, vtkPlusTrackedFrameList* aTrackedFrameList);
+  virtual PlusStatus GetVideoData(vtkPlusChannel* aRequestedChannel, double& aTimestamp, vtkIGSIOTrackedFrameList* aTrackedFrameList);
 
   /*
   * Functions to manage the currently active stream mixers

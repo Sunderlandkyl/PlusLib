@@ -7,7 +7,7 @@ See License.txt for details.
 #include "PlusConfigure.h"
 
 #include "vtkPlusPhantomLinearObjectRegistrationAlgo.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 
 #include "vtkObjectFactory.h"
 #include "vtkXMLUtilities.h"
@@ -57,7 +57,7 @@ vtkPlusPhantomLinearObjectRegistrationAlgo::~vtkPlusPhantomLinearObjectRegistrat
 
 //-----------------------------------------------------------------------------
 
-PlusStatus vtkPlusPhantomLinearObjectRegistrationAlgo::LinearObjectRegister(vtkPlusTransformRepository* aTransformRepository/* = NULL*/)
+PlusStatus vtkPlusPhantomLinearObjectRegistrationAlgo::LinearObjectRegister(vtkIGSIOTransformRepository* aTransformRepository/* = NULL*/)
 {
   LOG_TRACE("vtkPlusPhantomLinearObjectRegistrationAlgo::Register"); 
 
@@ -137,7 +137,7 @@ PlusStatus vtkPlusPhantomLinearObjectRegistrationAlgo::LinearObjectRegister(vtkP
   // Save result
   if (aTransformRepository)
   {
-    PlusTransformName phantomToReferenceTransformName(this->PhantomCoordinateFrame, this->ReferenceCoordinateFrame);
+    igsioTransformName phantomToReferenceTransformName(this->PhantomCoordinateFrame, this->ReferenceCoordinateFrame);
     aTransformRepository->SetTransform(phantomToReferenceTransformName, this->PhantomToReferenceTransformMatrix);
     aTransformRepository->SetTransformPersistent(phantomToReferenceTransformName, true);
     aTransformRepository->SetTransformDate(phantomToReferenceTransformName, vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());

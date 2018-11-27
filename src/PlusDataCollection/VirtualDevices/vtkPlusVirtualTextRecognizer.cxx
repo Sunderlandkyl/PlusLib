@@ -11,7 +11,7 @@ See License.txt for details.
 #include "vtkObjectFactory.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusVirtualTextRecognizer.h"
 
 // Tesseract includes
@@ -45,7 +45,7 @@ namespace
 vtkPlusVirtualTextRecognizer::vtkPlusVirtualTextRecognizer()
   : vtkPlusDevice()
   , Language()
-  , TrackedFrames(vtkPlusTrackedFrameList::New())
+  , TrackedFrames(vtkIGSIOTrackedFrameList::New())
   , OutputChannel(NULL)
 {
   // The data capture thread will be used to regularly check the input devices and generate and update the output
@@ -93,7 +93,7 @@ vtkPlusVirtualTextRecognizer::ChannelFieldListMap& vtkPlusVirtualTextRecognizer:
 PlusStatus vtkPlusVirtualTextRecognizer::InternalUpdate()
 {
   std::map<double, int> queriedFramesIndexes;
-  std::vector<PlusTrackedFrame*> queriedFrames;
+  std::vector<igsioTrackedFrame*> queriedFrames;
 
   if (!this->HasGracePeriodExpired())
   {
@@ -105,7 +105,7 @@ PlusStatus vtkPlusVirtualTextRecognizer::InternalUpdate()
     for (FieldListIterator fieldIt = it->second.begin(); fieldIt != it->second.end(); ++fieldIt)
     {
       TextFieldParameter* parameter = *fieldIt;
-      PlusTrackedFrame frame;
+      igsioTrackedFrame frame;
 
       // Attempt to find the frame already retrieved
       PlusStatus result = FindOrQueryFrame(frame, queriedFramesIndexes, parameter, queriedFrames);
@@ -129,7 +129,7 @@ PlusStatus vtkPlusVirtualTextRecognizer::InternalUpdate()
   }
 
   // Build the field map to send to the data sources
-  PlusTrackedFrame::FieldMapType fieldMap;
+  igsioTrackedFrame::FieldMapType fieldMap;
   for (ChannelFieldListMapIterator it = this->RecognitionFields.begin(); it != this->RecognitionFields.end(); ++it)
   {
     for (FieldListIterator fieldIt = it->second.begin(); fieldIt != it->second.end(); ++fieldIt)
@@ -148,10 +148,10 @@ PlusStatus vtkPlusVirtualTextRecognizer::InternalUpdate()
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusVirtualTextRecognizer::vtkImageDataToPix(PlusTrackedFrame& frame, TextFieldParameter* parameter)
+void vtkPlusVirtualTextRecognizer::vtkImageDataToPix(igsioTrackedFrame& frame, TextFieldParameter* parameter)
 {
-  PlusVideoFrame::GetOrientedClippedImage(frame.GetImageData()->GetImage(),
-                                          PlusVideoFrame::FlipInfoType(),
+  igsioVideoFrame::GetOrientedClippedImage(frame.GetImageData()->GetImage(),
+                                          igsioVideoFrame::FlipInfoType(),
                                           frame.GetImageData()->GetImageType(),
                                           parameter->ScreenRegion,
                                           parameter->Origin,
@@ -182,7 +182,7 @@ void vtkPlusVirtualTextRecognizer::vtkImageDataToPix(PlusTrackedFrame& frame, Te
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusVirtualTextRecognizer::FindOrQueryFrame(PlusTrackedFrame& frame, std::map<double, int>& QueriedFramesIndexes, TextFieldParameter* parameter, std::vector<PlusTrackedFrame*>& QueriedFrames)
+PlusStatus vtkPlusVirtualTextRecognizer::FindOrQueryFrame(igsioTrackedFrame& frame, std::map<double, int>& QueriedFramesIndexes, TextFieldParameter* parameter, std::vector<igsioTrackedFrame*>& QueriedFrames)
 {
   double mostRecent(-1);
 

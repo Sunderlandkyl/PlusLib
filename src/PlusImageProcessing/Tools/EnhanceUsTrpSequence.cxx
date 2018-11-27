@@ -1,10 +1,10 @@
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkImageCast.h"
 #include "vtkImageData.h"
-#include "vtkPlusMetaImageSequenceIO.h"
+#include "vtkIGSIOMetaImageSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusTransverseProcessEnhancer.h"
 
 #include "vtksys/CommandLineArguments.hxx"
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
   // Read the input sequence.
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   trackedFrameList->ReadFromSequenceMetafile(inputFileName.c_str());
 
   vtkSmartPointer<vtkImageCast> castToUchar = vtkSmartPointer<vtkImageCast>::New();

@@ -187,9 +187,9 @@ PlusStatus vtkPlusOptimetConoProbeMeasurer::InternalUpdate()
 	const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
 
 	// Send transforms
-	PlusTransformName name("Measurement", this->GetToolReferenceFrameName());
+	igsioTransformName name("Measurement", this->GetToolReferenceFrameName());
 	this->ToolTimeStampedUpdate(name.GetTransformName().c_str(), measurementToMeasurerTransform->GetMatrix(), ToolStatus::TOOL_OK, frameNumber, unfilteredTimestamp);
-	PlusTransformName parameters("Parameters", this->GetToolReferenceFrameName());
+	igsioTransformName parameters("Parameters", this->GetToolReferenceFrameName());
 	this->ToolTimeStampedUpdate(parameters.GetTransformName().c_str(), parametersToMeasurerTransform->GetMatrix(), ToolStatus::TOOL_OK, frameNumber, unfilteredTimestamp);
   }
 

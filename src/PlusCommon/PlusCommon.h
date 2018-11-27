@@ -18,6 +18,9 @@
 #include <vtkImageData.h>
 #include <vtksys/SystemTools.hxx>
 
+// ITK includes
+#include <itkImage.h>
+
 // System includes
 #include <float.h>
 
@@ -27,49 +30,63 @@
 #include <locale>
 #include <sstream>
 
+// IGSIO includes
+#include <igsioCommon.h>
+#include <vtkIGSIOTrackedFrameList.h>
+#include <igsioTrackedFrame.h>
+#include <igsioVideoFrame.h>
+#include <vtkIGSIOTransformRepository.h>
+#include <vtkIGSIOSequenceIO.h>
+#include <vtkIGSIOSequenceIOBase.h>
+//#include <vtkIGSIOMKVSequenceIO.h>
+#include <vtkIGSIOMetaImageSequenceIO.h>
+
 class vtkPlusUsScanConvert;
-class vtkPlusTrackedFrameList;
 
-enum PlusStatus
-{
-  PLUS_FAIL = 0,
-  PLUS_SUCCESS = 1
-};
+typedef igsioStatus PlusStatus;
+#define PLUS_FAIL IGSIO_FAIL
+#define PLUS_SUCCESS IGSIO_SUCCESS
 
-enum PlusImagingMode
-{
-  Plus_UnknownMode,
-  Plus_BMode,
-  Plus_RfMode
-};
+//enum PlusStatus
+//{
+//  PLUS_FAIL = 0,
+//  PLUS_SUCCESS = 1
+//};
 
-/*!
-\enum TrackedFrameFieldStatus
-\brief Tracked frame field status
-Image field is valid if the image data is not NULL.
-Tool status is valid only if the ToolStatus is TOOL_OK.
-\ingroup PlusLibCommon
-*/
-enum TrackedFrameFieldStatus
-{
-  FIELD_OK,           /*!< Field is valid */
-  FIELD_INVALID       /*!< Field is invalid */
-};
+//enum PlusImagingMode
+//{
+//  Plus_UnknownMode,
+//  Plus_BMode,
+//  Plus_RfMode
+//};
 
-enum ToolStatus
-{
-  TOOL_UNKNOWN,         /*!< Value unknown */
-  TOOL_OK,              /*!< Tool OK */
-  TOOL_MISSING,         /*!< Tool or tool port is not available */
-  TOOL_OUT_OF_VIEW,     /*!< Cannot obtain transform for tool */
-  TOOL_OUT_OF_VOLUME,   /*!< Tool is not within the sweet spot of system */
-  TOOL_SWITCH1_IS_ON,   /*!< Various buttons/switches on tool */
-  TOOL_SWITCH2_IS_ON,   /*!< Various buttons/switches on tool */
-  TOOL_SWITCH3_IS_ON,   /*!< Various buttons/switches on tool */
-  TOOL_REQ_TIMEOUT,     /*!< Request timeout status */
-  TOOL_INVALID,         /*!< Invalid tool status */
-  TOOL_PATH_NOT_FOUND   /*!< Transform cannot be computed from existing transforms */
-};
+///*!
+//\enum TrackedFrameFieldStatus
+//\brief Tracked frame field status
+//Image field is valid if the image data is not NULL.
+//Tool status is valid only if the ToolStatus is TOOL_OK.
+//\ingroup PlusLibCommon
+//*/
+//enum TrackedFrameFieldStatus
+//{
+//  FIELD_OK,           /*!< Field is valid */
+//  FIELD_INVALID       /*!< Field is invalid */
+//};
+//
+//enum ToolStatus
+//{
+//  TOOL_UNKNOWN,         /*!< Value unknown */
+//  TOOL_OK,              /*!< Tool OK */
+//  TOOL_MISSING,         /*!< Tool or tool port is not available */
+//  TOOL_OUT_OF_VIEW,     /*!< Cannot obtain transform for tool */
+//  TOOL_OUT_OF_VOLUME,   /*!< Tool is not within the sweet spot of system */
+//  TOOL_SWITCH1_IS_ON,   /*!< Various buttons/switches on tool */
+//  TOOL_SWITCH2_IS_ON,   /*!< Various buttons/switches on tool */
+//  TOOL_SWITCH3_IS_ON,   /*!< Various buttons/switches on tool */
+//  TOOL_REQ_TIMEOUT,     /*!< Request timeout status */
+//  TOOL_INVALID,         /*!< Invalid tool status */
+//  TOOL_PATH_NOT_FOUND   /*!< Transform cannot be computed from existing transforms */
+//};
 
 typedef std::array<unsigned int, 3> FrameSizeType;
 
@@ -288,43 +305,43 @@ private:
   } \
   }
 
-///////////////////////////////////////////////////////////////////
-
-/*!
-  \class PlusLockGuard
-  \brief A class for automatically unlocking objects
-
-  This class is used for locking a objects (buffers, mutexes, etc.)
-  and releasing the lock automatically when the guard object is deleted
-  (typically by getting out of scope).
-
-  Example:
-  \code
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
-  \endcode
-
-  \ingroup PlusLibCommon
-*/
-template <typename T>
-class PlusLockGuard
-{
-public:
-  PlusLockGuard(T* lockableObject)
-  {
-    m_LockableObject = lockableObject;
-    m_LockableObject->Lock();
-  }
-  ~PlusLockGuard()
-  {
-    m_LockableObject->Unlock();
-    m_LockableObject = NULL;
-  }
-private:
-  PlusLockGuard(PlusLockGuard&);
-  void operator=(PlusLockGuard&);
-
-  T* m_LockableObject;
-};
+/////////////////////////////////////////////////////////////////////
+//
+///*!
+//  \class PlusLockGuard
+//  \brief A class for automatically unlocking objects
+//
+//  This class is used for locking a objects (buffers, mutexes, etc.)
+//  and releasing the lock automatically when the guard object is deleted
+//  (typically by getting out of scope).
+//
+//  Example:
+//  \code
+//  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+//  \endcode
+//
+//  \ingroup PlusLibCommon
+//*/
+//template <typename T>
+//class PlusLockGuard
+//{
+//public:
+//  PlusLockGuard(T* lockableObject)
+//  {
+//    m_LockableObject = lockableObject;
+//    m_LockableObject->Lock();
+//  }
+//  ~PlusLockGuard()
+//  {
+//    m_LockableObject->Unlock();
+//    m_LockableObject = NULL;
+//  }
+//private:
+//  PlusLockGuard(PlusLockGuard&);
+//  void operator=(PlusLockGuard&);
+//
+//  T* m_LockableObject;
+//};
 
 /*!
   \def DELETE_IF_NOT_NULL(Object)
@@ -402,7 +419,6 @@ virtual void Set##name (type _arg) \
   } \
 }
 
-class vtkPlusTrackedFrameList;
 class vtkXMLDataElement;
 
 namespace PlusCommon
@@ -537,8 +553,8 @@ namespace PlusCommon
   typedef std::array<int, 3> PixelPoint;
   typedef std::pair<PixelPoint, PixelPoint> PixelLine;
   typedef std::vector<PixelLine> PixelLineList;
-  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList);
-  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkPlusTrackedFrameList* trackedFrameList);
+  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList);
+  vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkIGSIOTrackedFrameList* trackedFrameList);
   vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, float greyValue, const PixelLineList& scanLineEndPoints, vtkImageData* imageData);
   vtkPlusCommonExport PlusStatus DrawScanLines(int* inputImageExtent, const std::array<float, 3>& colour, const PixelLineList& scanLineEndPoints, vtkImageData* imageData);
 
@@ -618,103 +634,21 @@ namespace PlusCommon
   vtkPlusCommonExport std::string ConvertToolStatusToString(const ToolStatus& status);
   vtkPlusCommonExport TrackedFrameFieldStatus ConvertToolStatusToTrackedFrameFieldStatus(const ToolStatus& status);
   vtkPlusCommonExport ToolStatus ConvertTrackedFrameFieldStatusToToolStatus(TrackedFrameFieldStatus fieldStatus);
+
+#ifdef PLUS_USE_OpenIGTLink
+  /*! Convert between ITK and IGTL scalar pixel types */
+  vtkPlusCommonExport IGTLScalarPixelType GetIGTLScalarPixelTypeFromVTK(PlusCommon::VTKScalarPixelType vtkScalarPixelType);
+
+  /*! Convert between IGTL and ITK scalar pixel types */
+  vtkPlusCommonExport VTKScalarPixelType GetVTKScalarPixelTypeFromIGTL(PlusCommon::IGTLScalarPixelType igtlPixelType);
+#endif
+
+  /*! Convert 3D vtkImageData to 3D itkImage */
+  template<typename ScalarType> vtkPlusCommonExport PlusStatus DeepCopyVtkVolumeToItkVolume(vtkImageData* inFrame, typename itk::Image< ScalarType, 3 >::Pointer outFrame);
+  /*! Convert 2D/3D vtkImageData to 2D itkImage (take only first slice if 3D) */
+  template<typename ScalarType> vtkPlusCommonExport PlusStatus DeepCopyVtkVolumeToItkImage(vtkImageData* inFrame, typename itk::Image< ScalarType, 2 >::Pointer outFrame);
+
 };
-
-/*!
-  \class PlusTransformName
-  \brief Stores the from and to coordinate frame names for transforms
-
-  The PlusTransformName stores and generates the from and to coordinate frame names for transforms.
-  To enable robust serialization to/from a simple string (...To...Transform), the coordinate frame names must
-  start with an uppercase character and it shall not contain "To" followed by an uppercase character. E.g., valid
-  coordinate frame names are Tracker, TrackerBase, Tool; invalid names are tracker, trackerBase, ToImage.
-
-  Example usage:
-  Setting a transform name:
-  \code
-  PlusTransformName tnImageToProbe("Image", "Probe");
-  \endcode
-  or
-  \code
-  PlusTransformName tnImageToProbe;
-  if ( tnImageToProbe->SetTransformName("ImageToProbe") != PLUS_SUCCESS )
-  {
-    LOG_ERROR("Failed to set transform name!");
-    return PLUS_FAIL;
-  }
-  \endcode
-  Getting coordinate frame or transform names:
-  \code
-  std::string fromFrame = tnImageToProbe->From();
-  std::string toFrame = tnImageToProbe->To();
-  \endcode
-  or
-  \code
-  std::string strImageToProbe;
-  if ( tnImageToProbe->GetTransformName(strImageToProbe) != PLUS_SUCCESS )
-  {
-    LOG_ERROR("Failed to get transform name!");
-    return PLUS_FAIL;
-  }
-  \endcode
-
-  \ingroup PlusLibCommon
-*/
-class vtkPlusCommonExport PlusTransformName
-{
-public:
-  PlusTransformName();
-  ~PlusTransformName();
-  PlusTransformName(std::string aFrom, std::string aTo);
-  PlusTransformName(const std::string& transformName);
-
-  /*!
-    Set 'From' and 'To' coordinate frame names from a combined transform name with the following format [FrameFrom]To[FrameTo].
-    The combined transform name might contain only one 'To' phrase followed by a capital letter (e.g. ImageToToProbe is not allowed)
-    and the coordinate frame names should be in camel case format starting with capitalized letters.
-  */
-  PlusStatus SetTransformName(const char* aTransformName);
-  PlusStatus SetTransformName(const std::string& aTransformName);
-
-  /*! Return combined transform name between 'From' and 'To' coordinate frames: [From]To[To] */
-  PlusStatus GetTransformName(std::string& aTransformName) const;
-  std::string GetTransformName() const;
-
-  /*! Return 'From' coordinate frame name, give a warning if it's not capitalized and capitalize it*/
-  std::string From() const;
-
-  /*! Return 'To' coordinate frame name, give a warning if it's not capitalized and capitalize it */
-  std::string To() const;
-
-  /*! Clear the 'From' and 'To' fields */
-  void Clear();
-
-  /*! Check if the current transform name is valid */
-  bool IsValid() const;
-
-  inline bool operator== (const PlusTransformName& in) const
-  {
-    return (in.m_From == m_From && in.m_To == m_To);
-  }
-
-  inline bool operator!= (const PlusTransformName& in) const
-  {
-    return !(in == *this);
-  }
-
-  friend std::ostream& operator<< (std::ostream& os, const PlusTransformName& transformName)
-  {
-    os << transformName.GetTransformName();
-    return os;
-  }
-
-private:
-  /*! Check if the input string is capitalized, if not capitalize it */
-  void Capitalize(std::string& aString);
-  std::string m_From; /*! From coordinate frame name */
-  std::string m_To; /*! To coordinate frame name */
-};
-
 
 #define RETRY_UNTIL_TRUE(command_, numberOfRetryAttempts_, delayBetweenRetryAttemptsSec_) \
   { \

@@ -78,7 +78,7 @@ int main( int argc, char** argv )
     exit(EXIT_FAILURE);
   }
 
-  PlusTrackedFrame frame;
+  igsioTrackedFrame frame;
   if (channel->GetTrackedFrame(frame) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to retrieve frame from device.");

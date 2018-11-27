@@ -5,16 +5,16 @@ See License.txt for details.
 =========================================================Plus=header=end*/ 
 
 #include "PlusConfigure.h"
-#include "PlusVideoFrame.h"
-#include "PlusTrackedFrame.h"
+#include "igsioVideoFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusForoughiBoneSurfaceProbability.h"
 #include "vtkImageCast.h"
 #include "vtkImageData.h"
 #include "vtkMetaImageReader.h"
 #include "vtkMetaImageWriter.h"
-#include "vtkPlusSequenceIO.h"
+#include "vtkIGSIOSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
 
@@ -60,8 +60,8 @@ int main(int argc, char** argv)
   }
 
   // Read the image sequence
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
-  if( vtkPlusSequenceIO::Read(inputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS )
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
+  if( vtkIGSIOSequenceIO::Read(inputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Unable to read sequence file: " << inputImgSeqFileName);
     exit(EXIT_FAILURE);
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     }
     outputImgSeqFileName = inputImgSeqFileName + "-Bones.nrrd";
   }
-  if( vtkPlusSequenceIO::Write(outputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS )
+  if( vtkIGSIOSequenceIO::Write(outputImgSeqFileName, trackedFrameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Failed to save output volume to " << outputImgSeqFileName); 
     return EXIT_FAILURE;

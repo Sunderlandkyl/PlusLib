@@ -7,11 +7,11 @@ See License.txt for details.
 // Local includes
 #include "PlusConfigure.h"
 #include "PlusMath.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusBuffer.h"
 #include "vtkPlusDevice.h"
-#include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOSequenceIO.h"
+#include "vtkIGSIOTrackedFrameList.h"
 
 // VTK includes
 #include <vtkDoubleArray.h>
@@ -108,8 +108,8 @@ void vtkPlusBuffer::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os, indent);
   os << indent << "Frame size in pixel: " << this->GetFrameSize()[0] << "   " << this->GetFrameSize()[1] << "   " << this->GetFrameSize()[2] << std::endl;
   os << indent << "Scalar pixel type: " << vtkImageScalarTypeNameMacro(this->GetPixelType()) << std::endl;
-  os << indent << "Image type: " << PlusVideoFrame::GetStringFromUsImageType(this->GetImageType()) << std::endl;
-  os << indent << "Image orientation: " << PlusVideoFrame::GetStringFromUsImageOrientation(this->GetImageOrientation()) << std::endl;
+  os << indent << "Image type: " << igsioVideoFrame::GetStringFromUsImageType(this->GetImageType()) << std::endl;
+  os << indent << "Image orientation: " << igsioVideoFrame::GetStringFromUsImageOrientation(this->GetImageOrientation()) << std::endl;
 
   os << indent << "StreamBuffer: " << this->StreamBuffer << "\n";
   if (this->StreamBuffer)
@@ -202,7 +202,7 @@ bool vtkPlusBuffer::CheckFrameFormat(const FrameSizeType& frameSizeInPx, PlusCom
 
   if (imgType != this->GetImageType())
   {
-    LOCAL_LOG_WARNING("Frame image type (" << PlusVideoFrame::GetStringFromUsImageType(imgType) << ") and buffer image type (" << PlusVideoFrame::GetStringFromUsImageType(this->GetImageType()) << ") mismatch");
+    LOCAL_LOG_WARNING("Frame image type (" << igsioVideoFrame::GetStringFromUsImageType(imgType) << ") and buffer image type (" << igsioVideoFrame::GetStringFromUsImageType(this->GetImageType()) << ") mismatch");
     return false;
   }
 
@@ -224,7 +224,7 @@ PlusStatus vtkPlusBuffer::AddItem(vtkImageData* frame,
                                   const std::array<int, 3>& clipRectangleSize,
                                   double unfilteredTimestamp/*=UNDEFINED_TIMESTAMP*/,
                                   double filteredTimestamp/*=UNDEFINED_TIMESTAMP*/,
-                                  const PlusTrackedFrame::FieldMapType* customFields /*=NULL*/)
+                                  const igsioTrackedFrame::FieldMapType* customFields /*=NULL*/)
 {
   if (frame == NULL)
   {
@@ -244,13 +244,13 @@ PlusStatus vtkPlusBuffer::AddItem(vtkImageData* frame,
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusBuffer::AddItem(const PlusVideoFrame* frame,
+PlusStatus vtkPlusBuffer::AddItem(const igsioVideoFrame* frame,
                                   long frameNumber,
                                   const std::array<int, 3>& clipRectangleOrigin,
                                   const std::array<int, 3>& clipRectangleSize,
                                   double unfilteredTimestamp/*=UNDEFINED_TIMESTAMP*/,
                                   double filteredTimestamp/*=UNDEFINED_TIMESTAMP*/,
-                                  const PlusTrackedFrame::FieldMapType* customFields /*=NULL*/)
+                                  const igsioTrackedFrame::FieldMapType* customFields /*=NULL*/)
 {
   if (frame == NULL)
   {
@@ -262,7 +262,7 @@ PlusStatus vtkPlusBuffer::AddItem(const PlusVideoFrame* frame,
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusBuffer::AddItem(const PlusTrackedFrame::FieldMapType& fields,
+PlusStatus vtkPlusBuffer::AddItem(const igsioTrackedFrame::FieldMapType& fields,
                                   long frameNumber,
                                   double unfilteredTimestamp/*=UNDEFINED_TIMESTAMP*/,
                                   double filteredTimestamp/*=UNDEFINED_TIMESTAMP*/)
@@ -320,7 +320,7 @@ PlusStatus vtkPlusBuffer::AddItem(const PlusTrackedFrame::FieldMapType& fields,
   newObjectInBuffer->SetUid(itemUid);
 
   // Add custom fields
-  for (PlusTrackedFrame::FieldMapType::const_iterator it = fields.begin(); it != fields.end(); ++it)
+  for (igsioTrackedFrame::FieldMapType::const_iterator it = fields.begin(); it != fields.end(); ++it)
   {
     newObjectInBuffer->SetFrameField(it->first, it->second);
     std::string name(it->first);
@@ -342,7 +342,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr,
                                   const std::array<int, 3>& clipRectangleSize,
                                   double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/,
                                   double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/,
-                                  const PlusTrackedFrame::FieldMapType* customFields /*= NULL */)
+                                  const igsioTrackedFrame::FieldMapType* customFields /*= NULL */)
 {
   if (unfilteredTimestamp == UNDEFINED_TIMESTAMP)
   {
@@ -375,11 +375,11 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr,
     return PLUS_FAIL;
   }
 
-  PlusVideoFrame::FlipInfoType flipInfo;
-  if (PlusVideoFrame::GetFlipAxes(usImageOrientation, imageType, this->ImageOrientation, flipInfo) != PLUS_SUCCESS)
+  igsioVideoFrame::FlipInfoType flipInfo;
+  if (igsioVideoFrame::GetFlipAxes(usImageOrientation, imageType, this->ImageOrientation, flipInfo) != PLUS_SUCCESS)
   {
-    LOG_ERROR("Failed to convert image data to the requested orientation, from " << PlusVideoFrame::GetStringFromUsImageOrientation(usImageOrientation) <<
-              " to " << PlusVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientation));
+    LOG_ERROR("Failed to convert image data to the requested orientation, from " << igsioVideoFrame::GetStringFromUsImageOrientation(usImageOrientation) <<
+              " to " << igsioVideoFrame::GetStringFromUsImageOrientation(this->ImageOrientation));
     return PLUS_FAIL;
   }
 
@@ -392,7 +392,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr,
     outputFrameSizeInPx[2] = clipRectangleSize[2];
   }
 
-  if (flipInfo.tranpose == PlusVideoFrame::TRANSPOSE_IJKtoKIJ)
+  if (flipInfo.tranpose == igsioVideoFrame::TRANSPOSE_IJKtoKIJ)
   {
     unsigned int temp = outputFrameSizeInPx[0];
     outputFrameSizeInPx[0] = outputFrameSizeInPx[2];
@@ -442,7 +442,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr,
   unsigned char* byteImageDataPtr = reinterpret_cast<unsigned char*>(imageDataPtr);
   byteImageDataPtr += numberOfBytesToSkip;
 
-  if (PlusVideoFrame::GetOrientedClippedImage(byteImageDataPtr, flipInfo, imageType, pixelType, numberOfScalarComponents, inputFrameSizeInPx, newObjectInBuffer->GetFrame(), clipRectangleOrigin, clipRectangleSize) != PLUS_SUCCESS)
+  if (igsioVideoFrame::GetOrientedClippedImage(byteImageDataPtr, flipInfo, imageType, pixelType, numberOfScalarComponents, inputFrameSizeInPx, newObjectInBuffer->GetFrame(), clipRectangleOrigin, clipRectangleSize) != PLUS_SUCCESS)
   {
     LOCAL_LOG_ERROR("Failed to convert input US image to the requested orientation!");
     return PLUS_FAIL;
@@ -457,7 +457,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr,
   // Add custom fields
   if (customFields != NULL)
   {
-    for (PlusTrackedFrame::FieldMapType::const_iterator it = customFields->begin(); it != customFields->end(); ++it)
+    for (igsioTrackedFrame::FieldMapType::const_iterator it = customFields->begin(); it != customFields->end(); ++it)
     {
       newObjectInBuffer->SetFrameField(it->first, it->second);
       std::string name(it->first);
@@ -472,7 +472,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr,
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr, const FrameSizeType& frameSize, unsigned int inputFrameSizeInBytes, US_IMAGE_TYPE imageType, long frameNumber, double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/, double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/, const PlusTrackedFrame::FieldMapType* customFields /*= NULL*/)
+PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr, const FrameSizeType& frameSize, unsigned int inputFrameSizeInBytes, US_IMAGE_TYPE imageType, long frameNumber, double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/, double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/, const igsioTrackedFrame::FieldMapType* customFields /*= NULL*/)
 {
   if (unfilteredTimestamp == UNDEFINED_TIMESTAMP)
   {
@@ -546,7 +546,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr, const FrameSizeType& frame
   // Add custom fields
   if (customFields != NULL)
   {
-    for (PlusTrackedFrame::FieldMapType::const_iterator it = customFields->begin(); it != customFields->end(); ++it)
+    for (igsioTrackedFrame::FieldMapType::const_iterator it = customFields->begin(); it != customFields->end(); ++it)
     {
       newObjectInBuffer->SetFrameField(it->first, it->second);
       std::string name(it->first);
@@ -563,7 +563,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr, const FrameSizeType& frame
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusBuffer::AddTimeStampedItem(vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredTimestamp, double filteredTimestamp/*=UNDEFINED_TIMESTAMP*/, const PlusTrackedFrame::FieldMapType* customFields /*= NULL*/)
+PlusStatus vtkPlusBuffer::AddTimeStampedItem(vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredTimestamp, double filteredTimestamp/*=UNDEFINED_TIMESTAMP*/, const igsioTrackedFrame::FieldMapType* customFields /*= NULL*/)
 {
   if (matrix == NULL)
   {
@@ -622,7 +622,7 @@ PlusStatus vtkPlusBuffer::AddTimeStampedItem(vtkMatrix4x4* matrix, ToolStatus st
   // Add custom fields
   if (customFields != NULL)
   {
-    for (PlusTrackedFrame::FieldMapType::const_iterator it = customFields->begin(); it != customFields->end(); ++it)
+    for (igsioTrackedFrame::FieldMapType::const_iterator it = customFields->begin(); it != customFields->end(); ++it)
     {
       newObjectInBuffer->SetFrameField(it->first, it->second);
       std::string name(it->first);
@@ -828,17 +828,17 @@ PlusStatus vtkPlusBuffer::SetImageOrientation(US_IMAGE_ORIENTATION imgOrientatio
 //----------------------------------------------------------------------------
 int vtkPlusBuffer::GetNumberOfBytesPerScalar()
 {
-  return PlusVideoFrame::GetNumberOfBytesPerScalar(GetPixelType());
+  return igsioVideoFrame::GetNumberOfBytesPerScalar(GetPixelType());
 }
 
 //----------------------------------------------------------------------------
 int vtkPlusBuffer::GetNumberOfBytesPerPixel()
 {
-  return this->GetNumberOfScalarComponents() * PlusVideoFrame::GetNumberOfBytesPerScalar(GetPixelType());
+  return this->GetNumberOfScalarComponents() * igsioVideoFrame::GetNumberOfBytesPerScalar(GetPixelType());
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusBuffer::CopyImagesFromTrackedFrameList(vtkPlusTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, bool copyFrameFields)
+PlusStatus vtkPlusBuffer::CopyImagesFromTrackedFrameList(vtkIGSIOTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, bool copyFrameFields)
 {
   int numberOfErrors = 0;
 
@@ -1005,7 +1005,7 @@ PlusStatus vtkPlusBuffer::WriteToSequenceFile(const char* filename, bool useComp
 {
   LOG_TRACE("vtkPlusBuffer::WriteToSequenceFile");
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
 
   PlusStatus status = PLUS_SUCCESS;
 
@@ -1019,7 +1019,7 @@ PlusStatus vtkPlusBuffer::WriteToSequenceFile(const char* filename, bool useComp
       continue;
     }
 
-    PlusTrackedFrame* trackedFrame = new PlusTrackedFrame;
+    igsioTrackedFrame* trackedFrame = new igsioTrackedFrame;
 
     // Add image data
     trackedFrame->SetImageData(bufferItem.GetFrame());
@@ -1027,8 +1027,8 @@ PlusStatus vtkPlusBuffer::WriteToSequenceFile(const char* filename, bool useComp
     // Add tracking data
     vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     bufferItem.GetMatrix(matrix);
-    trackedFrame->SetFrameTransform(PlusTransformName("Tool", "Tracker"), matrix);
-    trackedFrame->SetFrameTransformStatus(PlusTransformName("Tool", "Tracker"), bufferItem.GetStatus());
+    trackedFrame->SetFrameTransform(igsioTransformName("Tool", "Tracker"), matrix);
+    trackedFrame->SetFrameTransformStatus(igsioTransformName("Tool", "Tracker"), bufferItem.GetStatus());
 
     // Add filtered timestamp
     double filteredTimestamp = bufferItem.GetFilteredTimestamp(this->GetLocalTimeOffsetSec());
@@ -1049,8 +1049,8 @@ PlusStatus vtkPlusBuffer::WriteToSequenceFile(const char* filename, bool useComp
     trackedFrame->SetFrameField("FrameNumber", frameNumberFieldValue.str());
 
     // Add custom fields
-    const PlusTrackedFrame::FieldMapType& customFields = bufferItem.GetFrameFieldMap();
-    for (PlusTrackedFrame::FieldMapType::const_iterator cf = customFields.begin(); cf != customFields.end(); ++cf)
+    const igsioTrackedFrame::FieldMapType& customFields = bufferItem.GetFrameFieldMap();
+    for (igsioTrackedFrame::FieldMapType::const_iterator cf = customFields.begin(); cf != customFields.end(); ++cf)
     {
       trackedFrame->SetFrameField(cf->first, cf->second);
     }
@@ -1060,7 +1060,7 @@ PlusStatus vtkPlusBuffer::WriteToSequenceFile(const char* filename, bool useComp
   }
 
   // Save tracked frames to metafile
-  if (vtkPlusSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
+  if (vtkIGSIOSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
   {
     LOCAL_LOG_ERROR("Failed to save tracked frames to sequence metafile!");
     return PLUS_FAIL;
@@ -1413,8 +1413,8 @@ ItemStatus vtkPlusBuffer::GetInterpolatedStreamBufferItemFromTime(double time, S
   bufferItem->SetFilteredTimestamp(time - this->StreamBuffer->GetLocalTimeOffsetSec());   // global = local + offset => local = global - offset
   bufferItem->SetUnfilteredTimestamp(interpolatedUnfilteredTimestamp);
 
-  double angleDiffA = PlusMath::GetOrientationDifference(interpolatedMatrix, itemAmatrix);
-  double angleDiffB = PlusMath::GetOrientationDifference(interpolatedMatrix, itemBmatrix);
+  double angleDiffA = igsioMath::GetOrientationDifference(interpolatedMatrix, itemAmatrix);
+  double angleDiffB = igsioMath::GetOrientationDifference(interpolatedMatrix, itemBmatrix);
   if (fabs(angleDiffA) > ANGLE_INTERPOLATION_WARNING_THRESHOLD_DEG && fabs(angleDiffB) > ANGLE_INTERPOLATION_WARNING_THRESHOLD_DEG)
   {
     static vtkPlusLogHelper helper(5.f, 5000, vtkPlusLogger::LOG_LEVEL_WARNING);
@@ -1428,7 +1428,7 @@ ItemStatus vtkPlusBuffer::GetInterpolatedStreamBufferItemFromTime(double time, S
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusBuffer::CopyTransformFromTrackedFrameList(vtkPlusTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, PlusTransformName& transformName)
+PlusStatus vtkPlusBuffer::CopyTransformFromTrackedFrameList(vtkIGSIOTrackedFrameList* sourceTrackedFrameList, TIMESTAMP_FILTERING_OPTION timestampFiltering, igsioTransformName& transformName)
 {
   int numberOfErrors = 0;
 

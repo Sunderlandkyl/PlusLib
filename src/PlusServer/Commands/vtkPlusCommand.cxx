@@ -115,7 +115,7 @@ vtkPlusDataCollector* vtkPlusCommand::GetDataCollector()
 }
 
 //----------------------------------------------------------------------------
-vtkPlusTransformRepository* vtkPlusCommand::GetTransformRepository()
+vtkIGSIOTransformRepository* vtkPlusCommand::GetTransformRepository()
 {
   if (this->CommandProcessor == NULL)
   {
@@ -130,7 +130,7 @@ vtkPlusTransformRepository* vtkPlusCommand::GetTransformRepository()
     return NULL;
   }
 
-  vtkPlusTransformRepository* aRepository = server->GetTransformRepository();
+  vtkIGSIOTransformRepository* aRepository = server->GetTransformRepository();
   if (aRepository == NULL)
   {
     LOG_ERROR("CommandProcessor::PlusServer::TransformRepository is invalid");

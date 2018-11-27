@@ -7,7 +7,7 @@ See License.txt for details.
 // Local includes
 #include "PlusCommon.h"
 #include "PlusConfigure.h"
-#include "PlusTrackedFrame.h"
+#include "igsioTrackedFrame.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusCommand.h"
 #include "vtkPlusCommandProcessor.h"
@@ -16,8 +16,8 @@ See License.txt for details.
 #include "vtkPlusIgtlMessageFactory.h"
 #include "vtkPlusOpenIGTLinkServer.h"
 #include "vtkPlusRecursiveCriticalSection.h"
-#include "vtkPlusTrackedFrameList.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTrackedFrameList.h"
+#include "vtkIGSIOTransformRepository.h"
 
 // VTK includes
 #include <vtkImageData.h>
@@ -393,7 +393,7 @@ void* vtkPlusOpenIGTLinkServer::DataSenderThread(vtkMultiThreader::ThreadInfo* d
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusOpenIGTLinkServer::SendLatestFramesToClients(vtkPlusOpenIGTLinkServer& self, double& elapsedTimeSinceLastPacketSentSec)
 {
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
 
   // Acquire tracked frames since last acquisition (minimum 1 frame)
@@ -982,7 +982,7 @@ void* vtkPlusOpenIGTLinkServer::DataReceiverThread(vtkMultiThreader::ThreadInfo*
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusOpenIGTLinkServer::SendTrackedFrame(PlusTrackedFrame& trackedFrame)
+PlusStatus vtkPlusOpenIGTLinkServer::SendTrackedFrame(igsioTrackedFrame& trackedFrame)
 {
   int numberOfErrors = 0;
 
@@ -1266,7 +1266,7 @@ bool vtkPlusOpenIGTLinkServer::HasGracePeriodExpired()
 }
 
 //------------------------------------------------------------------------------
-PlusStatus vtkPlusOpenIGTLinkServer::Start(vtkPlusDataCollector* dataCollector, vtkPlusTransformRepository* transformRepository, vtkXMLDataElement* serverElement, const std::string& configFilePath)
+PlusStatus vtkPlusOpenIGTLinkServer::Start(vtkPlusDataCollector* dataCollector, vtkIGSIOTransformRepository* transformRepository, vtkXMLDataElement* serverElement, const std::string& configFilePath)
 {
   if (serverElement == NULL)
   {

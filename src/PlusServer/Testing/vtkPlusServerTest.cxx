@@ -11,7 +11,7 @@ See License.txt for details.
 #include "vtkPlusOpenIGTLinkServer.h"
 #include "vtkPlusDataCollector.h"
 #include "vtkPlusOpenIGTLinkVideoSource.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 
 // VTK includes
 #include <vtkSmartPointer.h>
@@ -55,7 +55,7 @@ PlusStatus ConnectClients(int listeningPort, std::vector< vtkSmartPointer<vtkPlu
     }
     client->SetBufferSize(*aChannel, 10);
     client->SetMessageType("TrackedFrame");
-    PlusTransformName name("Image", "Reference");
+    igsioTransformName name("Image", "Reference");
     client->SetImageMessageEmbeddedTransformName(name);
     aSource->SetInputImageOrientation(US_IMG_ORIENT_MF);
 
@@ -148,7 +148,7 @@ vtkSmartPointer<vtkPlusOpenIGTLinkServer> StartServer(const std::string& inputCo
   }
 
   // Create transform repository instance
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   if (transformRepository->ReadConfiguration(configRootElement) != PLUS_SUCCESS)
   {
     LOG_ERROR("Transform repository failed to read configuration");

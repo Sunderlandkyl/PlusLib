@@ -14,8 +14,8 @@ compares the results to a baseline
 #include "PlusMath.h"
 #include "vtkPlusLineSegmentationAlgo.h"
 #include "vtkMath.h"
-#include "vtkPlusSequenceIO.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOSequenceIO.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkXMLDataElement.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
@@ -249,8 +249,8 @@ int main( int argc, char** argv )
   }
 
   LOG_DEBUG( "Read input sequence" );
-  vtkSmartPointer<vtkPlusTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
-  if ( vtkPlusSequenceIO::Read( inputSequenceMetafile, trackedFrameList ) != PLUS_SUCCESS )
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
+  if ( vtkIGSIOSequenceIO::Read( inputSequenceMetafile, trackedFrameList ) != PLUS_SUCCESS )
   {
     LOG_ERROR( "Failed to read sequence metafile: " << inputSequenceMetafile );
     return EXIT_FAILURE;

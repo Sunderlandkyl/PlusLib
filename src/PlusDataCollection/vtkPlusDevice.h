@@ -11,7 +11,7 @@ See License.txt for details.
 #include "PlusCommon.h"
 #include "PlusConfigure.h"
 #include "PlusStreamBufferItem.h"
-#include "PlusTrackedFrame.h"
+//#include "igsioTrackedFrame.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataCollectionExport.h"
 
@@ -20,10 +20,12 @@ See License.txt for details.
 #include <vtkMultiThreader.h>
 #include <vtkStdString.h>
 
+#include <set>
+
 // STL includes
 #include <string>
 
-class PlusTrackedFrame;
+//class igsioTrackedFrame; 
 class vtkPlusBuffer;
 class vtkPlusDataCollector;
 class vtkPlusDataSource;
@@ -113,7 +115,7 @@ public:
   virtual PlusStatus StopRecording();
 
   /*! Return the reference frame */
-  static PlusStatus GetToolReferenceFrameFromTrackedFrame(PlusTrackedFrame& aFrame, std::string& aToolReferenceFrameName);
+  static PlusStatus GetToolReferenceFrameFromTrackedFrame(igsioTrackedFrame& aFrame, std::string& aToolReferenceFrameName);
 
   /*!
   Get the buffer that is used to hold the data
@@ -457,22 +459,22 @@ protected:
   /*!
   This function can be called to add a video item to the specified video data sources
   */
-  virtual PlusStatus AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, const PlusVideoFrame& frame, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
-      double filteredTimestamp = UNDEFINED_TIMESTAMP, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+  virtual PlusStatus AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, const igsioVideoFrame& frame, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+      double filteredTimestamp = UNDEFINED_TIMESTAMP, const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
   This function can be called to add a video item to the specified video data sources
   */
   virtual PlusStatus AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx,
       PlusCommon::VTKScalarPixelType pixelType, unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
-      double filteredTimestamp = UNDEFINED_TIMESTAMP, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+      double filteredTimestamp = UNDEFINED_TIMESTAMP, const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
   This function is called by InternalUpdate() so that the subclasses
   can communicate information back to the vtkPlusDevice base class, which
   will in turn relay the information to the appropriate vtkPlusDataSource.
   */
-  virtual PlusStatus ToolTimeStampedUpdate(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredtimestamp, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+  virtual PlusStatus ToolTimeStampedUpdate(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, unsigned long frameNumber, double unfilteredtimestamp, const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
   This function is called by InternalUpdate() so that the subclasses
@@ -480,7 +482,7 @@ protected:
   will in turn relay the information to the appropriate vtkPlusDataSource.
   This function is for devices has no frame numbering, just auto increment tool frame number if new frame received
   */
-  virtual PlusStatus ToolTimeStampedUpdateWithoutFiltering(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, double unfilteredtimestamp, double filteredtimestamp, const PlusTrackedFrame::FieldMapType* customFields = NULL);
+  virtual PlusStatus ToolTimeStampedUpdateWithoutFiltering(const std::string& aToolSourceId, vtkMatrix4x4* matrix, ToolStatus status, double unfilteredtimestamp, double filteredtimestamp, const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!
   Helper function used during configuration to locate the correct XML element for a device

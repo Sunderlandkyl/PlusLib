@@ -37,7 +37,7 @@ PlusStatus StartServer(vtkXMLDataElement* configRootElement, const std::string& 
   }
 
   // Create transform repository instance
-  vtkSmartPointer<vtkPlusTransformRepository> transformRepository = vtkSmartPointer<vtkPlusTransformRepository>::New();
+  vtkSmartPointer<vtkIGSIOTransformRepository> transformRepository = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
   if (transformRepository->ReadConfiguration(configRootElement) != PLUS_SUCCESS)
   {
     LOG_ERROR("Transform repository failed to read configuration");
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
 
-  PlusTrackedFrame frame;
+  igsioTrackedFrame frame;
   if (channel->GetTrackedFrame(frame) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to retrieve frame from device.");

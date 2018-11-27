@@ -17,7 +17,7 @@ See License.txt for details.
 #include "vtkMatrix4x4.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
-#include "vtkPlusTransformRepository.h"
+#include "vtkIGSIOTransformRepository.h"
 
 #include <iostream>
 
@@ -388,7 +388,7 @@ private:
 
   // This is used in GetImage() to calculate the transformation of the image in the demanded reference frame.
   // The transform repository should be updated before calling GetImage() if the
-  vtkSmartPointer<vtkPlusTransformRepository> TransformRepository;
+  vtkSmartPointer<vtkIGSIOTransformRepository> TransformRepository;
 
   std::pair<std::string, std::string> PairImageIdAndName; // unique name created by exam name patient name patient id...
   std::string ServerAddress; // Host IP Address
@@ -404,7 +404,7 @@ private:
     : External(external)
   {
 
-    this->TransformRepository       = vtkSmartPointer<vtkPlusTransformRepository>::New();
+    this->TransformRepository       = vtkSmartPointer<vtkIGSIOTransformRepository>::New();
 
     this->ServerAddress.clear();
     this->ServerPort.clear();
@@ -584,7 +584,7 @@ PlusStatus vtkPlusStealthLinkTracker::GetSdkVersion(std::string& version)
   return this->InternalShared->GetSdkVersion(version);
 }
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusStealthLinkTracker::UpdateTransformRepository(vtkPlusTransformRepository* sharedTransformRepository)
+PlusStatus vtkPlusStealthLinkTracker::UpdateTransformRepository(vtkIGSIOTransformRepository* sharedTransformRepository)
 {
   if (sharedTransformRepository == NULL)
   {
@@ -753,7 +753,7 @@ PlusStatus vtkPlusStealthLinkTracker::GetImage(const std::string& requestedImage
       MNavStealthLink::Exam exam;
       this->InternalShared->GetCurrentExam(exam);
       vtkPlusAccurateTimer::Delay(1);   // Delay 1 second to make sure that this->Internal->RasToTracker is calculated correctly based on the new matrices, ijkToExamRpiTransform and ijkToRasTransform
-      const PlusTransformName rasToTrackerTransformName("Ras", "Tracker");
+      const igsioTransformName rasToTrackerTransformName("Ras", "Tracker");
 
       MNavStealthLink::NavData navData;
       if (!this->InternalShared->GetCurrentNavigationData(navData))
@@ -776,7 +776,7 @@ PlusStatus vtkPlusStealthLinkTracker::GetImage(const std::string& requestedImage
       }
       this->Internal->TransformRepository->SetTransform(rasToTrackerTransformName, rasToTrackerTransform);
       vtkSmartPointer<vtkMatrix4x4> rasToReferenceTransform = vtkSmartPointer<vtkMatrix4x4>::New();
-      const PlusTransformName rasToReferenceTransformName("Ras", imageReferencFrameName.c_str());
+      const igsioTransformName rasToReferenceTransformName("Ras", imageReferencFrameName.c_str());
       this->Internal->TransformRepository->GetTransform(rasToReferenceTransformName, rasToReferenceTransform);
       vtkMatrix4x4::Multiply4x4(rasToReferenceTransform, examIjkToRasTransform, ijkToReferenceTransform);
     }

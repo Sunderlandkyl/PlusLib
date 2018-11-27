@@ -20,7 +20,7 @@
 #include "vtkImageData.h"
 #include "vtkPlusPhilips3DProbeVideoSource.h"
 #include "vtkPlusChannel.h"
-#include "vtkPlusTrackedFrameList.h"
+#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/CommandLineArguments.hxx"
 #include <stdlib.h>
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
   usleep(3 * 1000000);
 #endif
 
-  vtkSmartPointer<vtkPlusTrackedFrameList> frameList = vtkSmartPointer<vtkPlusTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> frameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   vtkPlusChannel* channel = *philipsDevice->GetOutputChannelsStart();
 
   double oldTimestamp(0.0);
