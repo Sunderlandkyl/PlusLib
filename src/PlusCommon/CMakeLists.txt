@@ -9,7 +9,6 @@ SET(${PROJECT_NAME}_SRCS
   vtkPlusHTMLGenerator.cxx
   vtkPlusConfig.cxx
   PlusMath.cxx
-  vtkPlusRecursiveCriticalSection.cxx
   )
 
 IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
@@ -22,7 +21,6 @@ IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
     vtkPlusConfig.h
     vtkPlusMacro.h
     PlusMath.h
-    vtkPlusRecursiveCriticalSection.h
     PixelCodec.h
     PlusXmlUtils.h
     )
@@ -33,11 +31,7 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_BINARY_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/IO
-  "E:/d/p/PD14/Deps/IGSIO/Source/IGSIOCommon"
-  "E:/d/p/PD14/Deps/IGSIO/Source/IGSIOCommon/IO"
-  "E:/d/p/PD14/Deps/IGSIO-bin/Source/IGSIOCommon"
-  ${vtkIGSIOCommon_INCLUDE_DIRS}
+  ${VTKIGSIOCOMMON_INCLUDE_DIRS}
   ${OpenIGTLink_INCLUDE_DIRS}
   CACHE INTERNAL "" FORCE)
 

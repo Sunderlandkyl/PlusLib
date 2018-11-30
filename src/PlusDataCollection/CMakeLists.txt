@@ -2105,7 +2105,7 @@ ENDIF()
 LIST(APPEND ${PROJECT_NAME}_LIBS
   vtkPlusRendering
   vtkPlusCommon
-  vtkIGSIOCommon
+  IGSIO
   vtkPlusUsSimulator
   vtkPlusVolumeReconstruction
   vtkPlusImageProcessing

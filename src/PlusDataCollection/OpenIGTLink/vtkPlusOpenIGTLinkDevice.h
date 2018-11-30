@@ -152,7 +152,7 @@ protected:
   vtkSmartPointer<vtkPlusIgtlMessageFactory> MessageFactory;
 
   /*! Control access to the socket */
-  vtkSmartPointer<vtkPlusRecursiveCriticalSection> SocketMutex;
+  vtkSmartPointer<vtkIGSIORecursiveCriticalSection> SocketMutex;
 
   /*! OpenIGTLink client socket */
   igtl::ClientSocket::Pointer ClientSocket;

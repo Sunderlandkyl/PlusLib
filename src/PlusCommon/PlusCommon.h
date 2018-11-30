@@ -12,7 +12,7 @@
 #include "itkImageIOBase.h"
 #include "vtkPlusLogger.h"
 #include "vtkPlusMacro.h"
-#include "vtkPlusRecursiveCriticalSection.h"
+#include "vtkIGSIORecursiveCriticalSection.h"
 
 // VTK includes
 #include <vtkImageData.h>
@@ -36,10 +36,6 @@
 #include <igsioTrackedFrame.h>
 #include <igsioVideoFrame.h>
 #include <vtkIGSIOTransformRepository.h>
-#include <vtkIGSIOSequenceIO.h>
-#include <vtkIGSIOSequenceIOBase.h>
-//#include <vtkIGSIOMKVSequenceIO.h>
-#include <vtkIGSIOMetaImageSequenceIO.h>
 
 class vtkPlusUsScanConvert;
 
@@ -317,7 +313,7 @@ private:
 //
 //  Example:
 //  \code
-//  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+//  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
 //  \endcode
 //
 //  \ingroup PlusLibCommon

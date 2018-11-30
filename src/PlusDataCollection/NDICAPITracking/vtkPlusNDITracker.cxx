@@ -41,7 +41,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
 // Local includes
 #include "PlusConfigure.h"
-#include "vtkPlusRecursiveCriticalSection.h"
+#include "vtkIGSIORecursiveCriticalSection.h"
 #include "vtkPlusDataSource.h"
 #include "vtkPlusNDITracker.h"
 
@@ -91,7 +91,7 @@ vtkPlusNDITracker::vtkPlusNDITracker()
   , MeasurementVolumeNumber(0)
   , NetworkHostname("")
   , NetworkPort(8765)
-  , CommandMutex(vtkPlusRecursiveCriticalSection::New())
+  , CommandMutex(vtkIGSIORecursiveCriticalSection::New())
 {
   memset(this->CommandReply, 0, VTK_NDI_REPLY_LEN);
 
@@ -256,7 +256,7 @@ std::string vtkPlusNDITracker::Command(const char* format, ...)
 
   if (this->Device)
   {
-    PlusLockGuard<vtkPlusRecursiveCriticalSection> lock(this->CommandMutex);
+    PlusLockGuard<vtkIGSIORecursiveCriticalSection> lock(this->CommandMutex);
     strncpy(this->CommandReply, ndiCommandVA(this->Device, format, ap), VTK_NDI_REPLY_LEN - 1);
     this->CommandReply[VTK_NDI_REPLY_LEN - 1] = '\0';
   }
@@ -981,7 +981,7 @@ PlusStatus vtkPlusNDITracker::SendSromToTracker(const NdiToolDescriptor& toolDes
     return PLUS_SUCCESS;
   }
 
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> lock(this->CommandMutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> lock(this->CommandMutex);
   const int TRANSFER_BLOCK_SIZE = 64; // in bytes
   char hexbuffer[TRANSFER_BLOCK_SIZE * 2];
   for (int i = 0; i < VIRTUAL_SROM_SIZE; i += TRANSFER_BLOCK_SIZE)

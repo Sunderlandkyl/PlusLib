@@ -60,7 +60,7 @@ vtkPlusGenericSerialDevice::vtkPlusGenericSerialDevice()
   , RTS(false)
   , MaximumReplyDelaySec(0.100)
   , MaximumReplyDurationSec(0.300)
-  , Mutex(vtkSmartPointer<vtkPlusRecursiveCriticalSection>::New())
+  , Mutex(vtkSmartPointer<vtkIGSIORecursiveCriticalSection>::New())
   , FrameNumber(0)
   , FieldDataSource(nullptr)
 {
@@ -165,7 +165,7 @@ PlusStatus vtkPlusGenericSerialDevice::InternalDisconnect()
 PlusStatus vtkPlusGenericSerialDevice::InternalUpdate()
 {
   // Either update or send commands - but not simultaneously
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   // Determine the maximum time to spend in the loop (acquisition time period, but maximum 1 sec)
   double maxReadTimeSec = (this->AcquisitionRate < 1.0) ? 1.0 : 1 / this->AcquisitionRate;
@@ -188,7 +188,7 @@ PlusStatus vtkPlusGenericSerialDevice::InternalUpdate()
 PlusStatus vtkPlusGenericSerialDevice::SetDTR(bool onOff)
 {
   // Either update or send commands - but not simultaneously
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   PlusStatus retval;
 
@@ -212,7 +212,7 @@ PlusStatus vtkPlusGenericSerialDevice::SetDTR(bool onOff)
 PlusStatus vtkPlusGenericSerialDevice::SetRTS(bool onOff)
 {
   // Either update or send commands - but not simultaneously
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   PlusStatus retval;
 
@@ -236,7 +236,7 @@ PlusStatus vtkPlusGenericSerialDevice::SetRTS(bool onOff)
 PlusStatus vtkPlusGenericSerialDevice::GetDSR(bool & onOff)
 {
   // Either update or send commands - but not simultaneously
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
   PlusStatus retval = this->Serial->GetDSR(onOff);
   return retval;
 }
@@ -245,7 +245,7 @@ PlusStatus vtkPlusGenericSerialDevice::GetDSR(bool & onOff)
 PlusStatus vtkPlusGenericSerialDevice::GetCTS(bool & onOff)
 {
   // Either update or send commands - but not simultaneously
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
   PlusStatus retval = this->Serial->GetCTS(onOff);
   return retval;
 }
@@ -257,7 +257,7 @@ PlusStatus vtkPlusGenericSerialDevice::SendText(const std::string& textToSend, s
   LOG_DEBUG("Send to Serial device: " << textToSend);
 
   // Either update or send commands - but not simultaneously
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   // Write text
   unsigned char packetLength = textToSend.size();

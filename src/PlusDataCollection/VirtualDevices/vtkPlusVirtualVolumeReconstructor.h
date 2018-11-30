@@ -155,7 +155,7 @@ protected:
   std::string OutputVolDeviceName;
 
   /*! Mutex instance simultaneous access of writer (writer may be accessed from command processing thread and also the internal update thread) */
-  vtkSmartPointer<vtkPlusRecursiveCriticalSection> VolumeReconstructorAccessMutex;
+  vtkSmartPointer<vtkIGSIORecursiveCriticalSection> VolumeReconstructorAccessMutex;
 
 private:
   vtkPlusVirtualVolumeReconstructor(const vtkPlusVirtualVolumeReconstructor&);   // Not implemented.

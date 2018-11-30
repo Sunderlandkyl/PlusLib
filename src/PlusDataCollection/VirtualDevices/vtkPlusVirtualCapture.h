@@ -176,7 +176,7 @@ protected:
   bool IsData3D;
 
   /*! Mutex instance simultaneous access of writer (writer may be accessed from command processing thread and also the internal update thread) */
-  vtkSmartPointer<vtkPlusRecursiveCriticalSection> WriterAccessMutex;
+  vtkSmartPointer<vtkIGSIORecursiveCriticalSection> WriterAccessMutex;
 
   vtkPlusLogger::LogLevelType GracePeriodLogLevel;
 

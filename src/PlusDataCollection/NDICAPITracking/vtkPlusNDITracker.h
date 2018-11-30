@@ -293,7 +293,7 @@ protected:
   bool                              LeaveDeviceOpenAfterProbe;
   bool                              CheckDSR;
   NdiToolDescriptorsType            NdiToolDescriptors; // Maps Plus tool source IDs to NDI tool descriptors
-  vtkPlusRecursiveCriticalSection*  CommandMutex;
+  vtkIGSIORecursiveCriticalSection*  CommandMutex;
   char                              CommandReply[VTK_NDI_REPLY_LEN];
 
   std::string                       NetworkHostname;

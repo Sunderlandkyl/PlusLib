@@ -10,7 +10,7 @@ See License.txt for details.
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
 #include "vtkPlusDevice.h"
-#include "vtkPlusRecursiveCriticalSection.h"
+#include "vtkIGSIORecursiveCriticalSection.h"
 #include "vtkIGSIOSequenceIO.h"
 #include "vtkIGSIOTrackedFrameList.h"
 
@@ -145,7 +145,7 @@ vtkPlusDevice::vtkPlusDevice()
   this->SetNumberOfInputPorts(0);
 
   // For threaded capture of transformations
-  this->UpdateMutex = vtkPlusRecursiveCriticalSection::New();
+  this->UpdateMutex = vtkIGSIORecursiveCriticalSection::New();
 }
 
 //----------------------------------------------------------------------------
@@ -1284,7 +1284,7 @@ void* vtkPlusDevice::vtkDataCaptureThread(vtkMultiThreader::ThreadInfo* data)
 
     {
       // Lock before update
-      PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(self->UpdateMutex);
+      PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(self->UpdateMutex);
       if (!self->Recording)
       {
         // recording has been stopped
@@ -1448,7 +1448,7 @@ double vtkPlusDevice::GetStartTime()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusDevice::Probe()
 {
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
 
   if (this->InternalStartRecording() != PLUS_SUCCESS)
   {
@@ -1495,7 +1495,7 @@ PlusStatus vtkPlusDevice::ForceUpdate()
   }
 
   {
-    PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
     this->InternalUpdate();
   }
   return PLUS_SUCCESS;

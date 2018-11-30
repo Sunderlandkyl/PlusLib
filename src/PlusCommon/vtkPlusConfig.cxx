@@ -7,7 +7,7 @@
 #include "PlusConfigure.h"
 #include "vtkDirectory.h"
 #include "vtkMatrix4x4.h"
-#include "vtkPlusRecursiveCriticalSection.h"
+#include "vtkIGSIORecursiveCriticalSection.h"
 #include "vtkXMLUtilities.h"
 #include "vtksys/SystemTools.hxx"
 
@@ -55,7 +55,7 @@ namespace
   // ConfigCreationCriticalSection must be destroyed AFTER vtkPlusConfigCleanupGlobal
   struct StaticVariables
   {
-    vtkPlusSimpleRecursiveCriticalSection ConfigCreationCriticalSection;
+    vtkIGSIOSimpleRecursiveCriticalSection ConfigCreationCriticalSection;
     vtkPlusConfigCleanup vtkPlusConfigCleanupGlobal;
   };
   StaticVariables staticVariables;
@@ -72,7 +72,7 @@ vtkPlusConfig* vtkPlusConfig::GetInstance()
 {
   if (!vtkPlusConfig::Instance)
   {
-    PlusLockGuard<vtkPlusSimpleRecursiveCriticalSection> criticalSectionGuardedLock(&(staticVariables.ConfigCreationCriticalSection));
+    igsioLockGuard<vtkIGSIOSimpleRecursiveCriticalSection> criticalSectionGuardedLock(&(staticVariables.ConfigCreationCriticalSection));
 
     if (vtkPlusConfig::Instance != NULL)
     {

@@ -37,7 +37,7 @@ class vtkPlusOpenIGTLinkServer;
 class vtkPlusChannel;
 class vtkPlusCommandProcessor;
 class vtkPlusCommandResponse;
-class vtkPlusRecursiveCriticalSection;
+class vtkIGSIORecursiveCriticalSection;
 //class vtkIGSIOTransformRepository;
 
 struct ClientData
@@ -277,7 +277,7 @@ private:
   vtkSmartPointer<vtkPlusIgtlMessageFactory> IgtlMessageFactory;
 
   /*! Mutex instance for accessing client data list */
-  vtkSmartPointer<vtkPlusRecursiveCriticalSection> IgtlClientsMutex;
+  vtkSmartPointer<vtkIGSIORecursiveCriticalSection> IgtlClientsMutex;
 
   /*! Last sent tracked frame timestamp */
   double LastSentTrackedFrameTimestamp;
@@ -310,7 +310,7 @@ private:
   ClientIdToMessageListMap MessageResponseQueue;
 
   /*! Mutex to protect access to the message response list */
-  vtkSmartPointer<vtkPlusRecursiveCriticalSection> MessageResponseQueueMutex;
+  vtkSmartPointer<vtkIGSIORecursiveCriticalSection> MessageResponseQueueMutex;
 
   /*! Channel ID to request the data from */
   std::string OutputChannelId;

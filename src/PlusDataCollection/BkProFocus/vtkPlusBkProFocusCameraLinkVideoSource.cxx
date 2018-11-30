@@ -356,7 +356,7 @@ void vtkPlusBkProFocusCameraLinkVideoSource::EventCallback(void* owner, char* ev
 {
   vtkPlusBkProFocusCameraLinkVideoSource* self = static_cast<vtkPlusBkProFocusCameraLinkVideoSource*>(owner);
 
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> critSectionGuard(self->UpdateMutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> critSectionGuard(self->UpdateMutex);
 
   if (self->Internal->SubscribeScanPlane && !_strnicmp("SCAN_PLANE", &eventText[strlen("SDATA:")], strlen("SCAN_PLANE")))
   {
@@ -529,7 +529,7 @@ PlusStatus vtkPlusBkProFocusCameraLinkVideoSource::InternalStopRecording()
 //----------------------------------------------------------------------------
 void vtkPlusBkProFocusCameraLinkVideoSource::NewFrameCallback(void* pixelDataPtr, const FrameSizeType& inputFrameSizeInPix, PlusCommon::VTKScalarPixelType pixelType, US_IMAGE_TYPE imageType)
 {
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> critSectionGuard(this->UpdateMutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> critSectionGuard(this->UpdateMutex);
 
   // we may need to overwrite these, so create a copy that will be used internally
   FrameSizeType frameSizeInPix =

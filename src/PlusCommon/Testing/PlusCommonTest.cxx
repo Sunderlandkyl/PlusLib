@@ -6,7 +6,7 @@ See License.txt for details.
 
 // Local includes
 #include "PlusConfigure.h"
-#include "vtkPlusRecursiveCriticalSection.h"
+#include "vtkIGSIORecursiveCriticalSection.h"
 
 // VTK includes
 #include <vtkSmartPointer.h>
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
   if (TestInvalidTransformName("to", "to") != PLUS_SUCCESS) { exit(EXIT_FAILURE); }
 
   LOG_INFO("Test recursive critical section");
-  vtkPlusRecursiveCriticalSection* critSec = vtkPlusRecursiveCriticalSection::New();
+  vtkIGSIORecursiveCriticalSection* critSec = vtkIGSIORecursiveCriticalSection::New();
   LOG_INFO(" Lock");
   critSec->Lock();
   LOG_INFO(" Lock again");

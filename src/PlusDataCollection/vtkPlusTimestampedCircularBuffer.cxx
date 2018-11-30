@@ -8,7 +8,7 @@ See License.txt for details.
 #include "vtkPlusTimestampedCircularBuffer.h"
 
 #include "vtkDoubleArray.h"
-#include "vtkPlusRecursiveCriticalSection.h"
+#include "vtkIGSIORecursiveCriticalSection.h"
 #include "vtkTable.h"
 #include "vtkVariantArray.h"
 
@@ -16,7 +16,7 @@ vtkStandardNewMacro(vtkPlusTimestampedCircularBuffer);
 
 //----------------------------------------------------------------------------
 vtkPlusTimestampedCircularBuffer::vtkPlusTimestampedCircularBuffer()
-  : Mutex(vtkPlusRecursiveCriticalSection::New())
+  : Mutex(vtkIGSIORecursiveCriticalSection::New())
   , WritePointer(0)
   , CurrentTimeStamp(0.0)
   , LocalTimeOffsetSec(0.0)

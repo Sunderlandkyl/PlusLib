@@ -26,7 +26,7 @@ vtkPlusImageProcessorVideoSource::vtkPlusImageProcessorVideoSource()
   : vtkPlusDevice()
   , LastProcessedInputDataTimestamp(0)
   , EnableProcessing(true)
-  , ProcessingAlgorithmAccessMutex(vtkSmartPointer<vtkPlusRecursiveCriticalSection>::New())
+  , ProcessingAlgorithmAccessMutex(vtkSmartPointer<vtkIGSIORecursiveCriticalSection>::New())
   , GracePeriodLogLevel(vtkPlusLogger::LOG_LEVEL_DEBUG)
   , ProcessorAlgorithm(NULL)
 {
@@ -194,7 +194,7 @@ PlusStatus vtkPlusImageProcessorVideoSource::InternalConnect()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusImageProcessorVideoSource::InternalDisconnect()
 {
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> writerLock(this->ProcessingAlgorithmAccessMutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->ProcessingAlgorithmAccessMutex);
   this->EnableProcessing = false;
   return PLUS_SUCCESS;
 }

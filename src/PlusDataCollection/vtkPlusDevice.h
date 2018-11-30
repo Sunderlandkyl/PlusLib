@@ -280,7 +280,7 @@ public:
   // VTK doesn't generally use 'friend' functions they are public
   // instead of protected.  Do not use them anywhere except inside
   // vtkPlusDevice.cxx.
-  vtkPlusRecursiveCriticalSection* UpdateMutex;
+  vtkIGSIORecursiveCriticalSection* UpdateMutex;
   vtkTimeStamp UpdateTime;
   double InternalUpdateRate;
   //ETX

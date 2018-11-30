@@ -137,7 +137,7 @@ STDMETHODIMP MmfVideoSourceReader::OnFlush(DWORD)
 //----------------------------------------------------------------------------
 STDMETHODIMP MmfVideoSourceReader::OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimestamp, IMFSample* pSample)
 {
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->PlusDevice->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->PlusDevice->Mutex);
 
   if (!SUCCEEDED(hrStatus))
   {
@@ -245,7 +245,7 @@ vtkStandardNewMacro(vtkPlusMmfVideoSource);
 //----------------------------------------------------------------------------
 vtkPlusMmfVideoSource::vtkPlusMmfVideoSource()
   : FrameIndex(0)
-  , Mutex(vtkSmartPointer<vtkPlusRecursiveCriticalSection>::New())
+  , Mutex(vtkSmartPointer<vtkIGSIORecursiveCriticalSection>::New())
 {
   this->MmfSourceReader = new MmfVideoSourceReader(this);
   this->RequireImageOrientationInConfiguration = true;
@@ -283,7 +283,7 @@ void vtkPlusMmfVideoSource::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusMmfVideoSource::InternalConnect()
 {
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   if (this->MmfSourceReader->RefCount != 0)
   {
@@ -351,7 +351,7 @@ PlusStatus vtkPlusMmfVideoSource::InternalConnect()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusMmfVideoSource::InternalDisconnect()
 {
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   MfVideoCapture::MediaFoundationVideoCaptureApi::GetInstance().CloseDevice(this->ActiveVideoFormat.DeviceId);
   this->MmfSourceReader->CaptureSource = NULL;
@@ -362,7 +362,7 @@ PlusStatus vtkPlusMmfVideoSource::InternalDisconnect()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusMmfVideoSource::InternalStartRecording()
 {
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   HRESULT hr;
   if (this->MmfSourceReader->CaptureSource != NULL)
@@ -415,7 +415,7 @@ PlusStatus vtkPlusMmfVideoSource::InternalStopRecording()
 {
   LOG_DEBUG("vtkPlusMmfVideoSource::InternalStopRecording");
 
-  PlusLockGuard<vtkPlusRecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   MfVideoCapture::MediaFoundationVideoCaptureApi::GetInstance().StopRecording(this->ActiveVideoFormat.DeviceId);
 

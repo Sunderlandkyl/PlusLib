@@ -6,7 +6,7 @@ ADD_EXECUTABLE(vtkPlusTransverseProcessEnhancerTest vtkPlusTransverseProcessEnha
 SET_TARGET_PROPERTIES(vtkPlusTransverseProcessEnhancerTest PROPERTIES FOLDER Tests)
 TARGET_LINK_LIBRARIES(vtkPlusTransverseProcessEnhancerTest 
   vtkPlusCommon 
-  vtkIGSIOCommon
+  IGSIO
   vtkPlusDataCollection 
   vtkPlusImageProcessing 
   )
