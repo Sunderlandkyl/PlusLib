@@ -6,7 +6,7 @@
 #include "vtkPlusUsScanConvert.h"
 #include "vtkPlusUsScanConvertCurvilinear.h"
 #include "vtkPlusUsScanConvertLinear.h"
-
+#include "vtkPlusSequenceIO.h"
 
 int main(int argc, char **argv)
 {
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
   // Read input image.
 
   vtkSmartPointer<vtkIGSIOTrackedFrameList> inputFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
-  inputFrameList->ReadFromSequenceMetafile(inputFileName.c_str());
+  vtkPlusSequenceIO::Read(inputFileName.c_str(), inputFrameList);
   int numberOfFrames = inputFrameList->GetNumberOfTrackedFrames();
   
   // Create output frame list.
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   std::cout << "Writing output to file. Setting log level to error only, regardless of user specified verbose level." << std::endl;
   vtkPlusLogger::Instance()->SetLogLevel(1);
   
-  outputFrameList->SaveToSequenceMetafile(outputFileName.c_str());
+  vtkPlusSequenceIO::Write(outputFileName.c_str(), outputFrameList);
 
   return EXIT_SUCCESS;
 }

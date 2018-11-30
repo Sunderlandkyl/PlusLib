@@ -8,7 +8,7 @@ See License.txt for details.
 #include "PlusConfigure.h"
 #include "PlusMath.h"
 #include "igsioTrackedFrame.h"
-#include "vtkIGSIOSequenceIO.h"
+#include "vtkPlusSequenceIO.h"
 #include "vtkIGSIOTrackedFrameList.h"
 #include "vtkIGSIOTransformRepository.h"
 
@@ -92,7 +92,7 @@ PlusStatus MixTrackedFrameLists(vtkIGSIOTrackedFrameList* trackedFrameList, std:
   }
 
   LOG_INFO("Read master sequence file: " << inputFileNames[0]);
-  if (vtkIGSIOSequenceIO::Read(inputFileNames[0], trackedFrameList) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Read(inputFileNames[0], trackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Couldn't read sequence file: " << inputFileNames[0]);
     return PLUS_FAIL;
@@ -107,7 +107,7 @@ PlusStatus MixTrackedFrameLists(vtkIGSIOTrackedFrameList* trackedFrameList, std:
   {
     LOG_INFO("Read input sequence file: " << inputFileNames[i]);
     vtkSmartPointer<vtkIGSIOTrackedFrameList> additionalTrackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
-    if (vtkIGSIOSequenceIO::Read(inputFileNames[i], additionalTrackedFrameList) != PLUS_SUCCESS)
+    if (vtkPlusSequenceIO::Read(inputFileNames[i], additionalTrackedFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Couldn't read sequence file: " << inputFileNames[0]);
       return PLUS_FAIL;
@@ -171,7 +171,7 @@ PlusStatus AppendTrackedFrameLists(vtkIGSIOTrackedFrameList* trackedFrameList, s
   {
     LOG_INFO("Read input sequence file: " << inputFileNames[i]);
     vtkSmartPointer<vtkIGSIOTrackedFrameList> timestampFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
-    if (vtkIGSIOSequenceIO::Read(inputFileNames[i], timestampFrameList) != PLUS_SUCCESS)
+    if (vtkPlusSequenceIO::Read(inputFileNames[i], timestampFrameList) != PLUS_SUCCESS)
     {
       LOG_ERROR("Couldn't read sequence file: " << inputFileNames[0]);
       return PLUS_FAIL;
@@ -766,7 +766,7 @@ int main(int argc, char** argv)
   // Save output file to file
 
   LOG_INFO("Save output sequence file to: " << outputFileName);
-  if (vtkIGSIOSequenceIO::Write(outputFileName, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression, operation != REMOVE_IMAGE_DATA) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Write(outputFileName, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression, operation != REMOVE_IMAGE_DATA) != PLUS_SUCCESS)
   {
     LOG_ERROR("Couldn't write sequence file: " << outputFileName);
     return EXIT_FAILURE;

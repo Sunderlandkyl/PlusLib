@@ -174,7 +174,7 @@ PlusStatus vtkPlusVirtualCapture::InternalDisconnect()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusVirtualCapture::OpenFile(const char* aFilename)
 {
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
 
   if (aFilename == NULL || strlen(aFilename) == 0)
   {
@@ -232,7 +232,7 @@ PlusStatus vtkPlusVirtualCapture::OpenFile(const char* aFilename)
 PlusStatus vtkPlusVirtualCapture::CloseFile(const char* aFilename /* = NULL */, std::string* resultFilename /* = NULL */)
 {
   // Fix the header to write the correct number of frames
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
 
   if (!this->IsHeaderPrepared)
   {
@@ -339,7 +339,7 @@ PlusStatus vtkPlusVirtualCapture::InternalUpdate()
     this->GracePeriodLogLevel = vtkPlusLogger::LOG_LEVEL_WARNING;
   }
 
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
   if (!this->EnableCapturing)
   {
     // While this thread was waiting for the unlock, capturing was disabled, so cancel the update now
@@ -507,7 +507,7 @@ void vtkPlusVirtualCapture::SetEnableCapturing(bool aValue)
 PlusStatus vtkPlusVirtualCapture::Reset()
 {
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
 
     this->SetEnableCapturing(false);
 

@@ -33,7 +33,7 @@ SET(${PROJECT_NAME}_LIBS
   vtkGUISupportQt
   vtkPlusCalibration
   vtkPlusCommon
-  IGSIO
+  vtkIGSIOCommon
   vtkPlusDataCollection
   )
 

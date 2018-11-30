@@ -2,10 +2,12 @@
 #include "igsioTrackedFrame.h"
 #include "vtkImageCast.h"
 #include "vtkImageData.h"
-#include "vtkIGSIOMetaImageSequenceIO.h"
 #include "vtkSmartPointer.h"
-#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusTransverseProcessEnhancer.h"
+#include <vtkPlusSequenceIO.h>
+
+#include <vtkIGSIOTrackedFrameList.h>
+#include <vtkIGSIOMetaImageSequenceIO.h>
 
 #include "vtksys/CommandLineArguments.hxx"
 
@@ -103,7 +105,7 @@ int main(int argc, char **argv)
   // Read the input sequence.
 
   vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
-  trackedFrameList->ReadFromSequenceMetafile(inputFileName.c_str());
+  vtkPlusSequenceIO::Read(inputFileName.c_str(), trackedFrameList);
 
   vtkSmartPointer<vtkImageCast> castToUchar = vtkSmartPointer<vtkImageCast>::New();
   castToUchar->SetOutputScalarTypeToUnsignedChar();
@@ -156,7 +158,7 @@ int main(int argc, char **argv)
     boneFilter->SaveAllIntermediateResultsToFile();
   }
 
-  if (boneFilter->GetOutputFrames()->SaveToSequenceMetafile(outputFileName) == PLUS_FAIL)
+  if (vtkPlusSequenceIO::Write(outputFileName.c_str(), boneFilter->GetOutputFrames())== PLUS_FAIL)
   {
     LOG_ERROR("Could not save output sequence to the file: " << outputFileName);
     return EXIT_FAILURE;

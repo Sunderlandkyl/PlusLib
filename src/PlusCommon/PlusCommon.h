@@ -304,7 +304,7 @@ private:
 /////////////////////////////////////////////////////////////////////
 //
 ///*!
-//  \class PlusLockGuard
+//  \class igsioLockGuard
 //  \brief A class for automatically unlocking objects
 //
 //  This class is used for locking a objects (buffers, mutexes, etc.)
@@ -313,28 +313,28 @@ private:
 //
 //  Example:
 //  \code
-//  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+//  igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
 //  \endcode
 //
 //  \ingroup PlusLibCommon
 //*/
 //template <typename T>
-//class PlusLockGuard
+//class igsioLockGuard
 //{
 //public:
-//  PlusLockGuard(T* lockableObject)
+//  igsioLockGuard(T* lockableObject)
 //  {
 //    m_LockableObject = lockableObject;
 //    m_LockableObject->Lock();
 //  }
-//  ~PlusLockGuard()
+//  ~igsioLockGuard()
 //  {
 //    m_LockableObject->Unlock();
 //    m_LockableObject = NULL;
 //  }
 //private:
-//  PlusLockGuard(PlusLockGuard&);
-//  void operator=(PlusLockGuard&);
+//  igsioLockGuard(igsioLockGuard&);
+//  void operator=(igsioLockGuard&);
 //
 //  T* m_LockableObject;
 //};

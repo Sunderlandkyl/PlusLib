@@ -59,7 +59,7 @@ PlusStatus vtkPlusMicrochipTracker::InternalDisconnect()
 PlusStatus vtkPlusMicrochipTracker::InternalUpdate()
 {
   // Either update or send commands - but not simultaneously
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
 
   std::string textReceived;
   double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();

@@ -63,7 +63,7 @@ SET(External_Libraries_Install)
 
 SET(${PROJECT_NAME}_LIBS
   vtkPlusCommon
-  IGSIO
+  vtkIGSIOCommon
   vtkImagingStatistics
   vtkImagingGeneral
   vtkImagingMorphological

@@ -314,7 +314,7 @@ void vtkPlusMicronTracker::GetTransformMatrix(int markerIndex, vtkMatrix4x4* tra
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusMicronTracker::GetImage(vtkImageData* leftImage, vtkImageData* rightImage)
 {
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
 
   unsigned char** leftImageArray = 0;
   unsigned char** rightImageArray = 0;

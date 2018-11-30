@@ -284,7 +284,7 @@ void vtkPlus3dConnexionTracker::ProcessDeviceInputEvent(LPARAM lParam)
     currentTransform->RotateZ(all6DOFs[5]*this->RotationScales[2]);
 
     {
-      PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+      igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
       currentTransform->GetMatrix(this->LatestMouseTransform);
     }
   }
@@ -444,7 +444,7 @@ PlusStatus vtkPlus3dConnexionTracker::InternalUpdate()
   if (this->SpaceNavigatorTool != NULL)
   {
     {
-      PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
+      igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->Mutex);
       switch (this->OperatingMode)
       {
         case MOUSE_MODE:

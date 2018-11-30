@@ -11,16 +11,16 @@ This is a program meant to test vtkPlusTransverseProcessEnhancer.cxx from the co
 
 #include "PlusConfigure.h"
 #include "vtkPlusTransverseProcessEnhancer.h"
+#include <vtkPlusSequenceIO.h>
 
 // VTK includes
+#include "vtkImageCast.h"
 #include <vtkSmartPointer.h>
 #include <vtksys/CommandLineArguments.hxx>
 
-
-#include "igsioTrackedFrame.h"
-#include "vtkIGSIOTrackedFrameList.h"
-#include "vtkImageCast.h"
-
+// IGSIO includes
+#include <igsioTrackedFrame.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 //----------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
   // Read input sequence
   vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
-  if (trackedFrameList->ReadFromSequenceMetafile(inputFileName) == PLUS_FAIL)
+  if (vtkPlusSequenceIO::Read(inputFileName, trackedFrameList) == PLUS_FAIL)
   {
     return EXIT_FAILURE;
   }
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
     enhancer->SaveAllIntermediateResultsToFile();
   }
 
-  if (enhancer->GetOutputFrames()->SaveToSequenceMetafile(outputFileName) == PLUS_FAIL)
+  if (vtkPlusSequenceIO::Write(outputFileName, enhancer->GetOutputFrames()) == PLUS_FAIL)
   {
     LOG_ERROR("Could not save output sequence to the file: " << outputFileName);
     return EXIT_FAILURE;

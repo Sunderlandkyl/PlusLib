@@ -256,7 +256,7 @@ std::string vtkPlusNDITracker::Command(const char* format, ...)
 
   if (this->Device)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> lock(this->CommandMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> lock(this->CommandMutex);
     strncpy(this->CommandReply, ndiCommandVA(this->Device, format, ap), VTK_NDI_REPLY_LEN - 1);
     this->CommandReply[VTK_NDI_REPLY_LEN - 1] = '\0';
   }
@@ -981,7 +981,7 @@ PlusStatus vtkPlusNDITracker::SendSromToTracker(const NdiToolDescriptor& toolDes
     return PLUS_SUCCESS;
   }
 
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> lock(this->CommandMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> lock(this->CommandMutex);
   const int TRANSFER_BLOCK_SIZE = 64; // in bytes
   char hexbuffer[TRANSFER_BLOCK_SIZE * 2];
   for (int i = 0; i < VIRTUAL_SROM_SIZE; i += TRANSFER_BLOCK_SIZE)

@@ -26,7 +26,7 @@ endfunction()
 #--------------------------------------------------------------------------------------------
 ADD_EXECUTABLE(vtkPlusLoggerTest vtkPlusLoggerTest.cxx )
 SET_TARGET_PROPERTIES(vtkPlusLoggerTest PROPERTIES FOLDER Tests)
-TARGET_LINK_LIBRARIES(vtkPlusLoggerTest vtkPlusCommon IGSIO )
+TARGET_LINK_LIBRARIES(vtkPlusLoggerTest vtkPlusCommon vtkIGSIOCommon )
 
 ADD_TEST(vtkPlusLoggerTest
   ${PLUS_EXECUTABLE_OUTPUT_PATH}/vtkPlusLoggerTest
@@ -36,7 +36,7 @@ ADD_TEST(vtkPlusLoggerTest
  #--------------------------------------------------------------------------------------------
 ADD_EXECUTABLE(PlusCommonTest PlusCommonTest.cxx )
 SET_TARGET_PROPERTIES(PlusCommonTest PROPERTIES FOLDER Tests)
-TARGET_LINK_LIBRARIES(PlusCommonTest vtkPlusCommon IGSIO )
+TARGET_LINK_LIBRARIES(PlusCommonTest vtkPlusCommon vtkIGSIOCommon )
 
 ADD_TEST(PlusCommonTest
   ${PLUS_EXECUTABLE_OUTPUT_PATH}/PlusCommonTest
@@ -45,7 +45,7 @@ ADD_TEST(PlusCommonTest
 #--------------------------------------------------------------------------------------------
 ADD_EXECUTABLE(PlusMathTest PlusMathTest.cxx )
 SET_TARGET_PROPERTIES(PlusMathTest PROPERTIES FOLDER Tests)
-TARGET_LINK_LIBRARIES(PlusMathTest vtkPlusCommon IGSIO )
+TARGET_LINK_LIBRARIES(PlusMathTest vtkPlusCommon vtkIGSIOCommon )
 
 ADD_TEST(PlusMathTest
   ${PLUS_EXECUTABLE_OUTPUT_PATH}/PlusMathTest
@@ -55,7 +55,7 @@ ADD_TEST(PlusMathTest
 #--------------------------------------------------------------------------------------------
 ADD_EXECUTABLE(AccurateTimerTest AccurateTimerTest.cxx )
 SET_TARGET_PROPERTIES(AccurateTimerTest PROPERTIES FOLDER Tests)
-TARGET_LINK_LIBRARIES(AccurateTimerTest vtkPlusCommon IGSIO )
+TARGET_LINK_LIBRARIES(AccurateTimerTest vtkPlusCommon vtkIGSIOCommon )
 GENERATE_HELP_DOC(AccurateTimerTest)
 
 ADD_TEST(AccurateTimerTest
@@ -70,7 +70,7 @@ SET_TESTS_PROPERTIES(AccurateTimerTest PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR
 #--------------------------------------------------------------------------------------------
 #ADD_EXECUTABLE(vtkTransformRepositoryTest vtkTransformRepositoryTest.cxx )
 #SET_TARGET_PROPERTIES(vtkTransformRepositoryTest PROPERTIES FOLDER Tests)
-#TARGET_LINK_LIBRARIES(vtkTransformRepositoryTest vtkPlusCommon IGSIO )
+#TARGET_LINK_LIBRARIES(vtkTransformRepositoryTest vtkPlusCommon vtkIGSIOCommon )
 #
 #ADD_TEST(vtkTransformRepositoryTest
 #  ${PLUS_EXECUTABLE_OUTPUT_PATH}/vtkTransformRepositoryTest

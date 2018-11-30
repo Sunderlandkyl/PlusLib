@@ -194,7 +194,7 @@ PlusStatus vtkPlusImageProcessorVideoSource::InternalConnect()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusImageProcessorVideoSource::InternalDisconnect()
 {
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->ProcessingAlgorithmAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->ProcessingAlgorithmAccessMutex);
   this->EnableProcessing = false;
   return PLUS_SUCCESS;
 }

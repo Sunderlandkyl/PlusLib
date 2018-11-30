@@ -52,7 +52,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalDisconnect()
 
     int retValue = 0;
     {
-      PlusLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
+      igsioLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
       RETRY_UNTIL_TRUE(
         (retValue = this->ClientSocket->Send(stpMsg->GetBufferPointer(), stpMsg->GetBufferSize())) != 0,
         this->NumberOfRetryAttempts, this->DelayBetweenRetryAttemptsSec);
@@ -116,7 +116,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
       else
       {
         OnReceiveTimeout();
-        PlusLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
+        igsioLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
         if (!this->ClientSocket->GetConnected())
         {
           // Could not restore the connection, set transform status to INVALID
@@ -138,7 +138,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
     }
 
     // data type is unknown, ignore it
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
     this->ClientSocket->Skip(headerMsg->GetBodySizeToRead(), 0);
   }
 
@@ -148,7 +148,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
   tdataMsg->AllocateBuffer();
 
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
     this->ClientSocket->Receive(tdataMsg->GetBufferBodyPointer(), tdataMsg->GetBufferBodySize());
   }
   int c = tdataMsg->Unpack(this->IgtlMessageCrcCheckEnabled);
@@ -325,7 +325,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::ProcessTransformMessageGeneral(bool& moreM
   else
   {
     // if the data type is unknown, skip reading.
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
     this->ClientSocket->Skip(headerMsg->GetBodySizeToRead(), 0);
     return PLUS_SUCCESS;
   }
@@ -387,7 +387,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::SendRequestedMessageTypes()
 
     int retValue = 0;
     {
-      PlusLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
+      igsioLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
       RETRY_UNTIL_TRUE(
         (retValue = this->ClientSocket->Send(sttMsg->GetBufferPointer(), sttMsg->GetBufferSize())) != 0,
         this->NumberOfRetryAttempts, this->DelayBetweenRetryAttemptsSec);

@@ -9,6 +9,7 @@ SET(${PROJECT_NAME}_SRCS
   vtkPlusHTMLGenerator.cxx
   vtkPlusConfig.cxx
   PlusMath.cxx
+  vtkPlusSequenceIO.cxx
   )
 
 IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
@@ -23,6 +24,7 @@ IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
     PlusMath.h
     PixelCodec.h
     PlusXmlUtils.h
+    vtkPlusSequenceIO.h
     )
 
 ENDIF()
@@ -32,6 +34,7 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_BINARY_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${VTKIGSIOCOMMON_INCLUDE_DIRS}
+  ${VTKSEQUENCEIO_INCLUDE_DIRS}
   ${OpenIGTLink_INCLUDE_DIRS}
   CACHE INTERNAL "" FORCE)
 
@@ -77,6 +80,7 @@ SET(${PROJECT_NAME}_LIBS
   itkvnl_algo
   igtlioConverter
   vtkIGSIOCommon
+  vtkSequenceIO
   OpenIGTLink
   )
 

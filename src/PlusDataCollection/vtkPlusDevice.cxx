@@ -11,7 +11,7 @@ See License.txt for details.
 #include "vtkPlusDataSource.h"
 #include "vtkPlusDevice.h"
 #include "vtkIGSIORecursiveCriticalSection.h"
-#include "vtkIGSIOSequenceIO.h"
+#include "vtkPlusSequenceIO.h"
 #include "vtkIGSIOTrackedFrameList.h"
 
 // VTK includes
@@ -758,7 +758,7 @@ PlusStatus vtkPlusDevice::WriteToolsToSequenceFile(const std::string& filename, 
   }
 
   // Save tracked frames to metafile
-  if (vtkIGSIOSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
   {
     LOCAL_LOG_ERROR("Failed to save tracked frames to sequence metafile!");
     return PLUS_FAIL;
@@ -1284,7 +1284,7 @@ void* vtkPlusDevice::vtkDataCaptureThread(vtkMultiThreader::ThreadInfo* data)
 
     {
       // Lock before update
-      PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(self->UpdateMutex);
+      igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(self->UpdateMutex);
       if (!self->Recording)
       {
         // recording has been stopped
@@ -1448,7 +1448,7 @@ double vtkPlusDevice::GetStartTime()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusDevice::Probe()
 {
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
 
   if (this->InternalStartRecording() != PLUS_SUCCESS)
   {
@@ -1495,7 +1495,7 @@ PlusStatus vtkPlusDevice::ForceUpdate()
   }
 
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->UpdateMutex);
     this->InternalUpdate();
   }
   return PLUS_SUCCESS;

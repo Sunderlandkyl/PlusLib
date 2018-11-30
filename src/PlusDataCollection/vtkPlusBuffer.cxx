@@ -10,7 +10,7 @@ See License.txt for details.
 #include "igsioTrackedFrame.h"
 #include "vtkPlusBuffer.h"
 #include "vtkPlusDevice.h"
-#include "vtkIGSIOSequenceIO.h"
+#include "vtkPlusSequenceIO.h"
 #include "vtkIGSIOTrackedFrameList.h"
 
 // VTK includes
@@ -121,7 +121,7 @@ void vtkPlusBuffer::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusBuffer::AllocateMemoryForFrames()
 {
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
   PlusStatus result = PLUS_SUCCESS;
 
   for (int i = 0; i < this->StreamBuffer->GetBufferSize(); ++i)
@@ -298,7 +298,7 @@ PlusStatus vtkPlusBuffer::AddItem(const igsioTrackedFrame::FieldMapType& fields,
   int bufferIndex(0);
   BufferItemUidType itemUid;
 
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
   if (this->StreamBuffer->PrepareForNewItem(filteredTimestamp, itemUid, bufferIndex) != PLUS_SUCCESS)
   {
     // Just a debug message, because we want to avoid unnecessary warning messages if the timestamp is the same as last one
@@ -408,7 +408,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr,
 
   int bufferIndex(0);
   BufferItemUidType itemUid;
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
   if (this->StreamBuffer->PrepareForNewItem(filteredTimestamp, itemUid, bufferIndex) != PLUS_SUCCESS)
   {
     // Just a debug message, because we want to avoid unnecessary warning messages if the timestamp is the same as last one
@@ -513,7 +513,7 @@ PlusStatus vtkPlusBuffer::AddItem(void* imageDataPtr, const FrameSizeType& frame
 
   int bufferIndex(0);
   BufferItemUidType itemUid;
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
   if (this->StreamBuffer->PrepareForNewItem(filteredTimestamp, itemUid, bufferIndex) != PLUS_SUCCESS)
   {
     // Just a debug message, because we want to avoid unnecessary warning messages if the timestamp is the same as last one
@@ -596,7 +596,7 @@ PlusStatus vtkPlusBuffer::AddTimeStampedItem(vtkMatrix4x4* matrix, ToolStatus st
   int bufferIndex(0);
   BufferItemUidType itemUid;
 
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
   if (this->StreamBuffer->PrepareForNewItem(filteredTimestamp, itemUid, bufferIndex) != PLUS_SUCCESS)
   {
     // Just a debug message, because we want to avoid unnecessary warning messages if the timestamp is the same as last one
@@ -706,7 +706,7 @@ ItemStatus vtkPlusBuffer::GetStreamBufferItem(BufferItemUidType uid, StreamBuffe
     return ITEM_UNKNOWN_ERROR;
   }
 
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
 
   StreamBufferItem* dataItem = NULL;
   ItemStatus itemStatus = this->StreamBuffer->GetBufferItemPointerFromUid(uid, dataItem);
@@ -1060,7 +1060,7 @@ PlusStatus vtkPlusBuffer::WriteToSequenceFile(const char* filename, bool useComp
   }
 
   // Save tracked frames to metafile
-  if (vtkIGSIOSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Write(filename, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
   {
     LOCAL_LOG_ERROR("Failed to save tracked frames to sequence metafile!");
     return PLUS_FAIL;
@@ -1086,7 +1086,7 @@ bool vtkPlusBuffer::GetTimeStampReporting()
 // itemA is the closest item
 PlusStatus vtkPlusBuffer::GetPrevNextBufferItemFromTime(double time, StreamBufferItem& itemA, StreamBufferItem& itemB)
 {
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
 
   // The returned item is computed by interpolation between itemA and itemB in time. The itemA is the closest item to the requested time.
   // Accept itemA (the closest item) as is if it is very close to the requested time.
@@ -1253,7 +1253,7 @@ ItemStatus vtkPlusBuffer::GetStreamBufferItemFromExactTime(double time, StreamBu
 //----------------------------------------------------------------------------
 ItemStatus vtkPlusBuffer::GetStreamBufferItemFromClosestTime(double time, StreamBufferItem* bufferItem)
 {
-  PlusLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
+  igsioLockGuard<StreamItemCircularBuffer> dataBufferGuardedLock(this->StreamBuffer);
 
   BufferItemUidType itemUid(0);
   ItemStatus status = this->StreamBuffer->GetItemUidFromTime(time, itemUid);

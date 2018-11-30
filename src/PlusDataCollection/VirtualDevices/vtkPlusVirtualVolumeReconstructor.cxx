@@ -9,7 +9,7 @@ See License.txt for details.
 #include "vtkObjectFactory.h"
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
-#include "vtkIGSIOSequenceIO.h"
+#include "vtkPlusSequenceIO.h"
 #include "vtkIGSIOTrackedFrameList.h"
 #include "vtkIGSIOTransformRepository.h"
 #include "vtkPlusVirtualVolumeReconstructor.h"
@@ -62,7 +62,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::ReadConfiguration(vtkXMLDataElemen
   XML_READ_CSTRING_ATTRIBUTE_OPTIONAL(OutputVolFilename, deviceConfig);
   XML_READ_CSTRING_ATTRIBUTE_OPTIONAL(OutputVolDeviceName, deviceConfig);
 
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
   this->VolumeReconstructor->ReadConfiguration(deviceConfig);
 
   return PLUS_SUCCESS;
@@ -78,7 +78,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::WriteConfiguration(vtkXMLDataEleme
   deviceElement->SetAttribute("OutputVolFilename", this->OutputVolFilename.c_str());
   deviceElement->SetAttribute("OutputVolDeviceName", this->OutputVolDeviceName.c_str());
 
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
   this->VolumeReconstructor->WriteConfiguration(deviceElement);
 
   return PLUS_SUCCESS;
@@ -165,7 +165,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::InternalUpdate()
     LOG_WARNING("RequestedFrameRate is invalid, use default: " << 1 / requestedFramePeriodSec);
   }
 
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
   if (!this->EnableReconstruction)
   {
     // While this thread was waiting for the unlock, capturing was disabled, so cancel the update now
@@ -267,7 +267,7 @@ void vtkPlusVirtualVolumeReconstructor::SetEnableReconstruction(bool aValue)
 //-----------------------------------------------------------------------------
 PlusStatus vtkPlusVirtualVolumeReconstructor::Reset()
 {
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
   this->VolumeReconstructor->Reset();
   return PLUS_SUCCESS;
 }
@@ -310,14 +310,14 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::GetReconstructedVolumeFromFile(con
   }
   vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   std::string inputImageSeqFileFullPath = vtkPlusConfig::GetInstance()->GetOutputPath(inputSeqFilename);
-  if (vtkIGSIOSequenceIO::Read(inputImageSeqFileFullPath, trackedFrameList) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Read(inputImageSeqFileFullPath, trackedFrameList) != PLUS_SUCCESS)
   {
     errorMessage = "Volume reconstruction failed, unable to open input file specified in InputSeqFilename: " + inputImageSeqFileFullPath;
     LOG_INFO(errorMessage);
     return PLUS_FAIL;
   }
 
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
 
   // Determine volume extents automatically
   std::string errorDetail;
@@ -347,7 +347,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::GetReconstructedVolumeFromFile(con
 PlusStatus vtkPlusVirtualVolumeReconstructor::GetReconstructedVolume(vtkImageData* reconstructedVolume, std::string& outErrorMessage, bool applyHoleFilling/*=true*/)
 {
   outErrorMessage.clear();
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
   bool oldFillHoles = this->VolumeReconstructor->GetFillHoles();
   if (!applyHoleFilling)
   {
@@ -371,7 +371,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::GetReconstructedVolume(vtkImageDat
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusVirtualVolumeReconstructor::AddFrames(vtkIGSIOTrackedFrameList* trackedFrameList)
 {
-  PlusLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
+  igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->VolumeReconstructorAccessMutex);
 
   PlusStatus status = PLUS_SUCCESS;
   const int numberOfFrames = trackedFrameList->GetNumberOfTrackedFrames();

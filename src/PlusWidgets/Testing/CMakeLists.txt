@@ -9,7 +9,7 @@ SET(ToolStateDisplayWidgetTest_LIBS
   Qt5::Test
   PlusWidgets
   vtkPlusCommon
-  IGSIO
+  vtkIGSIOCommon
   vtkPlusDataCollection
   )
 

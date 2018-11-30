@@ -98,7 +98,7 @@ PlusStatus vtkPlusOpenIGTLinkVideoSource::InternalUpdate()
   else
   {
     // if the data type is unknown, skip reading.
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> socketGuard(this->SocketMutex);
     this->ClientSocket->Skip(headerMsg->GetBodySizeToRead(), 0);
     return PLUS_SUCCESS;
   }

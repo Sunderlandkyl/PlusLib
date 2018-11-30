@@ -52,39 +52,39 @@ public:
   // IjkToExamRpi Set and Get
   void SetExamIjkToRpiTransformMatrix(vtkMatrix4x4* examIjkToRpiTransform)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRpiMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRpiMutex);
     this->ExamIjkToRpiTransform = examIjkToRpiTransform;
   }
 
   void GetExamIjkToRpiTransformMatrix(vtkMatrix4x4* examIjkToRpiTransform)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRpiMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRpiMutex);
     examIjkToRpiTransform->DeepCopy(this->ExamIjkToRpiTransform);
   }
 
   // IjkToRas Set and Get
   void SetExamIjkToRasTransformMatrix(vtkMatrix4x4* examIjkToRasTransform)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRasMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRasMutex);
     this->ExamIjkToRasTransform = examIjkToRasTransform;
   }
 
   void GetExamIjkToRasTransformMatrix(vtkMatrix4x4* examIjkToRasTransform)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRasMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamIjkToRasMutex);
     examIjkToRasTransform->DeepCopy(this->ExamIjkToRasTransform);
   }
 
   // ExamValid Set and Get
   void SetExamValid(bool examValid)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamValidMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamValidMutex);
     this->ExamValid = examValid;
   }
 
   bool GetExamValid()
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamValidMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->ExamValidMutex);
     return this->ExamValid;
   }
 
@@ -93,7 +93,7 @@ public:
   PlusStatus GetCurrentNavigationData(MNavStealthLink::NavData& navData)
   {
     MNavStealthLink::Error err;
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     MNavStealthLink::DateTime myDateTime = this->StealthLinkServer->getServerTime();
     if (!this->StealthLinkServer->get(navData, myDateTime, err))
     {
@@ -108,7 +108,7 @@ public:
   PlusStatus GetInstrumentData(MNavStealthLink::Instrument& instrument, const std::string toolname)
   {
     MNavStealthLink::Error err;
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     MNavStealthLink::DateTime myDateTime = this->StealthLinkServer->getServerTime();
     if (!this->StealthLinkServer->get(toolname, instrument, myDateTime, err))
     {
@@ -121,14 +121,14 @@ public:
   //----------------------------------------------------------------------------
   void GetCurrentExam(MNavStealthLink::Exam& exam)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentExamMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentExamMutex);
     exam = this->CurrentExam;
   }
 
   //----------------------------------------------------------------------------
   void GetCurrentRegistration(MNavStealthLink::Registration& registration)   // TODO make it thread safe
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentRegistrationMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentRegistrationMutex);
     registration = this->CurrentRegistration;
   }
 
@@ -136,7 +136,7 @@ public:
   //Port names that are present on the server
   PlusStatus GetValidToolPortNames(std::vector<std::string>& validToolPortNames)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     MNavStealthLink::Error err;
     MNavStealthLink::InstrumentNameList instrumentNameList;
     // Get the instrument list
@@ -169,10 +169,10 @@ public:
   // do not modify the exam at the same time. Use GetCurrentExam function everytime the current exam is used.
   PlusStatus UpdateCurrentExam()
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentExamMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentExamMutex);
     MNavStealthLink::Error err;
     {
-      PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+      igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
       MNavStealthLink::DateTime myDateTime = this->StealthLinkServer->getServerTime();
       if (!this->StealthLinkServer->get(this->CurrentExam, myDateTime, err))
       {
@@ -188,10 +188,10 @@ public:
   // do not modify the registration at the same time. Use GetCurrentRegistration function everytime the current registration is used.
   PlusStatus UpdateCurrentRegistration(bool imageTransferRequiresPatientRegistration)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentRegistrationMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->CurrentRegistrationMutex);
     MNavStealthLink::Error err;
     {
-      PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+      igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
       MNavStealthLink::DateTime myDateTime = this->StealthLinkServer->getServerTime();
       if (!this->StealthLinkServer->get(this->CurrentRegistration, myDateTime, err))
       {
@@ -212,7 +212,7 @@ public:
   //---------------------------------------------------------------------------
   bool IsStealthServerConnected()
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     if (this->StealthLinkServer == NULL)
     {
       return false;
@@ -223,7 +223,7 @@ public:
   //----------------------------------------------------------------------------
   PlusStatus GetSdkVersion(std::string& version)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     MNavStealthLink::Version serverVersion;
     MNavStealthLink::Error err;
     {
@@ -241,7 +241,7 @@ public:
   //----------------------------------------------------------------------------
   PlusStatus GetExamNameList(MNavStealthLink::ExamNameList& examNameList)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     MNavStealthLink::Error err;
     MNavStealthLink::DateTime myDateTime = this->StealthLinkServer->getServerTime();
     if (!this->StealthLinkServer->get(examNameList, myDateTime, err))
@@ -255,7 +255,7 @@ public:
   //--------------------------------------------------------------------------
   PlusStatus ConnectToStealthStation(std::string serverAddress, std::string serverPort)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     delete this->StealthLinkServer;
     this->StealthLinkServer = NULL;
     this->StealthLinkServer = new MNavStealthLink::StealthServer(serverAddress, serverPort);
@@ -272,7 +272,7 @@ public:
   //-------------------------------------------------------------------------
   PlusStatus IsLocalizerConnected(bool& connected)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     MNavStealthLink::LocalizerInfo localizerInfo;
     MNavStealthLink::Error       err;
     if (!this->StealthLinkServer->get(localizerInfo, err))
@@ -293,7 +293,7 @@ public:
   //-------------------------------------------------------------------------
   PlusStatus GetStealthStationServerTime(double& serverTime)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     try
     {
       serverTime = (double) this->StealthLinkServer->getServerTime();
@@ -317,7 +317,7 @@ public:
   //----------------------------------------------------------------------
   PlusStatus GetExamData(MNavStealthLink::Exam exam, std::string examImageDirectory)
   {
-    PlusLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
+    igsioLockGuard<vtkIGSIORecursiveCriticalSection> updateMutexGuardedLock(this->StealthLinkServerMutex);
     try
     {
       exam.getExamData(*(this->StealthLinkServer), examImageDirectory);

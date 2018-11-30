@@ -7,12 +7,10 @@ See License.txt for details.
 // Local includes
 #include "PlusConfigure.h"
 #include "PlusMath.h"
-#include "igsioTrackedFrame.h"
-#include "igsioVideoFrame.h"
-#include "vtkIGSIOTrackedFrameList.h"
 #include "vtkPlusBoneEnhancer.h"
 #include "vtkPlusUsScanConvertCurvilinear.h"
 #include "vtkPlusUsScanConvertLinear.h"
+#include "vtkPlusSequenceIO.h"
 
 // VTK includes
 #include <vtkImageDilateErode3D.h>
@@ -21,8 +19,12 @@ See License.txt for details.
 #include <vtkImageSobel2D.h>
 #include <vtkImageThreshold.h>
 #include <vtkObjectFactory.h>
-
 #include "vtkImageAlgorithm.h"
+
+#include <igsioTrackedFrame.h>
+#include <igsioVideoFrame.h>
+#include <vtkIGSIOTrackedFrameList.h>
+
 
 #include <cmath>
 
@@ -786,9 +788,8 @@ PlusStatus vtkPlusBoneEnhancer::SaveIntermediateResultToFile(char* fileNamePostf
   std::map<char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
   if (indexIterator != this->IntermediateImageMap.end())
   {
-
     //Try to save the intermediate image
-    if (this->IntermediateImageMap[fileNamePostfix]->SaveToSequenceMetafile(IntermediateImageFileName + "_Plus" + std::string(fileNamePostfix) + ".mha", US_IMG_ORIENT_MF, false) == PLUS_FAIL)
+    if (vtkPlusSequenceIO::Write(IntermediateImageFileName + "_Plus" + std::string(fileNamePostfix) + ".mha", this->IntermediateImageMap[fileNamePostfix], US_IMG_ORIENT_MF, false) == PLUS_FAIL)
     {
       LOG_ERROR("An issue occured when trying to save the intermediate image with the postfix: " << fileNamePostfix);
       return PLUS_FAIL;
