@@ -15,13 +15,13 @@
 //----------------------------------------------------------------------------
 igsioStatus vtkPlusSequenceIO::Write(const std::string& filename, vtkIGSIOTrackedFrameList* frameList, US_IMAGE_ORIENTATION orientationInFile/*=US_IMG_ORIENT_MF*/, bool useCompression/*=true*/, bool enableImageDataWrite/*=true*/)
 {
-  return vtkIGSIOSequenceIO::Write(filename, frameList, orientationInFile, useCompression, enableImageDataWrite);
+  return vtkIGSIOSequenceIO::Write(filename, vtkPlusConfig::GetInstance()->GetOutputDirectory(), frameList, orientationInFile, useCompression, enableImageDataWrite);
 }
 
 //----------------------------------------------------------------------------
 igsioStatus vtkPlusSequenceIO::Write(const std::string& filename, igsioTrackedFrame* frame, US_IMAGE_ORIENTATION orientationInFile /*= US_IMG_ORIENT_MF*/, bool useCompression /*= true*/, bool enableImageDataWrite /*=true*/)
 {
-  return vtkIGSIOSequenceIO::Write(filename, frame, orientationInFile, useCompression, enableImageDataWrite);
+  return vtkIGSIOSequenceIO::Write(filename, vtkPlusConfig::GetInstance()->GetOutputDirectory(), frame, orientationInFile, useCompression, enableImageDataWrite);
 }
 
 //----------------------------------------------------------------------------
