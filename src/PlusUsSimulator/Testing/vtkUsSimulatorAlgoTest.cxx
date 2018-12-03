@@ -13,7 +13,7 @@ See License.txt for details.
 #include "vtkMatrix4x4.h"
 #include "vtkPointData.h"
 #include "vtkSTLWriter.h"
-#include "vtkIGSIOSequenceIO.h"
+#include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
 #include "vtkTimerLog.h"
 #include "vtkIGSIOTrackedFrameList.h"
@@ -175,7 +175,7 @@ int main(int argc, char** argv)
   bool showResults = false;
   bool useCompression(true);
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -203,7 +203,7 @@ int main(int argc, char** argv)
     exit(EXIT_SUCCESS);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if (inputConfigFileName.empty())
   {
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
   // Read transformations data
   LOG_DEBUG("Reading input meta file...");
   vtkSmartPointer< vtkIGSIOTrackedFrameList > trackedFrameList = vtkSmartPointer< vtkIGSIOTrackedFrameList >::New();
-  if (vtkIGSIOSequenceIO::Read(inputTransformsFile, trackedFrameList) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Read(inputTransformsFile, trackedFrameList) != PLUS_SUCCESS)
   {
     LOG_ERROR("Unable to load input sequences file.");
     exit(EXIT_FAILURE);
@@ -340,7 +340,7 @@ int main(int argc, char** argv)
     timeElapsedPerFrameSec.push_back(endTimeSec - startTimeSec);
   }
 
-  if (vtkIGSIOSequenceIO::Write(outputUsImageFile, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Write(outputUsImageFile, trackedFrameList, trackedFrameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS)
   {
     // Error has already been logged
     return EXIT_FAILURE;

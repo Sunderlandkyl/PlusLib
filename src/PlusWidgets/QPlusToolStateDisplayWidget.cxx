@@ -208,7 +208,7 @@ PlusStatus QPlusToolStateDisplayWidget::Update()
     }
     else
     {
-      label->setText(PlusCommon::ConvertToolStatusToString(status).c_str());
+      label->setText(igsioCommon::ConvertToolStatusToString(status).c_str());
       switch (status)
       {
       case (TOOL_OK):

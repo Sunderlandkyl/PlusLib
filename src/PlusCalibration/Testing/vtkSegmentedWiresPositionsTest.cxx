@@ -31,7 +31,7 @@ int main (int argc, char* argv[])
   double inputTranslationErrorThreshold(0); 
   double inputRotationErrorThreshold(0); 
 
-  int verboseLevel=vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel=vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments cmdargs;
   cmdargs.Initialize(argc, argv);
@@ -52,7 +52,7 @@ int main (int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
   
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if ( inputSequenceMetafile.empty() ) 
   {
@@ -77,7 +77,7 @@ int main (int argc, char* argv[])
 
   for ( unsigned int frameIndex = 0; frameIndex < trackedFrameList->GetNumberOfTrackedFrames(); frameIndex++ )
   {
-    vtkPlusLogger::PrintProgressbar( (100.0 * frameIndex) / trackedFrameList->GetNumberOfTrackedFrames() ); 
+    vtkIGSIOLogger::PrintProgressbar( (100.0 * frameIndex) / trackedFrameList->GetNumberOfTrackedFrames() ); 
 
     PlusFidPatternRecognition patternRecognition;
     PlusPatternRecognitionResult segResults;
@@ -137,7 +137,7 @@ int main (int argc, char* argv[])
   }
   
   positionInfo.close(); 
-  vtkPlusLogger::PrintProgressbar(100); 
+  vtkIGSIOLogger::PrintProgressbar(100); 
   std::cout << std::endl; 
 
   std::cout << "Exit success!!!" << std::endl; 

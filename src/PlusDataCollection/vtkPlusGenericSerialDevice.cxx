@@ -169,13 +169,13 @@ PlusStatus vtkPlusGenericSerialDevice::InternalUpdate()
 
   // Determine the maximum time to spend in the loop (acquisition time period, but maximum 1 sec)
   double maxReadTimeSec = (this->AcquisitionRate < 1.0) ? 1.0 : 1 / this->AcquisitionRate;
-  double startTime = vtkPlusAccurateTimer::GetSystemTime();
+  double startTime = vtkIGSIOAccurateTimer::GetSystemTime();
   while (this->Serial->GetNumberOfBytesAvailableForReading() > 0)
   {
     std::string textReceived;
     ReceiveResponse(textReceived);
     LOG_DEBUG("Received from serial device without request: " << textReceived);
-    if (vtkPlusAccurateTimer::GetSystemTime() - startTime > maxReadTimeSec)
+    if (vtkIGSIOAccurateTimer::GetSystemTime() - startTime > maxReadTimeSec)
     {
       // force exit from the loop if continuously receiving data
       break;
@@ -296,10 +296,10 @@ bool vtkPlusGenericSerialDevice::WaitForResponse()
 {
   const int waitPeriodSec = 0.010;
 
-  double startTime = vtkPlusAccurateTimer::GetSystemTime();
+  double startTime = vtkIGSIOAccurateTimer::GetSystemTime();
   while (this->Serial->GetNumberOfBytesAvailableForReading() == 0)
   {
-    if (vtkPlusAccurateTimer::GetSystemTime() - startTime > this->MaximumReplyDelaySec)
+    if (vtkIGSIOAccurateTimer::GetSystemTime() - startTime > this->MaximumReplyDelaySec)
     {
       // waiting time expired
       return false;
@@ -314,7 +314,7 @@ bool vtkPlusGenericSerialDevice::WaitForResponse()
 PlusStatus vtkPlusGenericSerialDevice::ReceiveResponse(std::string& textReceived, ReplyTermination acceptReply/*=REQUIRE_LINE_ENDING*/)
 {
   textReceived.clear();
-  double startTime = vtkPlusAccurateTimer::GetSystemTime();
+  double startTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   // Read the the response (until line ending is found or timeout)
   unsigned int lineEndingLength = this->LineEndingBin.size();
@@ -324,12 +324,12 @@ PlusStatus vtkPlusGenericSerialDevice::ReceiveResponse(std::string& textReceived
   {
     while (!this->Serial->Read(d))
     {
-      if (vtkPlusAccurateTimer::GetSystemTime() - startTime > this->MaximumReplyDurationSec)
+      if (vtkIGSIOAccurateTimer::GetSystemTime() - startTime > this->MaximumReplyDurationSec)
       {
         // waiting time expired
         if (acceptReply == REQUIRE_LINE_ENDING)
         {
-          static vtkPlusLogHelper logHelper(60.0, 1e6);
+          static vtkIGSIOLogHelper logHelper(60.0, 1e6);
           CUSTOM_RETURN_WITH_FAIL_IF(true, "Failed to get a proper response within configured time (" << this->MaximumReplyDurationSec << " sec)");
         }
         else if (acceptReply == REQUIRE_NOT_EMPTY && textReceived.empty())

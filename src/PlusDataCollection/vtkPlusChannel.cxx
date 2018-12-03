@@ -192,14 +192,14 @@ PlusStatus vtkPlusChannel::WriteConfiguration(vtkXMLDataElement* aChannelElement
       continue;
     }
     bool isEqual(false);
-    if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*element, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_VIDEO_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+    if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*element, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_VIDEO_TAG, isEqual) == PLUS_SUCCESS && isEqual)
     {
       if (this->HasVideoSource())
       {
         this->VideoSource->WriteConfiguration(element);
       }
     }
-    else if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*element, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+    else if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*element, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) == PLUS_SUCCESS && isEqual)
     {
       vtkPlusDataSource* aTool = NULL;
       if (element->GetAttribute("Id") == NULL || this->GetTool(aTool, element->GetAttribute("Id")) != PLUS_SUCCESS)
@@ -209,7 +209,7 @@ PlusStatus vtkPlusChannel::WriteConfiguration(vtkXMLDataElement* aChannelElement
       }
       aTool->WriteCompactConfiguration(element);
     }
-    else if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*element, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_FIELDDATA_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+    else if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*element, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_FIELDDATA_TAG, isEqual) == PLUS_SUCCESS && isEqual)
     {
       vtkPlusDataSource* aSource = NULL;
       if (element->GetAttribute("Id") == NULL || this->GetFieldDataSource(aSource, element->GetAttribute("Id")) != PLUS_SUCCESS)
@@ -749,7 +749,7 @@ PlusStatus vtkPlusChannel::GetTrackedFrameList(double& aTimestampOfLastFrameAlre
 
   // Get latest and oldest timestamp
   double mostRecentTimestamp(0);
-  static vtkPlusLogHelper logHelper(60.0, 500000);
+  static vtkIGSIOLogHelper logHelper(60.0, 500000);
   CUSTOM_RETURN_WITH_FAIL_IF(this->GetMostRecentTimestamp(mostRecentTimestamp) != PLUS_SUCCESS,
                              "Unable to get most recent timestamp!");
 
@@ -1057,7 +1057,7 @@ PlusStatus vtkPlusChannel::GetTrackedFrameListSampled(double& aTimestampOfLastFr
     return PLUS_FAIL;
   }
 
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
 
   double mostRecentTimestamp(0);
   RETURN_WITH_FAIL_IF(this->GetMostRecentTimestamp(mostRecentTimestamp) != PLUS_SUCCESS,
@@ -1068,7 +1068,7 @@ PlusStatus vtkPlusChannel::GetTrackedFrameListSampled(double& aTimestampOfLastFr
   for (; aTimestampOfNextFrameToBeAdded <= mostRecentTimestamp; aTimestampOfNextFrameToBeAdded += aSamplingPeriodSec)
   {
     // If the time that is allowed for adding of frames is expired then stop the processing now
-    if (maxTimeLimitSec > 0 && vtkPlusAccurateTimer::GetSystemTime() - startTimeSec > maxTimeLimitSec)
+    if (maxTimeLimitSec > 0 && vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec > maxTimeLimitSec)
     {
       LOG_DEBUG("Reached maximum time that is allowed for sampling frames");
       break;
@@ -1420,7 +1420,7 @@ PlusStatus vtkPlusChannel::GetMostRecentTimestamp(double& ts)
   {
     // Get the timestamp of the video item that is closest to the latest tracker item
     BufferItemUidType videoUid(0);
-    static vtkPlusLogHelper logHelper(60.0, 500000);
+    static vtkIGSIOLogHelper logHelper(60.0, 500000);
     CUSTOM_RETURN_WITH_FAIL_IF(this->VideoSource->GetItemUidFromTime(latestTrackerTimestamp, videoUid) != ITEM_OK,
                                "Failed to get video buffer item UID from time: " << std::fixed << latestVideoTimestamp);
     RETURN_WITH_FAIL_IF(this->VideoSource->GetTimeStamp(videoUid, latestVideoTimestamp) != ITEM_OK,

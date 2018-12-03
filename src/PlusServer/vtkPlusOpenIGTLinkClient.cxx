@@ -49,16 +49,16 @@ PlusStatus vtkPlusOpenIGTLinkClient::Connect(double timeoutSec/*=-1*/)
 {
   const double retryDelaySec = 1.0;
   int errorCode = 1;
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
   while (errorCode != 0)
   {
     errorCode = this->ClientSocket->ConnectToServer(this->ServerHost.c_str(), this->ServerPort);
-    if (vtkPlusAccurateTimer::GetSystemTime() - startTimeSec > timeoutSec)
+    if (vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec > timeoutSec)
     {
       // time is up
       break;
     }
-    vtkPlusAccurateTimer::DelayWithEventProcessing(retryDelaySec);
+    vtkIGSIOAccurateTimer::DelayWithEventProcessing(retryDelaySec);
   }
 
   if (errorCode != 0)
@@ -94,7 +94,7 @@ PlusStatus vtkPlusOpenIGTLinkClient::Disconnect()
     while (this->DataReceiverActive.second)
     {
       // Wait until the thread stops
-      vtkPlusAccurateTimer::Delay(0.2);
+      vtkIGSIOAccurateTimer::Delay(0.2);
     }
     this->DataReceiverThreadId = -1;
   }
@@ -125,7 +125,7 @@ PlusStatus vtkPlusOpenIGTLinkClient::SendCommand(vtkPlusCommand* command)
     if (igtl::IGTLProtocolToHeaderLookup(this->GetServerIGTLVersion()) < IGTL_HEADER_VERSION_2)
     {
       // command UID is not specified, generate one automatically from the timestamp
-      commandUid = vtkPlusAccurateTimer::GetUniversalTime();
+      commandUid = vtkIGSIOAccurateTimer::GetUniversalTime();
     }
     else
     {
@@ -207,7 +207,7 @@ PlusStatus vtkPlusOpenIGTLinkClient::ReceiveReply(PlusStatus& result, int32_t& o
     std::string& outContent, igtl::MessageBase::MetaDataMap& outParameters,
     std::string& outCommandName, double timeoutSec/*=0*/)
 {
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
   while (1)
   {
     {
@@ -223,7 +223,7 @@ PlusStatus vtkPlusOpenIGTLinkClient::ReceiveReply(PlusStatus& result, int32_t& o
 
           if (vtkPlusCommand::IsReplyDeviceName(strMsg->GetDeviceName()))
           {
-            if (PlusCommon::StringToInt<int32_t>(vtkPlusCommand::GetUidFromCommandDeviceName(strMsg->GetDeviceName()).c_str(), outOriginalCommandId) != PLUS_SUCCESS)
+            if (igsioCommon::StringToInt<int32_t>(vtkPlusCommand::GetUidFromCommandDeviceName(strMsg->GetDeviceName()).c_str(), outOriginalCommandId) != PLUS_SUCCESS)
             {
               LOG_ERROR("Failed to get UID from command device name.");
               continue;
@@ -291,12 +291,12 @@ PlusStatus vtkPlusOpenIGTLinkClient::ReceiveReply(PlusStatus& result, int32_t& o
         return PLUS_SUCCESS;
       }
     }
-    if (vtkPlusAccurateTimer::GetSystemTime() - startTimeSec > timeoutSec)
+    if (vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec > timeoutSec)
     {
       LOG_DEBUG("vtkPlusOpenIGTLinkClient::ReceiveReply timeout passed (" << timeoutSec << "sec)");
       return PLUS_FAIL;
     }
-    vtkPlusAccurateTimer::Delay(0.010);
+    vtkIGSIOAccurateTimer::Delay(0.010);
   }
   return PLUS_FAIL;
 }
@@ -329,7 +329,7 @@ void* vtkPlusOpenIGTLinkClient::DataReceiverThread(vtkMultiThreader::ThreadInfo*
        )
     {
       // Failed to receive data, maybe the socket is disconnected
-      vtkPlusAccurateTimer::Delay(0.1);
+      vtkIGSIOAccurateTimer::Delay(0.1);
       continue;
     }
 

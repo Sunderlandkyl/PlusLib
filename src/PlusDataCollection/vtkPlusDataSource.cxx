@@ -35,13 +35,13 @@ vtkPlusDataSource::vtkPlusDataSource()
   , ReferenceCoordinateFrameName("")
   , Buffer(vtkPlusBuffer::New())
 {
-  this->ClipRectangleOrigin[0] = PlusCommon::NO_CLIP;
-  this->ClipRectangleOrigin[1] = PlusCommon::NO_CLIP;
-  this->ClipRectangleOrigin[2] = PlusCommon::NO_CLIP;
+  this->ClipRectangleOrigin[0] = igsioCommon::NO_CLIP;
+  this->ClipRectangleOrigin[1] = igsioCommon::NO_CLIP;
+  this->ClipRectangleOrigin[2] = igsioCommon::NO_CLIP;
 
-  this->ClipRectangleSize[0] = PlusCommon::NO_CLIP;
-  this->ClipRectangleSize[1] = PlusCommon::NO_CLIP;
-  this->ClipRectangleSize[2] = PlusCommon::NO_CLIP;
+  this->ClipRectangleSize[0] = igsioCommon::NO_CLIP;
+  this->ClipRectangleSize[1] = igsioCommon::NO_CLIP;
+  this->ClipRectangleSize[2] = igsioCommon::NO_CLIP;
 
   this->InputFrameSize[0] = 0;
   this->InputFrameSize[1] = 0;
@@ -344,9 +344,9 @@ PlusStatus vtkPlusDataSource::ReadConfiguration(vtkXMLDataElement* sourceElement
     {
       // Only 2D data is provided
       XML_READ_STD_ARRAY_ATTRIBUTE_EXACT_OPTIONAL(int, 2, ClipRectangleOrigin, sourceElement);
-      if (this->ClipRectangleOrigin[0] == PlusCommon::NO_CLIP || this->ClipRectangleOrigin[1] == PlusCommon::NO_CLIP)
+      if (this->ClipRectangleOrigin[0] == igsioCommon::NO_CLIP || this->ClipRectangleOrigin[1] == igsioCommon::NO_CLIP)
       {
-        this->ClipRectangleOrigin[2] = PlusCommon::NO_CLIP;
+        this->ClipRectangleOrigin[2] = igsioCommon::NO_CLIP;
       }
       else
       {
@@ -362,9 +362,9 @@ PlusStatus vtkPlusDataSource::ReadConfiguration(vtkXMLDataElement* sourceElement
     {
       // Only 2D data is provided
       XML_READ_STD_ARRAY_ATTRIBUTE_EXACT_OPTIONAL(int, 2, ClipRectangleSize, sourceElement);
-      if (this->ClipRectangleSize[0] == PlusCommon::NO_CLIP || this->ClipRectangleSize[1] == PlusCommon::NO_CLIP)
+      if (this->ClipRectangleSize[0] == igsioCommon::NO_CLIP || this->ClipRectangleSize[1] == igsioCommon::NO_CLIP)
       {
-        this->ClipRectangleSize[2] = PlusCommon::NO_CLIP;
+        this->ClipRectangleSize[2] = igsioCommon::NO_CLIP;
       }
       else
       {
@@ -480,7 +480,7 @@ PlusStatus vtkPlusDataSource::WriteConfiguration(vtkXMLDataElement* aSourceEleme
     aSourceElement->AddNestedElement(customPropertiesElement);
   }
 
-  if (PlusCommon::IsClippingRequested(this->ClipRectangleOrigin, this->ClipRectangleSize))
+  if (igsioCommon::IsClippingRequested(this->ClipRectangleOrigin, this->ClipRectangleSize))
   {
     {
       int tmpValue[3] = { this->ClipRectangleOrigin[0], this->ClipRectangleOrigin[1], this->ClipRectangleOrigin[2] };
@@ -566,7 +566,7 @@ PlusStatus vtkPlusDataSource::AddItem(const igsioTrackedFrame::FieldMapType& cus
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDataSource::AddItem(void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx, PlusCommon::VTKScalarPixelType pixelType,
+PlusStatus vtkPlusDataSource::AddItem(void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx, igsioCommon::VTKScalarPixelType pixelType,
                                       unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/,
                                       double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/, const igsioTrackedFrame::FieldMapType* customFields /*= NULL*/)
 {
@@ -610,9 +610,9 @@ PlusStatus vtkPlusDataSource::SetInputFrameSize(unsigned int x, unsigned int y, 
   }
 
   int extents[6] = {0, static_cast<int>(x) - 1, 0, static_cast<int>(y) - 1, 0, static_cast<int>(z) - 1};
-  if (PlusCommon::IsClippingRequested(this->ClipRectangleOrigin, this->ClipRectangleSize))
+  if (igsioCommon::IsClippingRequested(this->ClipRectangleOrigin, this->ClipRectangleSize))
   {
-    if (PlusCommon::IsClippingWithinExtents(this->ClipRectangleOrigin, this->ClipRectangleSize, extents))
+    if (igsioCommon::IsClippingWithinExtents(this->ClipRectangleOrigin, this->ClipRectangleSize, extents))
     {
       outputFrameSizeInPx[0] = static_cast<unsigned int>(this->ClipRectangleSize[0]);
       outputFrameSizeInPx[1] = static_cast<unsigned int>(this->ClipRectangleSize[1]);
@@ -624,12 +624,12 @@ PlusStatus vtkPlusDataSource::SetInputFrameSize(unsigned int x, unsigned int y, 
                   << extents[2] << "," << extents[3] << "," << extents[4] << "," << extents[5] << "]. No clipping will be performed."
                   << " Origin=[" << this->ClipRectangleOrigin[0] << "," << this->ClipRectangleOrigin[1] << "," << this->ClipRectangleOrigin[2] << "]."
                   << " Size=[" << this->ClipRectangleSize[0] << "," << this->ClipRectangleSize[1] << "," << this->ClipRectangleSize[2] << "].");
-      this->ClipRectangleOrigin[0] = PlusCommon::NO_CLIP;
-      this->ClipRectangleOrigin[1] = PlusCommon::NO_CLIP;
-      this->ClipRectangleOrigin[2] = PlusCommon::NO_CLIP;
-      this->ClipRectangleSize[0] = PlusCommon::NO_CLIP;
-      this->ClipRectangleSize[1] = PlusCommon::NO_CLIP;
-      this->ClipRectangleSize[2] = PlusCommon::NO_CLIP;
+      this->ClipRectangleOrigin[0] = igsioCommon::NO_CLIP;
+      this->ClipRectangleOrigin[1] = igsioCommon::NO_CLIP;
+      this->ClipRectangleOrigin[2] = igsioCommon::NO_CLIP;
+      this->ClipRectangleSize[0] = igsioCommon::NO_CLIP;
+      this->ClipRectangleSize[1] = igsioCommon::NO_CLIP;
+      this->ClipRectangleSize[2] = igsioCommon::NO_CLIP;
     }
   }
 
@@ -743,13 +743,13 @@ unsigned int vtkPlusDataSource::GetNumberOfScalarComponents()
 }
 
 //-----------------------------------------------------------------------------
-PlusCommon::VTKScalarPixelType vtkPlusDataSource::GetPixelType()
+igsioCommon::VTKScalarPixelType vtkPlusDataSource::GetPixelType()
 {
   return this->GetBuffer()->GetPixelType();
 }
 
 //-----------------------------------------------------------------------------
-PlusStatus vtkPlusDataSource::SetPixelType(PlusCommon::VTKScalarPixelType pixelType)
+PlusStatus vtkPlusDataSource::SetPixelType(igsioCommon::VTKScalarPixelType pixelType)
 {
   return this->GetBuffer()->SetPixelType(pixelType);
 }

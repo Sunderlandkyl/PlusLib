@@ -952,7 +952,7 @@ PlusStatus vtkPlusDevice::ReadConfiguration(vtkXMLDataElement* rootXMLElement)
 
       vtkSmartPointer<vtkPlusDataSource> aDataSource = vtkSmartPointer<vtkPlusDataSource>::New();
       bool isEqual(false);
-      if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+      if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) == PLUS_SUCCESS && isEqual)
       {
         aDataSource->SetReferenceCoordinateFrameName(this->ToolReferenceFrameName);
 
@@ -967,7 +967,7 @@ PlusStatus vtkPlusDevice::ReadConfiguration(vtkXMLDataElement* rootXMLElement)
           LOCAL_LOG_ERROR("Failed to add tool '" << (!aDataSource->GetId().empty() ? aDataSource->GetId() : "(unspecified)") << "' to device on port " << (!aDataSource->GetPortName().empty() ? aDataSource->GetPortName() : "(unspecified)"));
         }
       }
-      else if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_FIELDDATA_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+      else if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_FIELDDATA_TAG, isEqual) == PLUS_SUCCESS && isEqual)
       {
         if (aDataSource->ReadConfiguration(dataSourceElement, this->RequirePortNameInDeviceSetConfiguration, this->RequireImageOrientationInConfiguration, this->GetDeviceId()) != PLUS_SUCCESS)
         {
@@ -980,7 +980,7 @@ PlusStatus vtkPlusDevice::ReadConfiguration(vtkXMLDataElement* rootXMLElement)
           LOCAL_LOG_ERROR("Failed to add field data source '" << (!aDataSource->GetId().empty() ? aDataSource->GetId() : "(unspecified)") << "' to device.");
         }
       }
-      else if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_VIDEO_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+      else if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_VIDEO_TAG, isEqual) == PLUS_SUCCESS && isEqual)
       {
         aDataSource->ReadConfiguration(dataSourceElement, this->RequirePortNameInDeviceSetConfiguration, this->RequireImageOrientationInConfiguration, this->GetDeviceId());
 
@@ -1089,7 +1089,7 @@ PlusStatus vtkPlusDevice::WriteConfiguration(vtkXMLDataElement* config)
       }
       vtkPlusDataSource* aDataSource = NULL;
       bool isEqual(false);
-      if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+      if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) == PLUS_SUCCESS && isEqual)
       {
         igsioTransformName toolId(dataSourceElement->GetAttribute("Id"), this->GetToolReferenceFrameName());
         if (dataSourceElement->GetAttribute("Id") == NULL || this->GetTool(toolId.GetTransformName(), aDataSource) != PLUS_SUCCESS)
@@ -1099,7 +1099,7 @@ PlusStatus vtkPlusDevice::WriteConfiguration(vtkXMLDataElement* config)
         }
         aDataSource->WriteConfiguration(dataSourceElement);
       }
-      else if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_FIELDDATA_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+      else if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_FIELDDATA_TAG, isEqual) == PLUS_SUCCESS && isEqual)
       {
         if (dataSourceElement->GetAttribute("Id") == NULL || this->GetFieldDataSource(dataSourceElement->GetAttribute("Id"), aDataSource) != PLUS_SUCCESS)
         {
@@ -1108,7 +1108,7 @@ PlusStatus vtkPlusDevice::WriteConfiguration(vtkXMLDataElement* config)
         }
         aDataSource->WriteConfiguration(dataSourceElement);
       }
-      else if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_VIDEO_TAG, isEqual) == PLUS_SUCCESS && isEqual)
+      else if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*dataSourceElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_VIDEO_TAG, isEqual) == PLUS_SUCCESS && isEqual)
       {
         if (dataSourceElement->GetAttribute("Id") == NULL || this->GetVideoSource(dataSourceElement->GetAttribute("Id"), aDataSource) != PLUS_SUCCESS)
         {
@@ -1206,7 +1206,7 @@ PlusStatus vtkPlusDevice::StartRecording()
     return PLUS_FAIL;
   }
 
-  this->RecordingStartTime = vtkPlusAccurateTimer::GetSystemTime();
+  this->RecordingStartTime = vtkIGSIOAccurateTimer::GetSystemTime();
   this->Recording = 1;
 
   if (this->StartThreadForInternalUpdates)
@@ -1243,7 +1243,7 @@ PlusStatus vtkPlusDevice::StopRecording()
     // Let's give a chance to the thread to stop before we kill the connection
     while (this->ThreadAlive)
     {
-      vtkPlusAccurateTimer::Delay(0.1);
+      vtkIGSIOAccurateTimer::Delay(0.1);
     }
     this->ThreadId = -1;
     LOCAL_LOG_DEBUG("Internal update thread terminated");
@@ -1273,7 +1273,7 @@ void* vtkPlusDevice::vtkDataCaptureThread(vtkMultiThreader::ThreadInfo* data)
 
   while (self->IsRecording() && self->GetCorrectlyConfigured())
   {
-    double newtime = vtkPlusAccurateTimer::GetSystemTime();
+    double newtime = vtkIGSIOAccurateTimer::GetSystemTime();
     // get current tracking rate over last few updates
     double difftime = newtime - currtime[updatecount % FRAME_RATE_AVERAGING];
     currtime[updatecount % FRAME_RATE_AVERAGING] = newtime;
@@ -1294,10 +1294,10 @@ void* vtkPlusDevice::vtkDataCaptureThread(vtkMultiThreader::ThreadInfo* data)
       self->UpdateTime.Modified();
     }
 
-    double delay = (newtime + 1.0 / rate - vtkPlusAccurateTimer::GetSystemTime());
+    double delay = (newtime + 1.0 / rate - vtkIGSIOAccurateTimer::GetSystemTime());
     if (delay > 0)
     {
-      vtkPlusAccurateTimer::Delay(delay);
+      vtkIGSIOAccurateTimer::Delay(delay);
     }
 
     updatecount++;
@@ -1546,7 +1546,7 @@ PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDa
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx, PlusCommon::VTKScalarPixelType pixelType, unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/, double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/, const igsioTrackedFrame::FieldMapType* customFields /*= NULL*/)
+PlusStatus vtkPlusDevice::AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx, igsioCommon::VTKScalarPixelType pixelType, unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp /*= UNDEFINED_TIMESTAMP*/, double filteredTimestamp /*= UNDEFINED_TIMESTAMP*/, const igsioTrackedFrame::FieldMapType* customFields /*= NULL*/)
 {
   PlusStatus result(PLUS_SUCCESS);
   for (std::vector<vtkPlusDataSource*>::const_iterator it = videoSources.begin(); it != videoSources.end(); ++it)
@@ -1808,7 +1808,7 @@ PlusStatus vtkPlusDevice::GetInputFrameSize(vtkPlusChannel& aChannel, FrameSizeT
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::SetPixelType(vtkPlusChannel& aChannel, PlusCommon::VTKScalarPixelType pixelType)
+PlusStatus vtkPlusDevice::SetPixelType(vtkPlusChannel& aChannel, igsioCommon::VTKScalarPixelType pixelType)
 {
   LOCAL_LOG_TRACE("vtkPlusDevice::SetPixelType");
 
@@ -1823,7 +1823,7 @@ PlusStatus vtkPlusDevice::SetPixelType(vtkPlusChannel& aChannel, PlusCommon::VTK
 }
 
 //----------------------------------------------------------------------------
-PlusCommon::VTKScalarPixelType vtkPlusDevice::GetPixelType(vtkPlusChannel& aChannel)
+igsioCommon::VTKScalarPixelType vtkPlusDevice::GetPixelType(vtkPlusChannel& aChannel)
 {
   LOCAL_LOG_TRACE("vtkPlusDevice::GetPixelType");
 
@@ -2236,7 +2236,7 @@ void vtkPlusDevice::SetDataCollector(vtkPlusDataCollector* _arg)
 //------------------------------------------------------------------------------
 bool vtkPlusDevice::HasGracePeriodExpired()
 {
-  return (vtkPlusAccurateTimer::GetSystemTime() - this->RecordingStartTime) > this->MissingInputGracePeriodSec;
+  return (vtkIGSIOAccurateTimer::GetSystemTime() - this->RecordingStartTime) > this->MissingInputGracePeriodSec;
 }
 
 //----------------------------------------------------------------------------
@@ -2312,7 +2312,7 @@ PlusStatus vtkPlusDevice::GetFirstActiveOutputVideoSource(vtkPlusDataSource*& aV
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusDevice::GetImageMetaData(PlusCommon::ImageMetaDataList& imageMetaDataItems)
+PlusStatus vtkPlusDevice::GetImageMetaData(igsioCommon::ImageMetaDataList& imageMetaDataItems)
 {
   LOCAL_LOG_DEBUG("No ImageMetaData is available");
   return PLUS_SUCCESS;

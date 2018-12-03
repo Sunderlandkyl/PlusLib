@@ -21,43 +21,43 @@ namespace
     // re #1182
     std::string baseline("Testing PLUS is fun!");
     std::string lowercase("Testing plus is fun!");
-    if (!PlusCommon::IsEqualInsensitive(baseline, lowercase))
+    if (!igsioCommon::IsEqualInsensitive(baseline, lowercase))
     {
       return PLUS_FAIL;
     }
 
     std::wstring w_baseline(L"Testing PLUS is fun!");
     std::wstring w_lowercase(L"Testing plus is fun!");
-    if (!PlusCommon::IsEqualInsensitive(w_baseline, w_lowercase))
+    if (!igsioCommon::IsEqualInsensitive(w_baseline, w_lowercase))
     {
       return PLUS_FAIL;
     }
 
-    if (!PlusCommon::HasSubstrInsensitive(baseline, "PLUS") || !PlusCommon::HasSubstrInsensitive(baseline, "plus"))
+    if (!igsioCommon::HasSubstrInsensitive(baseline, "PLUS") || !igsioCommon::HasSubstrInsensitive(baseline, "plus"))
     {
       return PLUS_FAIL;
     }
-    if (!PlusCommon::HasSubstrInsensitive(w_baseline, L"PLUS") || !PlusCommon::HasSubstrInsensitive(w_baseline, L"plus"))
+    if (!igsioCommon::HasSubstrInsensitive(w_baseline, L"PLUS") || !igsioCommon::HasSubstrInsensitive(w_baseline, L"plus"))
     {
       return PLUS_FAIL;
     }
 
     std::string tokenBaseline("Testing;PLUS;is;fun!;;");
     std::vector<std::string> tokens;
-    PlusCommon::SplitStringIntoTokens(tokenBaseline, ';', tokens, false);
+    igsioCommon::SplitStringIntoTokens(tokenBaseline, ';', tokens, false);
     if (tokens.size() != 4)
     {
       return PLUS_FAIL;
     }
-    if (!PlusCommon::IsEqualInsensitive(tokens[0], "Testing") ||
-        !PlusCommon::IsEqualInsensitive(tokens[1], "PLUS") ||
-        !PlusCommon::IsEqualInsensitive(tokens[2], "is") ||
-        !PlusCommon::IsEqualInsensitive(tokens[3], "fun!"))
+    if (!igsioCommon::IsEqualInsensitive(tokens[0], "Testing") ||
+        !igsioCommon::IsEqualInsensitive(tokens[1], "PLUS") ||
+        !igsioCommon::IsEqualInsensitive(tokens[2], "is") ||
+        !igsioCommon::IsEqualInsensitive(tokens[3], "fun!"))
     {
       return PLUS_FAIL;
     }
     tokens.clear();
-    PlusCommon::SplitStringIntoTokens(tokenBaseline, ';', tokens, true);
+    igsioCommon::SplitStringIntoTokens(tokenBaseline, ';', tokens, true);
     if (tokens.size() != 5)
     {
       return PLUS_FAIL;
@@ -68,24 +68,24 @@ namespace
     }
 
     std::string reconstructed;
-    PlusCommon::JoinTokensIntoString(tokens, reconstructed, ';');
-    if (!PlusCommon::IsEqualInsensitive(reconstructed, "Testing;PLUS;is;fun!;"))
+    igsioCommon::JoinTokensIntoString(tokens, reconstructed, ';');
+    if (!igsioCommon::IsEqualInsensitive(reconstructed, "Testing;PLUS;is;fun!;"))
     {
       return PLUS_FAIL;
     }
 
     std::string spaces(" Testing PLUS is fun!");
     std::string trimmed(spaces);
-    PlusCommon::Trim(trimmed);
-    if (PlusCommon::IsEqualInsensitive(spaces, trimmed))
+    igsioCommon::Trim(trimmed);
+    if (igsioCommon::IsEqualInsensitive(spaces, trimmed))
     {
       return PLUS_FAIL;
     }
 
     spaces = "Testing PLUS is fun!";
     trimmed = spaces;
-    PlusCommon::Trim(trimmed);
-    if (!PlusCommon::IsEqualInsensitive(spaces, trimmed))
+    igsioCommon::Trim(trimmed);
+    if (!igsioCommon::IsEqualInsensitive(spaces, trimmed))
     {
       return PLUS_FAIL;
     }
@@ -103,12 +103,12 @@ namespace
     }
 
     bool isEqual(false);
-    if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*rootElement, "version", "2.1", isEqual) != PLUS_SUCCESS || !isEqual)
+    if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*rootElement, "version", "2.1", isEqual) != PLUS_SUCCESS || !isEqual)
     {
       return PLUS_FAIL;
     }
     double version(0.0);
-    if (PlusCommon::XML::SafeGetAttributeValueInsensitive<double>(*rootElement, "version", version) != PLUS_SUCCESS || version != 2.1)
+    if (igsioCommon::XML::SafeGetAttributeValueInsensitive<double>(*rootElement, "version", version) != PLUS_SUCCESS || version != 2.1)
     {
       return PLUS_FAIL;
     }
@@ -179,7 +179,7 @@ namespace
 int main(int argc, char** argv)
 {
   bool printHelp(false);
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -201,13 +201,13 @@ int main(int argc, char** argv)
 
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   // ***********************************************
   // Test string to number conversion
   // ***********************************************
   double doubleResult(0);
-  if (PlusCommon::StringToDouble("8.12", doubleResult) != PLUS_SUCCESS)
+  if (igsioCommon::StringToDouble("8.12", doubleResult) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to convert '8.12' string to double");
     return EXIT_FAILURE;
@@ -218,14 +218,14 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  if (PlusCommon::StringToDouble("", doubleResult) != PLUS_FAIL)
+  if (igsioCommon::StringToDouble("", doubleResult) != PLUS_FAIL)
   {
     LOG_ERROR("Error expected on empty string to double conversion!");
     return EXIT_FAILURE;
   }
 
   int intResult(0);
-  if (PlusCommon::StringToInt("8", intResult) != PLUS_SUCCESS)
+  if (igsioCommon::StringToInt("8", intResult) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to convert '8' string to integer!");
     return EXIT_FAILURE;
@@ -236,7 +236,7 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  if (PlusCommon::StringToInt("", intResult) != PLUS_FAIL)
+  if (igsioCommon::StringToInt("", intResult) != PLUS_FAIL)
   {
     LOG_ERROR("Error expected on empty string to integer conversion!");
     return EXIT_FAILURE;

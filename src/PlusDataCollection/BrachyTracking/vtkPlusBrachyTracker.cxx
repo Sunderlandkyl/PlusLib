@@ -10,7 +10,7 @@ See License.txt for details.
 #include "PlusCivcoBrachyStepper.h"
 #include "PlusCmsBrachyStepper.h"
 #include "igsioTrackedFrame.h"
-#include "vtkPlusAccurateTimer.h"
+#include "vtkIGSIOAccurateTimer.h"
 #include "vtkPlusBrachyTracker.h"
 #include "vtkMath.h"
 #include "vtkMatrix4x4.h"
@@ -203,7 +203,7 @@ PlusStatus vtkPlusBrachyTracker::InternalUpdate()
     status = TOOL_REQ_TIMEOUT;
   }
 
-  const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
   // Save probe position to the matrix (0,3) element
   // Save probe rotation to the matrix (1,3) element

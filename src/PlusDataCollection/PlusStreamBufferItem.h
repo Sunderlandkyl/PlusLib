@@ -9,7 +9,7 @@ See License.txt for details.
 
 #include "vtkPlusDataCollectionExport.h"
 
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 //#include "igsioVideoFrame.h"
 
 #include "vtkSmartPointer.h"

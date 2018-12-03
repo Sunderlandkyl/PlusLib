@@ -54,7 +54,7 @@ vtkPlusVirtualCapture::vtkPlusVirtualCapture()
   , FrameBufferSize(DISABLE_FRAME_BUFFER)
   , IsData3D(false)
   , WriterAccessMutex(vtkSmartPointer<vtkIGSIORecursiveCriticalSection>::New())
-  , GracePeriodLogLevel(vtkPlusLogger::LOG_LEVEL_DEBUG)
+  , GracePeriodLogLevel(vtkIGSIOLogger::LOG_LEVEL_DEBUG)
   , EncodingFourCC("VP90")
 {
   this->AcquisitionRate = 30.0;
@@ -139,7 +139,7 @@ PlusStatus vtkPlusVirtualCapture::InternalConnect()
     this->SetEnableCapturing(true);
   }
 
-  this->LastUpdateTime = vtkPlusAccurateTimer::GetSystemTime();
+  this->LastUpdateTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   return PLUS_SUCCESS;
 }
@@ -178,8 +178,8 @@ PlusStatus vtkPlusVirtualCapture::OpenFile(const char* aFilename)
 
   if (aFilename == NULL || strlen(aFilename) == 0)
   {
-    std::string filenameRoot = PlusCommon::GetSequenceFilenameWithoutExtension(this->BaseFilename);
-    std::string ext = PlusCommon::GetSequenceFilenameExtension(this->BaseFilename);
+    std::string filenameRoot = igsioCommon::GetSequenceFilenameWithoutExtension(this->BaseFilename);
+    std::string ext = igsioCommon::GetSequenceFilenameExtension(this->BaseFilename);
     if (ext.empty())
     {
       // default to nrrd
@@ -269,7 +269,7 @@ PlusStatus vtkPlusVirtualCapture::CloseFile(const char* aFilename /* = NULL */, 
   std::string path = vtksys::SystemTools::GetFilenamePath(fullPath);
   std::string filename = vtksys::SystemTools::GetFilenameWithoutExtension(fullPath);
   std::string configFileName = path + "/" + filename + "_config.xml";
-  PlusCommon::XML::PrintXML(configFileName.c_str(), vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
+  igsioCommon::XML::PrintXML(configFileName.c_str(), vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
 
   this->IsHeaderPrepared = false;
   this->TotalFramesRecorded = 0;
@@ -305,13 +305,13 @@ PlusStatus vtkPlusVirtualCapture::InternalUpdate()
 
   if (this->LastUpdateTime == 0.0)
   {
-    this->LastUpdateTime = vtkPlusAccurateTimer::GetSystemTime();
+    this->LastUpdateTime = vtkIGSIOAccurateTimer::GetSystemTime();
   }
   if (this->NextFrameToBeRecordedTimestamp == 0.0)
   {
-    this->NextFrameToBeRecordedTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    this->NextFrameToBeRecordedTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   }
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
 
   this->TimeWaited += startTimeSec - LastUpdateTime;
 
@@ -336,7 +336,7 @@ PlusStatus vtkPlusVirtualCapture::InternalUpdate()
 
   if (this->HasGracePeriodExpired())
   {
-    this->GracePeriodLogLevel = vtkPlusLogger::LOG_LEVEL_WARNING;
+    this->GracePeriodLogLevel = vtkIGSIOLogger::LOG_LEVEL_WARNING;
   }
 
   igsioLockGuard<vtkIGSIORecursiveCriticalSection> writerLock(this->WriterAccessMutex);
@@ -394,14 +394,14 @@ PlusStatus vtkPlusVirtualCapture::InternalUpdate()
   }
 
   // Check whether the recording needed more time than the sampling interval
-  double recordingTimeSec = vtkPlusAccurateTimer::GetSystemTime() - startTimeSec;
-  double currentSystemTime = vtkPlusAccurateTimer::GetSystemTime();
+  double recordingTimeSec = vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec;
+  double currentSystemTime = vtkIGSIOAccurateTimer::GetSystemTime();
   double recordingLagSec =  currentSystemTime - this->NextFrameToBeRecordedTimestamp;
 
   if (recordingTimeSec > samplingPeriodSec)
   {
     // Log too long recording as warning only if the recording is falling behind
-    vtkPlusLogger::LogLevelType logLevel = (recordingLagSec > WARNING_RECORDING_LAG_SEC ? vtkPlusLogger::LOG_LEVEL_WARNING : vtkPlusLogger::LOG_LEVEL_DEBUG);
+    vtkIGSIOLogger::LogLevelType logLevel = (recordingLagSec > WARNING_RECORDING_LAG_SEC ? vtkIGSIOLogger::LOG_LEVEL_WARNING : vtkIGSIOLogger::LOG_LEVEL_DEBUG);
     LOG_DYNAMIC("Recording of frames takes too long time (" << recordingTimeSec << "sec instead of the allocated " << samplingPeriodSec << "sec, recording lags by " << recordingLagSec << "sec). This can cause slow-down of the application and non-uniform sampling. Reduce the acquisition rate or sampling rate to resolve the problem.", logLevel);
   }
 
@@ -419,10 +419,10 @@ PlusStatus vtkPlusVirtualCapture::InternalUpdate()
       // (because acquisitionLagSec < MAX_ALLOWED_RECORDING_LAG_SEC)
       LOG_ERROR("Recording cannot keep up with the acquisition. Skip " << recordingLagSec << " seconds of the data stream to catch up.");
     }
-    this->NextFrameToBeRecordedTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    this->NextFrameToBeRecordedTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   }
 
-  this->LastUpdateTime = vtkPlusAccurateTimer::GetSystemTime();
+  this->LastUpdateTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   return PLUS_SUCCESS;
 }
@@ -499,7 +499,7 @@ void vtkPlusVirtualCapture::SetEnableCapturing(bool aValue)
     this->LastAlreadyRecordedFrameTimestamp = UNDEFINED_TIMESTAMP;
     this->NextFrameToBeRecordedTimestamp = 0.0;
     this->FirstFrameIndexInThisSegment = this->RecordedFrames->GetNumberOfTrackedFrames();
-    this->RecordingStartTime = vtkPlusAccurateTimer::GetSystemTime(); // reset the starting time for the grace period
+    this->RecordingStartTime = vtkIGSIOAccurateTimer::GetSystemTime(); // reset the starting time for the grace period
   }
 }
 
@@ -528,7 +528,7 @@ PlusStatus vtkPlusVirtualCapture::Reset()
     return PLUS_FAIL;
   }
 
-  this->LastUpdateTime = vtkPlusAccurateTimer::GetSystemTime();
+  this->LastUpdateTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   return PLUS_SUCCESS;
 }

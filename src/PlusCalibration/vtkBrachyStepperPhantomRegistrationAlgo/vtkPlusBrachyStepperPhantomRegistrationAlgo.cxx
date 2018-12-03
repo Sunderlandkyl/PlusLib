@@ -245,7 +245,7 @@ PlusStatus vtkPlusBrachyStepperPhantomRegistrationAlgo::Update()
     igsioTransformName phantomToReferenceTransformName(this->PhantomCoordinateFrame, this->ReferenceCoordinateFrame);
     this->TransformRepository->SetTransform(phantomToReferenceTransformName, this->PhantomToReferenceTransformMatrix);
     this->TransformRepository->SetTransformPersistent(phantomToReferenceTransformName, true);
-    this->TransformRepository->SetTransformDate(phantomToReferenceTransformName, vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
+    this->TransformRepository->SetTransformDate(phantomToReferenceTransformName, vtkIGSIOAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
     this->TransformRepository->SetTransformError(phantomToReferenceTransformName, -1);   //TODO
   }
   else

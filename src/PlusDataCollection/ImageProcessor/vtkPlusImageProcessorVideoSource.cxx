@@ -27,7 +27,7 @@ vtkPlusImageProcessorVideoSource::vtkPlusImageProcessorVideoSource()
   , LastProcessedInputDataTimestamp(0)
   , EnableProcessing(true)
   , ProcessingAlgorithmAccessMutex(vtkSmartPointer<vtkIGSIORecursiveCriticalSection>::New())
-  , GracePeriodLogLevel(vtkPlusLogger::LOG_LEVEL_DEBUG)
+  , GracePeriodLogLevel(vtkIGSIOLogger::LOG_LEVEL_DEBUG)
   , ProcessorAlgorithm(NULL)
 {
   this->MissingInputGracePeriodSec = 2.0;
@@ -142,7 +142,7 @@ PlusStatus vtkPlusImageProcessorVideoSource::WriteConfiguration(vtkXMLDataElemen
   // Write processor elements
   if (this->ProcessorAlgorithm != NULL)
   {
-    vtkXMLDataElement* processorElement = PlusXmlUtils::GetNestedElementWithName(deviceElement, vtkPlusTrackedFrameProcessor::GetTagName());
+    vtkXMLDataElement* processorElement = igsioXmlUtils::GetNestedElementWithName(deviceElement, vtkPlusTrackedFrameProcessor::GetTagName());
     if (processorElement == NULL)
     {
       LOG_ERROR("Cannot find " << vtkPlusTrackedFrameProcessor::GetTagName() << " element in XML tree!");
@@ -216,7 +216,7 @@ PlusStatus vtkPlusImageProcessorVideoSource::InternalUpdate()
 
   if (this->HasGracePeriodExpired())
   {
-    this->GracePeriodLogLevel = vtkPlusLogger::LOG_LEVEL_WARNING;
+    this->GracePeriodLogLevel = vtkIGSIOLogger::LOG_LEVEL_WARNING;
   }
 
   // Get image to tracker transform from the tracker (only request 1 frame, the latest)
@@ -239,7 +239,7 @@ PlusStatus vtkPlusImageProcessorVideoSource::InternalUpdate()
   if (this->InputChannels[0]->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
   {
     LOG_ERROR("Error while getting latest tracked frame. Last recorded timestamp: " << std::fixed << this->LastProcessedInputDataTimestamp << ". Device ID: " << this->GetDeviceId());
-    this->LastProcessedInputDataTimestamp = vtkPlusAccurateTimer::GetSystemTime(); // forget about the past, try to add frames that are acquired from now on
+    this->LastProcessedInputDataTimestamp = vtkIGSIOAccurateTimer::GetSystemTime(); // forget about the past, try to add frames that are acquired from now on
     return PLUS_FAIL;
   }
 
@@ -353,6 +353,6 @@ void vtkPlusImageProcessorVideoSource::SetEnableProcessing(bool aValue)
   if (processingStartsNow)
   {
     this->LastProcessedInputDataTimestamp = 0.0;
-    this->RecordingStartTime = vtkPlusAccurateTimer::GetSystemTime(); // reset the starting time for the grace period
+    this->RecordingStartTime = vtkIGSIOAccurateTimer::GetSystemTime(); // reset the starting time for the grace period
   }
 }

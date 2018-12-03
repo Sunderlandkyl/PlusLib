@@ -8,7 +8,7 @@ See License.txt for details.
 #define __vtkPlusDataCollector_h
 
 // Local includes
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 #include "vtkPlusDataCollectionExport.h"
 #include "vtkPlusDevice.h"
 

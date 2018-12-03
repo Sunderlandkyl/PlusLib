@@ -260,7 +260,7 @@ PlusStatus vtkPlusDataCollector::WriteConfiguration(vtkXMLDataElement* aConfig)
 {
   LOG_TRACE("vtkPlusDataCollector::WriteConfiguration()");
 
-  vtkXMLDataElement* dataCollectionConfig = PlusXmlUtils::GetNestedElementWithName(aConfig, "DataCollection");
+  vtkXMLDataElement* dataCollectionConfig = igsioXmlUtils::GetNestedElementWithName(aConfig, "DataCollection");
   if (dataCollectionConfig == NULL)
   {
     LOG_ERROR("Cannot find DataCollection element in XML tree!");
@@ -307,7 +307,7 @@ PlusStatus vtkPlusDataCollector::Start()
 
   PlusStatus status = PLUS_SUCCESS;
 
-  const double startTime = vtkPlusAccurateTimer::GetSystemTime();
+  const double startTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   for (DeviceCollectionIterator it = Devices.begin(); it != Devices.end(); ++ it)
   {
@@ -323,7 +323,7 @@ PlusStatus vtkPlusDataCollector::Start()
 
   LOG_DEBUG("vtkPlusDataCollector::Start -- wait " << std::fixed << this->StartupDelaySec << " sec for buffer init...");
 
-  vtkPlusAccurateTimer::DelayWithEventProcessing(this->StartupDelaySec);
+  vtkIGSIOAccurateTimer::DelayWithEventProcessing(this->StartupDelaySec);
 
   this->Started = true;
 

@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
   std::string inputBaselineFileName;
 
   int numberOfPointsToAcquire = 100;
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
   double outlierGenerationProbability = 0.0;
 
   vtksys::CommandLineArguments cmdargs;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   std::string programPath("./"), errorMsg;
   if (!vtksys::SystemTools::FindProgramPath(argv[0], programPath, errorMsg))
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
   for (int i = 0; i < numberOfPointsToAcquire; ++i)
   {
     vtksys::SystemTools::Delay(50);
-    vtkPlusLogger::PrintProgressbar((100.0 * i) / numberOfPointsToAcquire);
+    vtkIGSIOLogger::PrintProgressbar((100.0 * i) / numberOfPointsToAcquire);
 
     vtkSmartPointer<vtkMatrix4x4> stylusToReferenceMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 
     pivotCalibration->InsertNextCalibrationPoint(stylusToReferenceMatrix);
   }
-  vtkPlusLogger::PrintProgressbar(100.0);
+  vtkIGSIOLogger::PrintProgressbar(100.0);
 
   if (numberOfOutliers > 0)
   {
@@ -231,7 +231,7 @@ int main(int argc, char* argv[])
   std::string calibrationResultFileName = "StylusCalibrationTest.xml";
   LOG_INFO("Writing calibration result (" << pivotCalibration->GetObjectPivotPointCoordinateFrame() << " to " << pivotCalibration->GetObjectMarkerCoordinateFrame() << " transform) to " << calibrationResultFileName);
   vtksys::SystemTools::RemoveFile(calibrationResultFileName.c_str());
-  PlusCommon::XML::PrintXML(calibrationResultFileName.c_str(), configRootElement);
+  igsioCommon::XML::PrintXML(calibrationResultFileName.c_str(), configRootElement);
 
   if (!inputBaselineFileName.empty())
   {

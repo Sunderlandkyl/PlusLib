@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 
   // Check command line arguments.
   std::string  inputConfigFileName;
-  int          verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int          verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   // Prepare and start data collection
   vtkSmartPointer<vtkXMLDataElement> configRootElement = vtkSmartPointer<vtkXMLDataElement>::New();
@@ -118,7 +118,7 @@ int main(int argc, char** argv)
 
   PlusStatus compareStatus = PLUS_SUCCESS;
 
-  vtkPlusAccurateTimer::Delay(5.0); // wait for 5s until the frames are acquired into the buffer
+  vtkIGSIOAccurateTimer::Delay(5.0); // wait for 5s until the frames are acquired into the buffer
 
   // Check some transforms to ensure that the correct data is returned by the data collector
   // THIS TEST ONLY WORKS WITH THIS SEQUENCE METAFILE: PlusLib\data\TestImages\fCal_Test_Calibration.mha

@@ -396,7 +396,7 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackImageMessage(igtl::MessageHeader::Poi
   FrameSizeType imageSize = {static_cast<unsigned int>(imgSize[0]), static_cast<unsigned int>(imgSize[1]), static_cast<unsigned int>(imgSize[2]) };
 
   // Set scalar pixel type
-  PlusCommon::VTKScalarPixelType pixelType = PlusCommon::GetVTKScalarPixelTypeFromIGTL(imgMsg->GetScalarType());
+  igsioCommon::VTKScalarPixelType pixelType = PlusCommon::GetVTKScalarPixelTypeFromIGTL(imgMsg->GetScalarType());
   igsioVideoFrame frame;
   if (frame.AllocateFrame(imageSize, pixelType, imgMsg->GetNumComponents()) != PLUS_SUCCESS)
   {
@@ -432,14 +432,14 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackImageMessage(igtl::MessageHeader::Poi
 
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIgtlMessageCommon::PackImageMetaMessage(igtl::ImageMetaMessage::Pointer imageMetaMessage,
-    PlusCommon::ImageMetaDataList& imageMetaDataList)
+    igsioCommon::ImageMetaDataList& imageMetaDataList)
 {
   if (imageMetaMessage.IsNull())
   {
     LOG_ERROR("Failed to pack image message - input image message is NULL");
     return PLUS_FAIL;
   }
-  for (PlusCommon::ImageMetaDataList::iterator it = imageMetaDataList.begin(); it != imageMetaDataList.end(); it++)
+  for (igsioCommon::ImageMetaDataList::iterator it = imageMetaDataList.begin(); it != imageMetaDataList.end(); it++)
   {
     igtl::ImageMetaElement::Pointer imageMetaElement = igtl::ImageMetaElement::New();
     igtl::TimeStamp::Pointer timeStamp =  igtl::TimeStamp::New();
@@ -561,7 +561,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackTransformMessage(igtl::TransformMessage
   transformName.GetTransformName(strTransformName);
 
   transformMessage->SetMetaDataElement("TransformValid", status == TOOL_OK);
-  transformMessage->SetMetaDataElement("TransformStatus", IANA_TYPE_US_ASCII, PlusCommon::ConvertToolStatusToString(status));
+  transformMessage->SetMetaDataElement("TransformStatus", IANA_TYPE_US_ASCII, igsioCommon::ConvertToolStatusToString(status));
   transformMessage->SetMatrix(igtlMatrix);
   transformMessage->SetTimeStamp(igtlTime);
   transformMessage->SetDeviceName(strTransformName.c_str());
@@ -628,7 +628,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackTrackingDataMessage(igtl::TrackingDataM
     trackElement->SetType(igtl::TrackingDataElement::TYPE_6D);
     trackElement->SetMatrix(matrix);
     trackingDataMessage->AddTrackingDataElement(trackElement);
-    trackingDataMessage->SetMetaDataElement(shortenedName + "Status", IANA_TYPE_US_ASCII,  PlusCommon::ConvertToolStatusToString(status));
+    trackingDataMessage->SetMetaDataElement(shortenedName + "Status", IANA_TYPE_US_ASCII,  igsioCommon::ConvertToolStatusToString(status));
   }
 
   trackingDataMessage->SetTimeStamp(igtlTime);
@@ -691,7 +691,7 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackTrackingDataMessage(igtl::MessageHead
     std::string statusStr;
     if (tdMsg->GetMetaDataElement(std::string(currentTrackingData->GetName()) + "Status", statusStr))
     {
-      status = PlusCommon::ConvertStringToToolStatus(statusStr);
+      status = igsioCommon::ConvertStringToToolStatus(statusStr);
     }
     vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
     if (igtlioTransformConverter::IGTLToVTKTransform(igtlMatrix, mat) != 1)
@@ -783,7 +783,7 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackTransformMessage(igtl::MessageHeader:
   toolStatus = TOOL_UNKNOWN;
   if (transMsg->GetMetaDataElement("TransformStatus", statusStr))
   {
-    toolStatus = PlusCommon::ConvertStringToToolStatus(statusStr);
+    toolStatus = igsioCommon::ConvertStringToToolStatus(statusStr);
   }
 
   // Get transform name
@@ -814,7 +814,7 @@ PlusStatus vtkPlusIgtlMessageCommon::PackPositionMessage(igtl::PositionMessage::
 
   positionMessage->SetPosition(position);
   positionMessage->SetQuaternion(quaternion);
-  positionMessage->SetMetaDataElement("TransformStatus", IANA_TYPE_US_ASCII, PlusCommon::ConvertToolStatusToString(status));
+  positionMessage->SetMetaDataElement("TransformStatus", IANA_TYPE_US_ASCII, igsioCommon::ConvertToolStatusToString(status));
   positionMessage->SetTimeStamp(igtlTime);
   positionMessage->SetDeviceName(strTransformName.c_str());
   positionMessage->Pack();
@@ -889,7 +889,7 @@ PlusStatus vtkPlusIgtlMessageCommon::UnpackPositionMessage(igtl::MessageHeader::
   toolStatus = TOOL_UNKNOWN;
   if (posMsg->GetMetaDataElement("Status", statusStr))
   {
-    toolStatus = PlusCommon::ConvertStringToToolStatus(statusStr);
+    toolStatus = igsioCommon::ConvertStringToToolStatus(statusStr);
   }
 
   // Get timestamp

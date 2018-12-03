@@ -597,14 +597,14 @@ PlusStatus vtkPlusStealthLinkTracker::UpdateTransformRepository(vtkIGSIOTransfor
 }
 
 //--------------------------------------------------------------------
-PlusStatus vtkPlusStealthLinkTracker::GetImageMetaData(PlusCommon::ImageMetaDataList& imageMetaData)
+PlusStatus vtkPlusStealthLinkTracker::GetImageMetaData(igsioCommon::ImageMetaDataList& imageMetaData)
 {
   if (!this->InternalShared->UpdateCurrentExam())  //this function is thread safe
   {
     return PLUS_FAIL;
   }
   LOG_INFO("Acquiring the image meta data from the device with DeviceId: " << this->GetDeviceId());
-  PlusCommon::ImageMetaDataItem imageMetaDataItem;
+  igsioCommon::ImageMetaDataItem imageMetaDataItem;
   MNavStealthLink::Exam exam;
   this->InternalShared->GetCurrentExam(exam);   // thread safe
 
@@ -617,7 +617,7 @@ PlusStatus vtkPlusStealthLinkTracker::GetImageMetaData(PlusCommon::ImageMetaData
   imageMetaDataItem.Size[0] = exam.size[0];
   imageMetaDataItem.Size[1] = exam.size[1];
   imageMetaDataItem.Size[2] = exam.size[2];
-  imageMetaDataItem.TimeStampUtc = vtkPlusAccurateTimer::GetUniversalTime();
+  imageMetaDataItem.TimeStampUtc = vtkIGSIOAccurateTimer::GetUniversalTime();
   imageMetaData.push_back(imageMetaDataItem);
   this->Internal->PairImageIdAndName.first = imageMetaDataItem.Id;
   this->Internal->PairImageIdAndName.second = this->Internal->GetExamAndPatientInformationAsString(exam);
@@ -752,7 +752,7 @@ PlusStatus vtkPlusStealthLinkTracker::GetImage(const std::string& requestedImage
     {
       MNavStealthLink::Exam exam;
       this->InternalShared->GetCurrentExam(exam);
-      vtkPlusAccurateTimer::Delay(1);   // Delay 1 second to make sure that this->Internal->RasToTracker is calculated correctly based on the new matrices, ijkToExamRpiTransform and ijkToRasTransform
+      vtkIGSIOAccurateTimer::Delay(1);   // Delay 1 second to make sure that this->Internal->RasToTracker is calculated correctly based on the new matrices, ijkToExamRpiTransform and ijkToRasTransform
       const igsioTransformName rasToTrackerTransformName("Ras", "Tracker");
 
       MNavStealthLink::NavData navData;
@@ -904,7 +904,7 @@ PlusStatus vtkPlusStealthLinkTracker::InternalConnect()
     return PLUS_FAIL;
   }
 
-  //Get the time difference between the StealthServer and the vtkPlusAccurateTimer
+  //Get the time difference between the StealthServer and the vtkIGSIOAccurateTimer
   double serverTimeInMicroSeconds = 0;
   if (!this->InternalShared->GetStealthStationServerTime(serverTimeInMicroSeconds))
   {
@@ -912,7 +912,7 @@ PlusStatus vtkPlusStealthLinkTracker::InternalConnect()
   }
   this->InternalUpdatePrivate->ServerInitialTimeInMicroSeconds = serverTimeInMicroSeconds;
 
-  this->InternalUpdatePrivate->TrackerTimeToSystemTimeSec =  vtkPlusAccurateTimer::GetSystemTime();
+  this->InternalUpdatePrivate->TrackerTimeToSystemTimeSec =  vtkIGSIOAccurateTimer::GetSystemTime();
 
   this->Internal->DicomImagesOutputDirectory = vtkPlusConfig::GetInstance()->GetOutputDirectory() +  std::string("/StealthLinkDicomOutput");
   this->Internal->KeepReceivedDicomFiles = false;
@@ -945,7 +945,7 @@ PlusStatus vtkPlusStealthLinkTracker::InternalUpdate()
   }
   double timeSystemSec = 0.0;
   timeSystemSec = (serverTimeInMicroSec - this->InternalUpdatePrivate->ServerInitialTimeInMicroSeconds) / (1e6) + this->InternalUpdatePrivate->TrackerTimeToSystemTimeSec;
-  double unfilteredTime = vtkPlusAccurateTimer::GetSystemTime();
+  double unfilteredTime = vtkIGSIOAccurateTimer::GetSystemTime();
   //----------------------------------------------------------
   MNavStealthLink::NavData navData;
   if (!this->InternalShared->GetCurrentNavigationData(navData))    //thread safe
@@ -1091,7 +1091,7 @@ PlusStatus vtkPlusStealthLinkTracker::AcquireDicomImage(std::string dicomImagesO
   this->RemoveForbiddenCharacters(description);
   std::string patientName = exam.patientName;
   this->RemoveForbiddenCharacters(patientName);
-  examImageDirectory = std::string(dicomImagesOutputDirectory) + std::string("/") + patientName + std::string("_") + description + std::string("_") + vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString();
+  examImageDirectory = std::string(dicomImagesOutputDirectory) + std::string("/") + patientName + std::string("_") + description + std::string("_") + vtkIGSIOAccurateTimer::GetInstance()->GetDateAndTimeString();
   if (!this->InternalShared->GetExamData(exam, examImageDirectory))
   {
     return PLUS_FAIL;

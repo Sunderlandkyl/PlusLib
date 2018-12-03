@@ -109,7 +109,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
         // The server only sends update if a transform is modified, it's not an error
         LOG_TRACE("No OpenIGTLink message has been received in device " << this->GetDeviceId());
         // Store the last known transform values (useful when the server only notifies about transform changes
-        double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+        double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
         StoreMostRecentTransformValues(unfilteredTimestamp);
         return PLUS_SUCCESS;
       }
@@ -120,7 +120,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
         if (!this->ClientSocket->GetConnected())
         {
           // Could not restore the connection, set transform status to INVALID
-          double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+          double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
           StoreInvalidTransforms(unfilteredTimestamp);
         }
         return PLUS_FAIL;
@@ -159,7 +159,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateTData()
   }
 
   // for now just use system time, all coordinates will be sequential.
-  double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   double filteredTimestamp = unfilteredTimestamp; // No need to filter already filtered timestamped items received over OpenIGTLink
   // We store the list of identified tools (tools we get information about from the tracker).
   // The tools that are missing from the tracker message are assumed to be out of view.
@@ -233,7 +233,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateGeneral()
 {
   LOG_TRACE("vtkPlusOpenIGTLinkTracker::InternalUpdateGeneral");
 
-  double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
   double maxAllocatedProcessingTime = 2.0;
   // set maxAllocatedProcessingTime to 2 acquisition periods to allow reading all transforms even when there aare slight delays
@@ -252,7 +252,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateGeneral()
       // an error occurred, stop processing the messages in this update iteration
       break;
     }
-    if (vtkPlusAccurateTimer::GetSystemTime() - unfilteredTimestamp > maxAllocatedProcessingTime)
+    if (vtkIGSIOAccurateTimer::GetSystemTime() - unfilteredTimestamp > maxAllocatedProcessingTime)
     {
       // no more time for processing messages in this iteration
       break;
@@ -274,7 +274,7 @@ PlusStatus vtkPlusOpenIGTLinkTracker::InternalUpdateGeneral()
   if (!this->ClientSocket->GetConnected())
   {
     // Could not restore the connection, set transform status to INVALID
-    double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
     StoreInvalidTransforms(unfilteredTimestamp);
     return PLUS_FAIL;
   }
@@ -343,11 +343,11 @@ PlusStatus vtkPlusOpenIGTLinkTracker::ProcessTransformMessageGeneral(bool& moreM
   {
     // Use the timestamp in the OpenIGTLink message
     // The received timestamp is in UTC and timestamps in the buffer are in system time, so conversion is needed
-    unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTimeFromUniversalTime(unfilteredTimestampUtc);
+    unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTimeFromUniversalTime(unfilteredTimestampUtc);
   }
   else
   {
-    unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   }
 
   // No need to filter already filtered timestamped items received over OpenIGTLink
@@ -521,5 +521,5 @@ bool vtkPlusOpenIGTLinkTracker::IsTDataMessageType()
   {
     return false;
   }
-  return (PlusCommon::IsEqualInsensitive(this->MessageType, "TDATA"));
+  return (igsioCommon::IsEqualInsensitive(this->MessageType, "TDATA"));
 }

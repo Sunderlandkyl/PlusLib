@@ -15,7 +15,7 @@ See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 #define __vtkPlusDataBuffer_h
 
 // Local includes
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 #include "PlusConfigure.h"
 #include "vtkPlusDataCollectionExport.h"
 #include "PlusStreamBufferItem.h"
@@ -102,7 +102,7 @@ public:
   virtual PlusStatus AddItem(void* imageDataPtr,
                              US_IMAGE_ORIENTATION usImageOrientation,
                              const FrameSizeType& inputFrameSizeInPx,
-                             PlusCommon::VTKScalarPixelType pixelType,
+                             igsioCommon::VTKScalarPixelType pixelType,
                              unsigned int numberOfScalarComponents,
                              US_IMAGE_TYPE imageType,
                              int numberOfBytesToSkip,
@@ -278,9 +278,9 @@ public:
   virtual PlusStatus GetFrameSize(unsigned int& _arg1, unsigned int& _arg2, unsigned int& _arg3) const;
 
   /*! Set the pixel type */
-  PlusStatus SetPixelType(PlusCommon::VTKScalarPixelType pixelType);
+  PlusStatus SetPixelType(igsioCommon::VTKScalarPixelType pixelType);
   /*! Get the pixel type */
-  vtkGetMacro(PixelType, PlusCommon::VTKScalarPixelType);
+  vtkGetMacro(PixelType, igsioCommon::VTKScalarPixelType);
 
   /*! Set the number of scalar components */
   PlusStatus SetNumberOfScalarComponents(unsigned int numberOfScalarComponents);
@@ -326,7 +326,7 @@ protected:
     Compares frame format with new frame imaging parameters.
     \return true if current buffer frame format matches the method arguments, otherwise false
   */
-  virtual bool CheckFrameFormat(const FrameSizeType& frameSizeInPx, PlusCommon::VTKScalarPixelType pixelType, US_IMAGE_TYPE imgType, int numberOfScalarComponents);
+  virtual bool CheckFrameFormat(const FrameSizeType& frameSizeInPx, igsioCommon::VTKScalarPixelType pixelType, US_IMAGE_TYPE imgType, int numberOfScalarComponents);
 
   /*! Returns the two buffer items that are closest previous and next buffer items relative to the specified time. itemA is the closest item */
   PlusStatus GetPrevNextBufferItemFromTime(double time, StreamBufferItem& itemA, StreamBufferItem& itemB);
@@ -349,7 +349,7 @@ protected:
   FrameSizeType FrameSize;
 
   /*! Image pixel type */
-  PlusCommon::VTKScalarPixelType PixelType;
+  igsioCommon::VTKScalarPixelType PixelType;
 
   /*! Number of scalar components */
   unsigned int NumberOfScalarComponents;

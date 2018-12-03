@@ -5,7 +5,7 @@ See License.txt for details.
 =========================================================Plus=header=end*/
 
 // Local includes
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 #include "PlusConfigure.h"
 #include "igsioTrackedFrame.h"
 #include "vtkPlusChannel.h"
@@ -103,7 +103,7 @@ vtkPlusOpenIGTLinkServer::vtkPlusOpenIGTLinkServer()
   , BroadcastChannel(NULL)
   , LogWarningOnNoDataAvailable(true)
   , KeepAliveIntervalSec(CLIENT_SOCKET_TIMEOUT_SEC / 2.0)
-  , GracePeriodLogLevel(vtkPlusLogger::LOG_LEVEL_DEBUG)
+  , GracePeriodLogLevel(vtkIGSIOLogger::LOG_LEVEL_DEBUG)
   , MissingInputGracePeriodSec(0.0)
   , BroadcastStartTime(0.0)
 {
@@ -191,7 +191,7 @@ PlusStatus vtkPlusOpenIGTLinkServer::StartOpenIGTLinkService()
 
   this->PlusCommandProcessor->SetPlusServer(this);
 
-  this->BroadcastStartTime = vtkPlusAccurateTimer::GetSystemTime();
+  this->BroadcastStartTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   return PLUS_SUCCESS;
 }
@@ -206,7 +206,7 @@ PlusStatus vtkPlusOpenIGTLinkServer::StopOpenIGTLinkService()
     while (this->ConnectionActive.Respond)
     {
       // Wait until the thread stops
-      vtkPlusAccurateTimer::DelayWithEventProcessing(0.2);
+      vtkIGSIOAccurateTimer::DelayWithEventProcessing(0.2);
     }
     this->ConnectionReceiverThreadId = -1;
     LOG_DEBUG("ConnectionReceiverThread stopped");
@@ -366,14 +366,14 @@ void* vtkPlusOpenIGTLinkServer::DataSenderThread(vtkMultiThreader::ThreadInfo* d
     if (!clientsConnected)
     {
       // No client connected, wait for a while
-      vtkPlusAccurateTimer::Delay(0.2);
+      vtkIGSIOAccurateTimer::Delay(0.2);
       self->LastSentTrackedFrameTimestamp = 0; // next time start sending from the most recent timestamp
       continue;
     }
 
     if (self->HasGracePeriodExpired())
     {
-      self->GracePeriodLogLevel = vtkPlusLogger::LOG_LEVEL_WARNING;
+      self->GracePeriodLogLevel = vtkIGSIOLogger::LOG_LEVEL_WARNING;
     }
 
     SendMessageResponses(*self);
@@ -394,7 +394,7 @@ void* vtkPlusOpenIGTLinkServer::DataSenderThread(vtkMultiThreader::ThreadInfo* d
 PlusStatus vtkPlusOpenIGTLinkServer::SendLatestFramesToClients(vtkPlusOpenIGTLinkServer& self, double& elapsedTimeSinceLastPacketSentSec)
 {
   vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
 
   // Acquire tracked frames since last acquisition (minimum 1 frame)
   if (self.LastProcessingTimePerFrameMs < 1)
@@ -427,7 +427,7 @@ PlusStatus vtkPlusOpenIGTLinkServer::SendLatestFramesToClients(vtkPlusOpenIGTLin
           LOG_INFO("OpenIGTLink broadcasting started. No data was available between " << self.LastSentTrackedFrameTimestamp << "-" << oldestDataTimestamp << "sec, therefore no data were broadcasted during this time period.");
           self.LastSentTrackedFrameTimestamp = oldestDataTimestamp + SAMPLING_SKIPPING_MARGIN_SEC;
         }
-        static vtkPlusLogHelper logHelper(60.0, 500000);
+        static vtkIGSIOLogHelper logHelper(60.0, 500000);
         CUSTOM_RETURN_WITH_FAIL_IF(self.BroadcastChannel->GetTrackedFrameList(self.LastSentTrackedFrameTimestamp, trackedFrameList, numberOfFramesToGet) != PLUS_SUCCESS,
                                    "Failed to get tracked frame list from data collector (last recorded timestamp: " << std::fixed << self.LastSentTrackedFrameTimestamp);
       }
@@ -437,8 +437,8 @@ PlusStatus vtkPlusOpenIGTLinkServer::SendLatestFramesToClients(vtkPlusOpenIGTLin
   // There is no new frame in the buffer
   if (trackedFrameList->GetNumberOfTrackedFrames() == 0)
   {
-    vtkPlusAccurateTimer::Delay(DELAY_ON_NO_NEW_FRAMES_SEC);
-    elapsedTimeSinceLastPacketSentSec += vtkPlusAccurateTimer::GetSystemTime() - startTimeSec;
+    vtkIGSIOAccurateTimer::Delay(DELAY_ON_NO_NEW_FRAMES_SEC);
+    elapsedTimeSinceLastPacketSentSec += vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec;
 
     // Send keep alive packet to clients
     if (elapsedTimeSinceLastPacketSentSec > self.KeepAliveIntervalSec)
@@ -459,7 +459,7 @@ PlusStatus vtkPlusOpenIGTLinkServer::SendLatestFramesToClients(vtkPlusOpenIGTLin
   }
 
   // Compute time spent with processing one frame in this round
-  double computationTimeMs = (vtkPlusAccurateTimer::GetSystemTime() - startTimeSec) * 1000.0;
+  double computationTimeMs = (vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec) * 1000.0;
 
   // Update last processing time if new tracked frames have been acquired
   if (trackedFrameList->GetNumberOfTrackedFrames() > 0)
@@ -571,7 +571,7 @@ void* vtkPlusOpenIGTLinkServer::DataReceiverThread(vtkMultiThreader::ThreadInfo*
     int bytesReceived = clientSocket->Receive(headerMsg->GetBufferPointer(), headerMsg->GetBufferSize());
     if (bytesReceived == IGTL_EMPTY_DATA_SIZE || bytesReceived != headerMsg->GetBufferSize())
     {
-      vtkPlusAccurateTimer::Delay(0.1);
+      vtkIGSIOAccurateTimer::Delay(0.1);
       continue;
     }
 
@@ -913,7 +913,7 @@ void* vtkPlusOpenIGTLinkServer::DataReceiverThread(vtkMultiThreader::ThreadInfo*
           fileName = getPointMsg->GetDeviceName();
         }
 
-        if (PlusCommon::Tail(fileName, 4) != "fcsv")
+        if (igsioCommon::Tail(fileName, 4) != "fcsv")
         {
           LOG_WARNING("Filename does not end in fcsv. GetPoint behaviour may not function correctly.");
         }
@@ -940,16 +940,16 @@ void* vtkPlusOpenIGTLinkServer::DataReceiverThread(vtkMultiThreader::ThreadInfo*
         }
         std::stringstream buffer;
         buffer << t.rdbuf();
-        std::vector<std::string> lines = PlusCommon::SplitStringIntoTokens(buffer.str(), '\n', false);
+        std::vector<std::string> lines = igsioCommon::SplitStringIntoTokens(buffer.str(), '\n', false);
         for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it)
         {
-          std::string line = PlusCommon::Trim(*it);
+          std::string line = igsioCommon::Trim(*it);
           if (line[0] == '#')
           {
             continue;
           }
 
-          std::vector<std::string> tokens = PlusCommon::SplitStringIntoTokens(line, ',', true);
+          std::vector<std::string> tokens = igsioCommon::SplitStringIntoTokens(line, ',', true);
           igtl::PointElement::Pointer elem = igtl::PointElement::New();
           elem->SetPosition(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
           elem->SetName(tokens[0].c_str());
@@ -998,7 +998,7 @@ PlusStatus vtkPlusOpenIGTLinkServer::SendTrackedFrame(igsioTrackedFrame& tracked
 
   // Convert relative timestamp to UTC
   double timestampSystem = trackedFrame.GetTimestamp(); // save original timestamp, we'll restore it later
-  double timestampUniversal = vtkPlusAccurateTimer::GetUniversalTimeFromSystemTime(timestampSystem);
+  double timestampUniversal = vtkIGSIOAccurateTimer::GetUniversalTimeFromSystemTime(timestampSystem);
   trackedFrame.SetTimestamp(timestampUniversal);
 
   std::vector<int> disconnectedClientIds;
@@ -1108,7 +1108,7 @@ void vtkPlusOpenIGTLinkServer::DisconnectClient(int clientId)
     if (clientDataReceiverThreadStillActive)
     {
       // give some time for the threads to finish
-      vtkPlusAccurateTimer::DelayWithEventProcessing(0.2);
+      vtkIGSIOAccurateTimer::DelayWithEventProcessing(0.2);
     }
   }
   while (clientDataReceiverThreadStillActive);
@@ -1262,7 +1262,7 @@ int vtkPlusOpenIGTLinkServer::ProcessPendingCommands()
 //------------------------------------------------------------------------------
 bool vtkPlusOpenIGTLinkServer::HasGracePeriodExpired()
 {
-  return (vtkPlusAccurateTimer::GetSystemTime() - this->BroadcastStartTime) > this->MissingInputGracePeriodSec;
+  return (vtkIGSIOAccurateTimer::GetSystemTime() - this->BroadcastStartTime) > this->MissingInputGracePeriodSec;
 }
 
 //------------------------------------------------------------------------------
@@ -1356,7 +1356,7 @@ igtl::MessageBase::Pointer vtkPlusOpenIGTLinkServer::CreateIgtlMessageFromComman
     igtl::ImageMessage::Pointer igtlMessage = dynamic_cast<igtl::ImageMessage*>(this->IgtlMessageFactory->CreateSendMessage("IMAGE", replyHeaderVersion).GetPointer());
     igtlMessage->SetDeviceName(imageName.c_str());
 
-    if (vtkPlusIgtlMessageCommon::PackImageMessage(igtlMessage, imageData, *imageToReferenceTransform, vtkPlusAccurateTimer::GetSystemTime()) != PLUS_SUCCESS)
+    if (vtkPlusIgtlMessageCommon::PackImageMessage(igtlMessage, imageData, *imageToReferenceTransform, vtkIGSIOAccurateTimer::GetSystemTime()) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to create image mesage from command response");
       return NULL;
@@ -1384,7 +1384,7 @@ igtl::MessageBase::Pointer vtkPlusOpenIGTLinkServer::CreateIgtlMessageFromComman
     igtlMessage->SetDeviceName("PlusServer");
     igtlMessage->SetMetaDataElement("fileName", IANA_TYPE_US_ASCII, polydataName);
 
-    if (vtkPlusIgtlMessageCommon::PackPolyDataMessage(igtlMessage, polyData, vtkPlusAccurateTimer::GetSystemTime()) != PLUS_SUCCESS)
+    if (vtkPlusIgtlMessageCommon::PackPolyDataMessage(igtlMessage, polyData, vtkIGSIOAccurateTimer::GetSystemTime()) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to create polydata mesage from command response");
       return NULL;
@@ -1396,7 +1396,7 @@ igtl::MessageBase::Pointer vtkPlusOpenIGTLinkServer::CreateIgtlMessageFromComman
   if (imageMetaDataResponse)
   {
     std::string imageMetaDataName = "PlusServerImageMetaData";
-    PlusCommon::ImageMetaDataList imageMetaDataList;
+    igsioCommon::ImageMetaDataList imageMetaDataList;
     imageMetaDataResponse->GetImageMetaDataItems(imageMetaDataList);
     igtl::ImageMetaMessage::Pointer igtlMessage = dynamic_cast<igtl::ImageMetaMessage*>(this->IgtlMessageFactory->CreateSendMessage("IMGMETA", replyHeaderVersion).GetPointer());
     igtlMessage->SetDeviceName(imageMetaDataName.c_str());

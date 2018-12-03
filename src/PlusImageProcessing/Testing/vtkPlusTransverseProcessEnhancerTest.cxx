@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   std::string outputConfigFileName;
   std::string outputFileName;
   bool saveIntermediateResults = false;
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   //Get command line arguments
   args.Initialize(argc, argv);
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   //check for various non-optional command line arguments
   int commandCheckStatus = EXIT_SUCCESS;
@@ -200,7 +200,7 @@ int main(int argc, char** argv)
       LOG_ERROR("Unable to write to config file.");
       return EXIT_FAILURE;
     }
-    if (PlusCommon::XML::PrintXML(outputConfigFileName, processorWriteData) == PLUS_FAIL)
+    if (igsioCommon::XML::PrintXML(outputConfigFileName, processorWriteData) == PLUS_FAIL)
     {
       LOG_ERROR("An error occured when trying to save to the config file " << outputConfigFileName);
       return EXIT_FAILURE;

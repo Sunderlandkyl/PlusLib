@@ -132,7 +132,7 @@ PlusStatus vtkPlusPhantomLandmarkRegistrationAlgo::LandmarkRegister( vtkIGSIOTra
     igsioTransformName phantomToReferenceTransformName( this->PhantomCoordinateFrame, this->ReferenceCoordinateFrame );
     aTransformRepository->SetTransform( phantomToReferenceTransformName, this->PhantomToReferenceTransformMatrix );
     aTransformRepository->SetTransformPersistent( phantomToReferenceTransformName, true );
-    aTransformRepository->SetTransformDate( phantomToReferenceTransformName, vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString().c_str() );
+    aTransformRepository->SetTransformDate( phantomToReferenceTransformName, vtkIGSIOAccurateTimer::GetInstance()->GetDateAndTimeString().c_str() );
     aTransformRepository->SetTransformError( phantomToReferenceTransformName, this->RegistrationErrorMm );
   }
   else

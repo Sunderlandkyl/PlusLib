@@ -184,7 +184,7 @@ PlusStatus vtkPlusOptimetConoProbeMeasurer::InternalUpdate()
 
 	// Create frame number and time stamp
 	unsigned long frameNumber = this->MeasurementTool->GetFrameNumber() + 1 ;
-	const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+	const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
 	// Send transforms
 	igsioTransformName name("Measurement", this->GetToolReferenceFrameName());

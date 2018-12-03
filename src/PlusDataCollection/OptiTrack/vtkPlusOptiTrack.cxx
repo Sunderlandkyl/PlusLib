@@ -98,7 +98,7 @@ void vtkPlusOptiTrack::vtkInternal::UpdateMotiveDataDescriptions()
     }
   }
 
-  this->LastMotiveDataDescriptionsUpdateTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  this->LastMotiveDataDescriptionsUpdateTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 }
 
 //-----------------------------------------------------------------------
@@ -326,7 +326,7 @@ PlusStatus vtkPlusOptiTrack::InternalUpdate()
 PlusStatus vtkPlusOptiTrack::InternalCallback(sFrameOfMocapData* data)
 {
   LOG_TRACE("vtkPlusOptiTrack::InternalCallback");
-  const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
   if (this->Internal->LastMotiveDataDescriptionsUpdateTimestamp < 0)
   {

@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
   std::string inputImageToReferenceTransformNameDeprecated;
   std::string inputImgSeqFileNameDeprecated;
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   bool disableCompression = false;
 
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
   }
 
   // Set the log level
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   // Deprecated arguments (2013-07-29, #800)
   if (!inputImageToReferenceTransformNameDeprecated.empty())
@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
   for (int frameIndex = 0; frameIndex < numberOfFrames; frameIndex += reconstructor->GetSkipInterval())
   {
     LOG_DEBUG("Frame: " << frameIndex);
-    vtkPlusLogger::PrintProgressbar((100.0 * frameIndex) / numberOfFrames);
+    vtkIGSIOLogger::PrintProgressbar((100.0 * frameIndex) / numberOfFrames);
 
     igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
 
@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  vtkPlusLogger::PrintProgressbar(100);
+  vtkIGSIOLogger::PrintProgressbar(100);
 
   trackedFrameList->Clear();
 

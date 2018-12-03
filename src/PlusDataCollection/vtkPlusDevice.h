@@ -8,7 +8,7 @@ See License.txt for details.
 #define __vtkPlusDevice_h
 
 // Local includes
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 #include "PlusConfigure.h"
 #include "PlusStreamBufferItem.h"
 //#include "igsioTrackedFrame.h"
@@ -363,9 +363,9 @@ public:
   virtual PlusStatus GetOutputFrameSize(vtkPlusChannel& aChannel, FrameSizeType& dim) const;
 
   /*! Set the pixel type (char, unsigned short, ...) */
-  virtual PlusStatus SetPixelType(vtkPlusChannel& aChannel, PlusCommon::VTKScalarPixelType pixelType);
+  virtual PlusStatus SetPixelType(vtkPlusChannel& aChannel, igsioCommon::VTKScalarPixelType pixelType);
   /*! Get the pixel type (char, unsigned short, ...) */
-  virtual PlusCommon::VTKScalarPixelType GetPixelType(vtkPlusChannel& aChannel);
+  virtual igsioCommon::VTKScalarPixelType GetPixelType(vtkPlusChannel& aChannel);
 
   /*! Set the image type (B-mode, RF, ...) provided by the video source. */
   virtual PlusStatus SetImageType(vtkPlusChannel& aChannel, US_IMAGE_TYPE imageType);
@@ -420,7 +420,7 @@ public:
   PlusStatus GetFirstActiveOutputVideoSource(vtkPlusDataSource*& aVideoSource);
 
   /*! Return a list of items that describe what image volumes this device can provide */
-  virtual PlusStatus GetImageMetaData(PlusCommon::ImageMetaDataList& imageMetaDataItems);
+  virtual PlusStatus GetImageMetaData(igsioCommon::ImageMetaDataList& imageMetaDataItems);
 
   /*!
     Return the specified volume from the corresponding device. The assignedImageId and requestedImageId should be the same
@@ -466,7 +466,7 @@ protected:
   This function can be called to add a video item to the specified video data sources
   */
   virtual PlusStatus AddVideoItemToVideoSources(const std::vector<vtkPlusDataSource*>& videoSources, void* imageDataPtr, US_IMAGE_ORIENTATION usImageOrientation, const FrameSizeType& frameSizeInPx,
-      PlusCommon::VTKScalarPixelType pixelType, unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
+      igsioCommon::VTKScalarPixelType pixelType, unsigned int numberOfScalarComponents, US_IMAGE_TYPE imageType, int numberOfBytesToSkip, long frameNumber, double unfilteredTimestamp = UNDEFINED_TIMESTAMP,
       double filteredTimestamp = UNDEFINED_TIMESTAMP, const igsioTrackedFrame::FieldMapType* customFields = NULL);
 
   /*!

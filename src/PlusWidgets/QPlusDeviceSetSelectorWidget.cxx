@@ -331,7 +331,7 @@ PlusStatus QPlusDeviceSetSelectorWidget::ParseDirectory(const QString& aDirector
   {
     QString fileName = QDir::toNativeSeparators(QString(configDir.absoluteFilePath(filesIterator.next())));
     QString extension = fileName.mid(fileName.lastIndexOf("."));
-    if (!PlusCommon::IsEqualInsensitive(extension.toStdString(), ".xml"))
+    if (!igsioCommon::IsEqualInsensitive(extension.toStdString(), ".xml"))
     {
       continue;
     }

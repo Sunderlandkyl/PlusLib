@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
   double inputRotationErrorThreshold(1e-10);
 #endif
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     exit(EXIT_SUCCESS);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   LOG_INFO("Read configuration file...");
 
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
       return EXIT_FAILURE;
     }
 
-    PlusCommon::XML::PrintXML(resultConfigFileName.c_str(), vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
+    igsioCommon::XML::PrintXML(resultConfigFileName.c_str(), vtkPlusConfig::GetInstance()->GetDeviceSetConfigurationData());
   }
 
   if (!inputBaselineFileName.empty())
@@ -570,7 +570,7 @@ int CompareCalibrationResultsWithBaseline(const char* baselineFileName, const ch
           continue;
         }
 
-        if (PlusCommon::IsEqualInsensitive(segmentationStatusBaseline, "OK"))
+        if (igsioCommon::IsEqualInsensitive(segmentationStatusBaseline, "OK"))
         {
           {
             // <SegmentedPoints>
@@ -769,7 +769,7 @@ int CompareCalibrationResultsWithBaseline(const char* baselineFileName, const ch
           continue;
         }
 
-        if (PlusCommon::IsEqualInsensitive(segmentationStatusBaseline, "OK"))
+        if (igsioCommon::IsEqualInsensitive(segmentationStatusBaseline, "OK"))
         {
           {
             // <SegmentedPoints>

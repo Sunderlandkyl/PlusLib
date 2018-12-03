@@ -73,7 +73,7 @@ public:
   static PlusStatus UnpackImageMessage(igtl::MessageHeader::Pointer headerMsg, igtl::Socket* socket, igsioTrackedFrame& trackedFrame, const igsioTransformName& embeddedTransformName, int crccheck);
 
   /*! Pack image meta deta message from vtkPlusServer::ImageMetaDataList  */
-  static PlusStatus PackImageMetaMessage(igtl::ImageMetaMessage::Pointer imageMetaMessage, PlusCommon::ImageMetaDataList& imageMetaDataList);
+  static PlusStatus PackImageMetaMessage(igtl::ImageMetaMessage::Pointer imageMetaMessage, igsioCommon::ImageMetaDataList& imageMetaDataList);
 
 #if defined(OpenIGTLink_ENABLE_VIDEOSTREAMING)
   /*! Pack video message from tracked frame */

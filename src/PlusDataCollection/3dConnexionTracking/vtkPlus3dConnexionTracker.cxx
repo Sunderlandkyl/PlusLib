@@ -439,7 +439,7 @@ PlusStatus vtkPlus3dConnexionTracker::InternalUpdate()
 {
   LOG_TRACE("vtkPlus3dConnexionTracker::InternalUpdate");
 
-  const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
   if (this->SpaceNavigatorTool != NULL)
   {

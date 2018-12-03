@@ -157,7 +157,7 @@ PlusStatus vtkPlusMicronTracker::InternalUpdate()
   }
 
   // Setting the timestamp
-  const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
   if (this->MicronTracker->mtGrabFrame() != 0) // mtOK
   {

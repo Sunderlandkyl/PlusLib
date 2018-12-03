@@ -186,13 +186,13 @@ STDMETHODIMP MmfVideoSourceReader::OnReadSample(HRESULT hrStatus, DWORD dwStream
     GUID videoFormat = DEFAULT_PIXEL_TYPE;
     pType->GetGUID(MF_MT_SUBTYPE, &videoFormat);
     std::wstring videoFormatWStr = MfVideoCapture::FormatReader::StringFromGUID(videoFormat);
-    if (PlusCommon::HasSubstrInsensitive(videoFormatWStr, MF_VIDEO_FORMAT_PREFIX))
+    if (igsioCommon::HasSubstrInsensitive(videoFormatWStr, MF_VIDEO_FORMAT_PREFIX))
     {
       // found standard prefix, remove it
       videoFormatWStr.erase(0, MF_VIDEO_FORMAT_PREFIX.size());
     }
 
-    if (!PlusCommon::IsEqualInsensitive(videoFormatWStr, this->PlusDevice->ActiveVideoFormat.PixelFormatName))
+    if (!igsioCommon::IsEqualInsensitive(videoFormatWStr, this->PlusDevice->ActiveVideoFormat.PixelFormatName))
     {
       LOG_ERROR_W("Unexpected video format: " << videoFormatWStr << " (expected: " << this->PlusDevice->ActiveVideoFormat.PixelFormatName << ")");
       return S_FALSE;
@@ -573,7 +573,7 @@ void vtkPlusMmfVideoSource::GetListOfCaptureVideoFormats(std::vector<std::wstrin
     {
       MfVideoCapture::MediaType type = MfVideoCapture::MediaFoundationVideoCaptureApi::GetInstance().GetFormat(deviceId, streamIndex, formatIndex);
       std::wstring pixelType(type.MF_MT_SUBTYPEName.begin(), type.MF_MT_SUBTYPEName.end());
-      if (PlusCommon::HasSubstrInsensitive(pixelType, MF_VIDEO_FORMAT_PREFIX))
+      if (igsioCommon::HasSubstrInsensitive(pixelType, MF_VIDEO_FORMAT_PREFIX))
       {
         // found standard prefix, remove it
         pixelType.erase(0, MF_VIDEO_FORMAT_PREFIX.size());
@@ -618,7 +618,7 @@ PlusStatus vtkPlusMmfVideoSource::AddFrame(unsigned char* bufferData, DWORD buff
 
   PlusStatus decodingStatus(PLUS_SUCCESS);
   PixelCodec::PixelEncoding encoding(PixelCodec::PixelEncoding_ERROR);
-  if (PlusCommon::IsEqualInsensitive(this->ActiveVideoFormat.PixelFormatName, L"YUY2"))
+  if (igsioCommon::IsEqualInsensitive(this->ActiveVideoFormat.PixelFormatName, L"YUY2"))
   {
     if (bufferSize < frameSize[0] * frameSize[1] * 2)
     {
@@ -627,11 +627,11 @@ PlusStatus vtkPlusMmfVideoSource::AddFrame(unsigned char* bufferData, DWORD buff
     }
     encoding = PixelCodec::PixelEncoding_YUY2;
   }
-  else if (PlusCommon::IsEqualInsensitive(this->ActiveVideoFormat.PixelFormatName, L"MJPG"))
+  else if (igsioCommon::IsEqualInsensitive(this->ActiveVideoFormat.PixelFormatName, L"MJPG"))
   {
     encoding = PixelCodec::PixelEncoding_MJPG;
   }
-  else if (PlusCommon::IsEqualInsensitive(this->ActiveVideoFormat.PixelFormatName, L"RGB24"))
+  else if (igsioCommon::IsEqualInsensitive(this->ActiveVideoFormat.PixelFormatName, L"RGB24"))
   {
     if (bufferSize < frameSize[0] * frameSize[1] * 3)
     {

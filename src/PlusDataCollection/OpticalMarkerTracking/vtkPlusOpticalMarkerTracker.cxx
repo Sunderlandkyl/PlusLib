@@ -349,7 +349,7 @@ PlusStatus vtkPlusOpticalMarkerTracker::InternalUpdate()
   if (this->InputChannels[0]->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
   {
     LOG_ERROR("Error while getting latest tracked frame. Last recorded timestamp: " << std::fixed << this->LastProcessedInputDataTimestamp << ". Device ID: " << this->GetDeviceId());
-    this->LastProcessedInputDataTimestamp = vtkPlusAccurateTimer::GetSystemTime(); // forget about the past, try to add frames that are acquired from now on
+    this->LastProcessedInputDataTimestamp = vtkIGSIOAccurateTimer::GetSystemTime(); // forget about the past, try to add frames that are acquired from now on
     return PLUS_FAIL;
   }
 
@@ -373,7 +373,7 @@ PlusStatus vtkPlusOpticalMarkerTracker::InternalUpdate()
   for (std::vector<TrackedTool>::iterator toolIt = begin(this->Internal->Tools); toolIt != end(this->Internal->Tools); ++toolIt)
   {
     bool toolInFrame = false;
-    const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
     for (std::vector<aruco::Marker>::iterator markerIt = begin(this->Internal->Markers); markerIt != end(this->Internal->Markers); ++markerIt)
     {
       if (toolIt->MarkerId == markerIt->id)

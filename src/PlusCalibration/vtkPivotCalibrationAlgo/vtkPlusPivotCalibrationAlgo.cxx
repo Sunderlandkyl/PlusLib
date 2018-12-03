@@ -245,7 +245,7 @@ PlusStatus vtkPlusPivotCalibrationAlgo::DoPivotCalibration(vtkIGSIOTransformRepo
     igsioTransformName pivotPointToMarkerTransformName(this->ObjectPivotPointCoordinateFrame, this->ObjectMarkerCoordinateFrame);
     aTransformRepository->SetTransform(pivotPointToMarkerTransformName, this->PivotPointToMarkerTransformMatrix);
     aTransformRepository->SetTransformPersistent(pivotPointToMarkerTransformName, true);
-    aTransformRepository->SetTransformDate(pivotPointToMarkerTransformName, vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
+    aTransformRepository->SetTransformDate(pivotPointToMarkerTransformName, vtkIGSIOAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
     aTransformRepository->SetTransformError(pivotPointToMarkerTransformName, this->CalibrationError);
   }
   else

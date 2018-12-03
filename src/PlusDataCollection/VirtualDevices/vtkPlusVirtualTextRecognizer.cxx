@@ -6,7 +6,7 @@ See License.txt for details.
 
 #include "PlusConfigure.h"
 
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 #include "vtkPlusDataCollector.h"
 #include "vtkObjectFactory.h"
 #include "vtkPlusChannel.h"
@@ -121,7 +121,7 @@ PlusStatus vtkPlusVirtualTextRecognizer::InternalUpdate()
       this->TesseractAPI->SetImage(parameter->ReceivedFrame);
       char* text_out = this->TesseractAPI->GetUTF8Text();
       std::string textStr(text_out);
-      parameter->LatestParameterValue = PlusCommon::Trim(textStr);
+      parameter->LatestParameterValue = igsioCommon::Trim(textStr);
       delete [] text_out;
 
       frame.SetFrameField(parameter->ParameterName, parameter->LatestParameterValue);
@@ -338,7 +338,7 @@ PlusStatus vtkPlusVirtualTextRecognizer::WriteConfiguration(vtkXMLDataElement* r
 {
   XML_FIND_DEVICE_ELEMENT_REQUIRED_FOR_WRITING(deviceConfig, rootConfigElement);
 
-  if (!PlusCommon::IsEqualInsensitive(this->Language, DEFAULT_LANGUAGE))
+  if (!igsioCommon::IsEqualInsensitive(this->Language, DEFAULT_LANGUAGE))
   {
     XML_WRITE_STRING_ATTRIBUTE_IF_NOT_EMPTY(Language, deviceConfig);
   }

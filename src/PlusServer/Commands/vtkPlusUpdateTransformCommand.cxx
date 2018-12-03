@@ -49,7 +49,7 @@ void vtkPlusUpdateTransformCommand::GetCommandNames(std::list<std::string>& cmdN
 std::string vtkPlusUpdateTransformCommand::GetDescription(const std::string& commandName)
 {
   std::string desc;
-  if (commandName.empty() || PlusCommon::IsEqualInsensitive(commandName, UPDATE_TRANSFORM_CMD))
+  if (commandName.empty() || igsioCommon::IsEqualInsensitive(commandName, UPDATE_TRANSFORM_CMD))
   {
     desc += UPDATE_TRANSFORM_CMD;
     desc += ": Update the details of a transform in the remote transform repository.";

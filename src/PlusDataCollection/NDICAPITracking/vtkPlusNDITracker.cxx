@@ -329,7 +329,7 @@ PlusStatus vtkPlusNDITracker::InternalConnectSerial()
   this->LeaveDeviceOpenAfterProbe = true;
   if (this->Probe() == PLUS_FAIL)
   {
-    LOG_ERROR("Failed to detect device" << (this->SerialPort < 0 ? ". Port scanning failed. " : " on serial port " + std::string(ndiSerialDeviceName(this->SerialPort)) + " (index " + PlusCommon::ToString<int>(this->SerialPort) + "). ") << ndiErrorString(NDI_OPEN_ERROR));
+    LOG_ERROR("Failed to detect device" << (this->SerialPort < 0 ? ". Port scanning failed. " : " on serial port " + std::string(ndiSerialDeviceName(this->SerialPort)) + " (index " + igsioCommon::ToString<int>(this->SerialPort) + "). ") << ndiErrorString(NDI_OPEN_ERROR));
     return PLUS_FAIL;
   }
 
@@ -504,7 +504,7 @@ PlusStatus vtkPlusNDITracker::InternalUpdate()
   // default to incrementing frame count by one (in case a frame index cannot be retrieved from the tracker for a specific tool)
   this->LastFrameNumber++;
   int defaultToolFrameNumber = this->LastFrameNumber;
-  const double toolTimestamp = vtkPlusAccurateTimer::GetSystemTime(); // unfiltered timestamp
+  const double toolTimestamp = vtkIGSIOAccurateTimer::GetSystemTime(); // unfiltered timestamp
   vtkSmartPointer<vtkMatrix4x4> toolToTrackerTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   for (DataSourceContainerConstIterator it = this->GetToolIteratorBegin(); it != this->GetToolIteratorEnd(); ++it)
   {
@@ -763,25 +763,25 @@ PlusStatus vtkPlusNDITracker::EnableToolPorts()
     ndiGetPHINFToolInfo(this->Device, identity);
     identity[31] = '\0';
     std::string serialNumber(&identity[23]);
-    PlusCommon::Trim(serialNumber);
+    igsioCommon::Trim(serialNumber);
     trackerTool->SetCustomProperty("SerialNumber", serialNumber);
     identity[23] = '\0';
     std::string toolRevision(&identity[20]);
-    PlusCommon::Trim(toolRevision);
+    igsioCommon::Trim(toolRevision);
     trackerTool->SetCustomProperty("Revision", toolRevision);
     identity[20] = '\0';
     std::string toolManufacturer(&identity[8]);
-    PlusCommon::Trim(toolManufacturer);
+    igsioCommon::Trim(toolManufacturer);
     trackerTool->SetCustomProperty("Manufacturer", toolManufacturer);
     identity[8] = '\0';
     std::string ndiIdentity(&identity[0]);
-    PlusCommon::Trim(ndiIdentity);
+    igsioCommon::Trim(ndiIdentity);
     trackerTool->SetCustomProperty("NdiIdentity", ndiIdentity);
     char partNumber[24];
     ndiGetPHINFPartNumber(this->Device, partNumber);
     partNumber[20] = '\0';
     std::string toolPartNumber(&partNumber[0]);
-    PlusCommon::Trim(toolPartNumber);
+    igsioCommon::Trim(toolPartNumber);
     trackerTool->SetCustomProperty("PartNumber", toolPartNumber);
     int status = ndiGetPHINFPortStatus(this->Device);
 
@@ -1057,7 +1057,7 @@ PlusStatus vtkPlusNDITracker::ReadConfiguration(vtkXMLDataElement* rootConfigEle
       continue;
     }
     bool isEqual(false);
-    if (PlusCommon::XML::SafeCheckAttributeValueInsensitive(*toolDataElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) != PLUS_SUCCESS || !isEqual)
+    if (igsioCommon::XML::SafeCheckAttributeValueInsensitive(*toolDataElement, "Type", vtkPlusDataSource::DATA_SOURCE_TYPE_TOOL_TAG, isEqual) != PLUS_SUCCESS || !isEqual)
     {
       // if this is not a Tool element, skip it
       continue;
@@ -1140,7 +1140,7 @@ PlusStatus vtkPlusNDITracker::WriteConfiguration(vtkXMLDataElement* rootConfig)
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusNDITracker::LogVolumeList(int selectedVolume, vtkPlusLogger::LogLevelType logLevel)
+void vtkPlusNDITracker::LogVolumeList(int selectedVolume, vtkIGSIOLogger::LogLevelType logLevel)
 {
   auto reply = this->Command("GETINFO:Param.Tracking.Available Volumes");
 
@@ -1154,8 +1154,8 @@ void vtkPlusNDITracker::LogVolumeList(int selectedVolume, vtkPlusLogger::LogLeve
   }
   else
   {
-    auto tokens = PlusCommon::SplitStringIntoTokens(reply, '=', false);
-    auto dataFields = PlusCommon::SplitStringIntoTokens(tokens[1], ';', true);
+    auto tokens = igsioCommon::SplitStringIntoTokens(reply, '=', false);
+    auto dataFields = igsioCommon::SplitStringIntoTokens(tokens[1], ';', true);
     numVolumes = dataFields.size() / 7;
   }
 
@@ -1172,12 +1172,12 @@ void vtkPlusNDITracker::LogVolumeList(int selectedVolume, vtkPlusLogger::LogLeve
     return;
   }
 
-  auto lines = PlusCommon::SplitStringIntoTokens(reply, '\n', false);
+  auto lines = igsioCommon::SplitStringIntoTokens(reply, '\n', false);
 
   for (auto iter = begin(lines); iter != end(lines); ++iter)
   {
-    auto tokens = PlusCommon::SplitStringIntoTokens(*iter, '=', true);
-    auto dataFields = PlusCommon::SplitStringIntoTokens(tokens[1], ';', true);
+    auto tokens = igsioCommon::SplitStringIntoTokens(*iter, '=', true);
+    auto dataFields = igsioCommon::SplitStringIntoTokens(tokens[1], ';', true);
     if (selectedVolume > 0 &&
         tokens[0].find("Features.Volumes.Index") != std::string::npos &&
         dataFields[0][0] - '0' == selectedVolume - 1) // NDI index by 0, Plus index by 1
@@ -1191,22 +1191,22 @@ void vtkPlusNDITracker::LogVolumeList(int selectedVolume, vtkPlusLogger::LogLeve
       // Features.Volumes.Paramn      Shape parameters as described in SFLIST           Read
       for (int i = 0; i < 13; ++i)
       {
-        auto tokens = PlusCommon::SplitStringIntoTokens(*(iter + i), '=', true);
-        auto names = PlusCommon::SplitStringIntoTokens(tokens[0], '.', false);
-        auto dataFields = PlusCommon::SplitStringIntoTokens(tokens[1], ';', true);
+        auto tokens = igsioCommon::SplitStringIntoTokens(*(iter + i), '=', true);
+        auto names = igsioCommon::SplitStringIntoTokens(tokens[0], '.', false);
+        auto dataFields = igsioCommon::SplitStringIntoTokens(tokens[1], ';', true);
         LOG_DYNAMIC(" " << names[2] << ": " << dataFields[0], logLevel);
       }
 
       return;
     }
 
-    auto names = PlusCommon::SplitStringIntoTokens(tokens[0], '.', false);
+    auto names = igsioCommon::SplitStringIntoTokens(tokens[0], '.', false);
     LOG_DYNAMIC(names[2] << ": " << dataFields[0], logLevel);
   }
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusNDITracker::LogVolumeListSFLIST(unsigned int numVolumes, int selectedVolume, vtkPlusLogger::LogLevelType logLevel)
+void vtkPlusNDITracker::LogVolumeListSFLIST(unsigned int numVolumes, int selectedVolume, vtkIGSIOLogger::LogLevelType logLevel)
 {
   std::string volumeListCommandReply = this->Command("SFLIST:03");
   for (unsigned int volIndex = 0; volIndex < numVolumes; ++volIndex)
@@ -1325,14 +1325,14 @@ PlusStatus vtkPlusNDITracker::SelectMeasurementVolume()
     }
     else
     {
-      auto tokens = PlusCommon::SplitStringIntoTokens(reply, '=', false);
-      auto dataFields = PlusCommon::SplitStringIntoTokens(tokens[1], ';', true);
+      auto tokens = igsioCommon::SplitStringIntoTokens(reply, '=', false);
+      auto dataFields = igsioCommon::SplitStringIntoTokens(tokens[1], ';', true);
 
       // <Value>;<Type>;<Attribute>;<Minimum>;<Maximum>;<Enumeration>;<Description>
       if (static_cast<unsigned int>(this->MeasurementVolumeNumber) - 1 > dataFields.size() / 7)
       {
         LOG_ERROR("Selected measurement volume does not exist. Using default.");
-        LogVolumeList(this->MeasurementVolumeNumber, vtkPlusLogger::LOG_LEVEL_DEBUG);
+        LogVolumeList(this->MeasurementVolumeNumber, vtkIGSIOLogger::LOG_LEVEL_DEBUG);
         return PLUS_FAIL;
       }
       else
@@ -1343,7 +1343,7 @@ PlusStatus vtkPlusNDITracker::SelectMeasurementVolume()
         if (errnum)
         {
           LOG_ERROR("Failed to set measurement volume " << this->MeasurementVolumeNumber << ": " << ndiErrorString(errnum));
-          LogVolumeList(0, vtkPlusLogger::LOG_LEVEL_INFO);
+          LogVolumeList(0, vtkIGSIOLogger::LOG_LEVEL_INFO);
           CloseDevice(this->Device);
           return PLUS_FAIL;
         }
@@ -1362,7 +1362,7 @@ PlusStatus vtkPlusNDITracker::SelectMeasurementVolumeDeprecated()
   if (errnum)
   {
     LOG_ERROR("Failed to set measurement volume " << this->MeasurementVolumeNumber << ": " << ndiErrorString(errnum));
-    LogVolumeList(this->MeasurementVolumeNumber, vtkPlusLogger::LOG_LEVEL_DEBUG);
+    LogVolumeList(this->MeasurementVolumeNumber, vtkIGSIOLogger::LOG_LEVEL_DEBUG);
     return PLUS_FAIL;
   }
 

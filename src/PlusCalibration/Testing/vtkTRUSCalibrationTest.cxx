@@ -46,7 +46,7 @@ int main (int argc, char* argv[])
   double inputTranslationErrorThreshold(1e-10); 
   double inputRotationErrorThreshold(1e-10); 
 
-  int verboseLevel=vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel=vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments cmdargs;
   cmdargs.Initialize(argc, argv);
@@ -69,7 +69,7 @@ int main (int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
   
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   // Read configuration
   vtkSmartPointer<vtkXMLDataElement> configRootElement = vtkSmartPointer<vtkXMLDataElement>::New();

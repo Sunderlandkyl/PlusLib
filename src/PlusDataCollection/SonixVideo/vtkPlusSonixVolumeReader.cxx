@@ -138,7 +138,7 @@ PlusStatus vtkPlusSonixVolumeReader::GenerateTrackedFrameFromSonixVolume(const c
     // Read data from file
     fread(dataFromFile, frameSizeInBytes, 1, fp);
 
-    PlusCommon::VTKScalarPixelType pixelType = VTK_VOID;
+    igsioCommon::VTKScalarPixelType pixelType = VTK_VOID;
     switch (dataType)
     {
       case udtBPost:

@@ -67,7 +67,7 @@ PlusStatus vtkPlusOpenIGTLinkVideoSource::InternalUpdate()
   headerMsg->Unpack(this->IgtlMessageCrcCheckEnabled);
 
   // Set unfiltered and filtered timestamp by converting UTC to system timestamp
-  double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
   igsioTrackedFrame trackedFrame;
   igtl::MessageBase::Pointer bodyMsg = this->MessageFactory->CreateReceiveMessage(headerMsg);
@@ -92,7 +92,7 @@ PlusStatus vtkPlusOpenIGTLinkVideoSource::InternalUpdate()
     {
       // Use the timestamp in the OpenIGTLink message
       // The received timestamp is in UTC and timestamps in the buffer are in system time, so conversion is needed
-      unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTimeFromUniversalTime(unfilteredTimestampUtc);
+      unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTimeFromUniversalTime(unfilteredTimestampUtc);
     }
   }
   else

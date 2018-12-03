@@ -1195,7 +1195,7 @@ PlusStatus vtkPlusCapistranoVideoSource::InternalUpdate()
   }
 
   //igsioTrackedFrame::FieldMapType customFields;
-  const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+  const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
   RETURN_WITH_FAIL_IF(aSource->AddItem((void*)this->Internal->Bitmap.bmBits,
                                        aSource->GetInputImageOrientation(),

@@ -527,7 +527,7 @@ PlusStatus vtkPlusBkProFocusCameraLinkVideoSource::InternalStopRecording()
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusBkProFocusCameraLinkVideoSource::NewFrameCallback(void* pixelDataPtr, const FrameSizeType& inputFrameSizeInPix, PlusCommon::VTKScalarPixelType pixelType, US_IMAGE_TYPE imageType)
+void vtkPlusBkProFocusCameraLinkVideoSource::NewFrameCallback(void* pixelDataPtr, const FrameSizeType& inputFrameSizeInPix, igsioCommon::VTKScalarPixelType pixelType, US_IMAGE_TYPE imageType)
 {
   igsioLockGuard<vtkIGSIORecursiveCriticalSection> critSectionGuard(this->UpdateMutex);
 

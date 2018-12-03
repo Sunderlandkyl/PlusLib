@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
 {
   std::string inputConfigFileName;
   std::string inputBaselineFileName;
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
   std::string inputTrackedStylusTipSequence;
   std::string intermediateFileOutputDirectory;
   bool plotSignal(false);
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
     std::cout << "Help: " << cmdargs.GetHelp() << std::endl;
     exit(EXIT_FAILURE);
   }
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
   LOG_INFO("Initialize");
 
   // Read LandmarkDetection configuration
@@ -434,7 +434,7 @@ int main(int argc, char* argv[])
             phantomRegistration->GetRecordedLandmarks_Reference()->InsertPoint(landmarkDetection->GetDetectedLandmarkPoints_Reference()->GetNumberOfPoints() - 1, landmarkFound);
             phantomRegistration->GetRecordedLandmarks_Reference()->Modified();
             LOG_INFO("\nLandmark found (" << landmarkFound[0] << ", " << landmarkFound[1] << ", " << landmarkFound[2] << ") at " << trackedStylusTipFrames->GetTrackedFrame(j)->GetTimestamp() << "[ms]" << "\nNumber of landmarks in phantonReg " << phantomRegistration->GetRecordedLandmarks_Reference()->GetNumberOfPoints());
-            vtkPlusLogger::PrintProgressbar((100.0 *  newLandmarkDetected - 1) / numberOfExpectedLandmarks);
+            vtkIGSIOLogger::PrintProgressbar((100.0 *  newLandmarkDetected - 1) / numberOfExpectedLandmarks);
 
             if (newLandmarkDetected == numberOfExpectedLandmarks)
             {
@@ -463,7 +463,7 @@ int main(int argc, char* argv[])
 
       LOG_INFO("Registration error = " << phantomRegistration->GetRegistrationErrorMm());
       accumulatedError += phantomRegistration->GetRegistrationErrorMm();
-      vtkPlusLogger::PrintProgressbar(100);
+      vtkIGSIOLogger::PrintProgressbar(100);
 
       if (numberFiles == 1)
       {
@@ -476,7 +476,7 @@ int main(int argc, char* argv[])
 
         std::string registrationResultFileName = "PhantomRegistrationAutoDetectLandmarkTest.xml";
         vtksys::SystemTools::RemoveFile(registrationResultFileName.c_str());
-        PlusCommon::XML::PrintXML(registrationResultFileName.c_str(), configLandmarkDetection);
+        igsioCommon::XML::PrintXML(registrationResultFileName.c_str(), configLandmarkDetection);
 
         if (CompareRegistrationResultsWithBaseline(inputBaselineFileName.c_str(), registrationResultFileName.c_str(), phantomRegistration->GetPhantomCoordinateFrame(), phantomRegistration->GetReferenceCoordinateFrame()) != PLUS_SUCCESS)
         {

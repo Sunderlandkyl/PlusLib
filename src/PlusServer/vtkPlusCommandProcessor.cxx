@@ -110,7 +110,7 @@ PlusStatus vtkPlusCommandProcessor::Stop()
     while (this->CommandExecutionActive.second)
     {
       // Wait until the thread stops
-      vtkPlusAccurateTimer::Delay(0.2);
+      vtkIGSIOAccurateTimer::Delay(0.2);
     }
     this->CommandExecutionThreadId = -1;
   }

@@ -279,7 +279,7 @@ PlusStatus vtkPlusFakeTracker::InternalUpdate()
   {
   case (FakeTrackerMode_Default): // Spins the tools around different axis to fake movement
   {
-    const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
     for (DataSourceContainerConstIterator it = this->GetToolIteratorBegin(); it != this->GetToolIteratorEnd(); ++it)
     {
       ToolStatus toolStatus = TOOL_OK;
@@ -327,7 +327,7 @@ PlusStatus vtkPlusFakeTracker::InternalUpdate()
       toolStatus = TOOL_MISSING;
     }
 
-    const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
     double tx = (this->Frame % 100);  // 0 - 99
     double ty = (this->Frame % 100) + 100;  // 100 - 199
     double tz = (this->Frame % 100) + 200;  // 200 - 299
@@ -366,7 +366,7 @@ PlusStatus vtkPlusFakeTracker::InternalUpdate()
       toolStatus = TOOL_MISSING;
     }
 
-    const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
     double tx = sin(this->Frame / 100.0) * 20; // -20 - +20
     double ty = cos(this->Frame / 50.0) * 10 + 50; // 40 - 60
     double tz = abs(this->Frame % 100 - 50.0) + 100;  // 100 - 150
@@ -411,7 +411,7 @@ PlusStatus vtkPlusFakeTracker::InternalUpdate()
     }
     */
 
-    const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
     // create stationary position for reference (tool 0)
     vtkSmartPointer<vtkTransform> referenceToTrackerTransform = vtkSmartPointer<vtkTransform>::New();
@@ -460,7 +460,7 @@ PlusStatus vtkPlusFakeTracker::InternalUpdate()
   case (FakeTrackerMode_RecordPhantomLandmarks): // Touches some positions with 1 sec difference
   {
     ToolStatus toolStatus = TOOL_OK;
-    const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
     // create stationary position for phantom reference (tool 0)
     vtkSmartPointer<vtkTransform> referenceToTrackerTransform = vtkSmartPointer<vtkTransform>::New();
@@ -542,7 +542,7 @@ PlusStatus vtkPlusFakeTracker::InternalUpdate()
     default:
       break;
     }
-    const double unfilteredTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    const double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
 
     // create stationary position for phantom reference (tool 0)
     vtkSmartPointer<vtkTransform> identityTransform = vtkSmartPointer<vtkTransform>::New();

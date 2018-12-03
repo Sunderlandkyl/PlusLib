@@ -129,7 +129,7 @@ void vtkPlusWinProbeVideoSource::FrameCallback(int length, char * data, char *hH
     }
     else if (m_wrapTimeStampCounter) //time to wrap it around
     {
-        m_timestampOffset = vtkPlusAccurateTimer::GetSystemTime() - timestamp;
+        m_timestampOffset = vtkIGSIOAccurateTimer::GetSystemTime() - timestamp;
         m_wrapTimeStampCounter = false;
         LOG_DEBUG("Wrapping around time-stamp counter. Leftover fraction: " << timestamp);
     }
@@ -302,12 +302,12 @@ void vtkPlusWinProbeVideoSource::Watchdog()
     while (this->Recording)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(15));
-        double now = vtkPlusAccurateTimer::GetSystemTime();
+        double now = vtkIGSIOAccurateTimer::GetSystemTime();
         if (now - m_lastTimestamp > 0.2)
         {
             SetPendingRecreateTables(true);
             LOG_INFO("Called SetPendingRecreateTables");
-            m_timestampOffset = vtkPlusAccurateTimer::GetSystemTime();
+            m_timestampOffset = vtkIGSIOAccurateTimer::GetSystemTime();
             std::this_thread::sleep_for(std::chrono::milliseconds(3000));
         }
     }
@@ -331,7 +331,7 @@ PlusStatus vtkPlusWinProbeVideoSource::InternalStartRecording()
     this->SetVoltage(m_voltage);
     this->SetSSDepth(m_depth); //as a side-effect calls AdjustSpacing and AdjustBufferSize
 
-    m_timestampOffset = vtkPlusAccurateTimer::GetSystemTime();
+    m_timestampOffset = vtkIGSIOAccurateTimer::GetSystemTime();
     WPExecute();
     //if (sizeof(void *) == 4) //32 bits
     {

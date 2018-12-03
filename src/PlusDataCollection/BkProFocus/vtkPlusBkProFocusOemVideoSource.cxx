@@ -1270,23 +1270,23 @@ PlusStatus vtkPlusBkProFocusOemVideoSource::AddParametersToFrameFields()
 {
   vtkPlusUsDevice::InternalUpdate();// Move to beginning of vtkPlusBkProFocusOemVideoSource::InternalUpdate()?
 
-  this->FrameFields[IGTLIO_KEY_PROBE_TYPE]   = PlusCommon::ToString<int>(this->GetProbeType());
+  this->FrameFields[IGTLIO_KEY_PROBE_TYPE]   = igsioCommon::ToString<int>(this->GetProbeType());
   std::string output;
-  PlusCommon::JoinTokensIntoString<double>(this->CalculateOrigin(), output, ' ');
+  igsioCommon::JoinTokensIntoString<double>(this->CalculateOrigin(), output, ' ');
   this->FrameFields[IGTLIO_KEY_ORIGIN]       = output;
-  PlusCommon::JoinTokensIntoString<double>(this->CalculateAngles(), output, ' ');
+  igsioCommon::JoinTokensIntoString<double>(this->CalculateAngles(), output, ' ');
   this->FrameFields[IGTLIO_KEY_ANGLES]       = output;
-  PlusCommon::JoinTokensIntoString<double>(this->CalculateBoundingBox(), output, ' ');
+  igsioCommon::JoinTokensIntoString<double>(this->CalculateBoundingBox(), output, ' ');
   this->FrameFields[IGTLIO_KEY_BOUNDING_BOX] = output;
-  PlusCommon::JoinTokensIntoString<double>(this->CalculateDepths(), output, ' ');
+  igsioCommon::JoinTokensIntoString<double>(this->CalculateDepths(), output, ' ');
   this->FrameFields[IGTLIO_KEY_DEPTHS]       = output;
-  this->FrameFields[IGTLIO_KEY_LINEAR_WIDTH] = PlusCommon::ToString<double>(this->CalculateLinearWidth());
+  this->FrameFields[IGTLIO_KEY_LINEAR_WIDTH] = igsioCommon::ToString<double>(this->CalculateLinearWidth());
 
-  this->FrameFields[IGTLIO_KEY_SPACING_X]    = PlusCommon::ToString<double>(this->GetSpacingX());
-  this->FrameFields[IGTLIO_KEY_SPACING_Y]    = PlusCommon::ToString<double>(this->GetSpacingY());
+  this->FrameFields[IGTLIO_KEY_SPACING_X]    = igsioCommon::ToString<double>(this->GetSpacingX());
+  this->FrameFields[IGTLIO_KEY_SPACING_Y]    = igsioCommon::ToString<double>(this->GetSpacingY());
 
-  this->FrameFields[KEY_DEPTH]        = PlusCommon::ToString<double>(this->CalculateDepthMm());
-  this->FrameFields[KEY_GAIN]         = PlusCommon::ToString<int>(this->CalculateGain());
+  this->FrameFields[KEY_DEPTH]        = igsioCommon::ToString<double>(this->CalculateDepthMm());
+  this->FrameFields[KEY_GAIN]         = igsioCommon::ToString<int>(this->CalculateGain());
 
   return PLUS_SUCCESS;
 }

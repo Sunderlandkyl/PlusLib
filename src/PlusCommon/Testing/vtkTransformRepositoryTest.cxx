@@ -6,7 +6,7 @@
 
 #include "PlusConfigure.h"
 
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 #include "vtksys/CommandLineArguments.hxx"
 #include "vtkSmartPointer.h"
 #include "vtkTransform.h"
@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 {
   // Parse command-line arguments
   bool printHelp(false);
-  int verboseLevel(vtkPlusLogger::LOG_LEVEL_UNDEFINED);
+  int verboseLevel(vtkIGSIOLogger::LOG_LEVEL_UNDEFINED);
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
   args.AddArgument("--help", vtksys::CommandLineArguments::NO_ARGUMENT, &printHelp, "Print this help.");
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   /////////////////////////////////////////////////////////////////////////////
   // Set up coordinate transforms
@@ -304,7 +304,7 @@ int main(int argc, char** argv)
     LOG_ERROR("Failed to write persistent transforms to CoordinateDefinitions");
     return EXIT_FAILURE;
   }
-  PlusCommon::XML::PrintXML("CoordinateDefinitions.xml", xmlData);
+  igsioCommon::XML::PrintXML("CoordinateDefinitions.xml", xmlData);
 
   /////////////////////////////////////////////////////////////////////////////
   // Check read configuration

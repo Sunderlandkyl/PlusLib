@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   std::string outputFileName;
   std::string configFileName;
   bool saveIntermediateResults = false;
-  int verboseLevel=vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel=vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   args.Initialize(argc, argv);
   args.AddArgument("--help", vtksys::CommandLineArguments::NO_ARGUMENT, &printHelp, "Print this help");
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if (inputFileName.empty())
   {

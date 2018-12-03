@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
   std::string inputTrackedStylusTipSequenceMetafile;
   std::string stylusTipToStylusTransformNameStr;
 
-  int verboseLevel=vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel=vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments cmdargs;
   cmdargs.Initialize(argc, argv);
@@ -61,7 +61,7 @@ int main (int argc, char* argv[])
     std::cout << "Help: " << cmdargs.GetHelp() << std::endl;
     exit(EXIT_FAILURE);
   }
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   LOG_INFO("Initialize"); 
   // Read configuration
@@ -121,7 +121,7 @@ int main (int argc, char* argv[])
     // Acquire positions for pivot calibration
     for (int i=0; i < trackedStylusTipFrames->GetNumberOfTrackedFrames(); ++i)
     {
-      //vtkPlusLogger::PrintProgressbar((100.0 * i) /  trackedStylusTipFrames->GetNumberOfTrackedFrames()); 
+      //vtkIGSIOLogger::PrintProgressbar((100.0 * i) /  trackedStylusTipFrames->GetNumberOfTrackedFrames()); 
       vtkSmartPointer<vtkMatrix4x4> stylusToReferenceMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
       if ( transformRepository->SetTransforms(*(trackedStylusTipFrames->GetTrackedFrame(i))) != PLUS_SUCCESS )

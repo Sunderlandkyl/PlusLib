@@ -36,7 +36,7 @@ public:
   virtual bool IsTracker() const { return true; }
 
   /*! Return a list of items that desrcibe what image volumes stealthlink device can provide */
-  virtual PlusStatus GetImageMetaData( PlusCommon::ImageMetaDataList& imageMetaData );
+  virtual PlusStatus GetImageMetaData( igsioCommon::ImageMetaDataList& imageMetaData );
 
   /*!
     Return the volume  with the given id that this device can provide.

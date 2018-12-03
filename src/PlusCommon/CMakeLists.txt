@@ -4,8 +4,6 @@ PROJECT(PlusCommon)
 # Sources
 SET(${PROJECT_NAME}_SRCS
   ${PROJECT_NAME}.cxx
-  vtkPlusAccurateTimer.cxx
-  vtkPlusLogger.cxx
   vtkPlusHTMLGenerator.cxx
   vtkPlusConfig.cxx
   PlusMath.cxx
@@ -15,9 +13,6 @@ SET(${PROJECT_NAME}_SRCS
 IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
   SET(${PROJECT_NAME}_HDRS
     ${PROJECT_NAME}.h
-    vtkPlusAccurateTimer.h
-    WindowsAccurateTimer.h
-    vtkPlusLogger.h
     vtkPlusHTMLGenerator.h
     vtkPlusConfig.h
     vtkPlusMacro.h
@@ -83,10 +78,6 @@ SET(${PROJECT_NAME}_LIBS
   vtkSequenceIO
   OpenIGTLink
   )
-
-IF(WIN32)
-  LIST(APPEND ${PROJECT_NAME}_LIBS Winmm)
-ENDIF(WIN32)
 
 IF(PLUS_USE_OpenIGTLink)
   LIST(APPEND ${PROJECT_NAME}_LIBS OpenIGTLink)

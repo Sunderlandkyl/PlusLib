@@ -7,7 +7,7 @@
 #ifndef __vtkPlusSequenceIO_h
 #define __vtkPlusSequenceIO_h
 
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 
 /*!
   \class vtkPlusSequenceIO

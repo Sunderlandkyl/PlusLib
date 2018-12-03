@@ -85,7 +85,7 @@ PlusStatus vtkPlusSavedDataSource::InternalUpdate()
 PlusStatus vtkPlusSavedDataSource::InternalUpdateOriginalTimestamp(BufferItemUidType frameToBeAddedUid, int frameToBeAddedLoopIndex)
 {
   // Compute elapsed time since we started the acquisition
-  double elapsedTime = vtkPlusAccurateTimer::GetSystemTime() - this->GetOutputDataSource()->GetStartTime();
+  double elapsedTime = vtkIGSIOAccurateTimer::GetSystemTime() - this->GetOutputDataSource()->GetStartTime();
   double loopTime = this->LoopStopTime_Local - this->LoopStartTime_Local;
 
   const int numberOfFramesInTheLoop = this->LoopLastFrameUid - this->LoopFirstFrameUid + 1;
@@ -648,7 +648,7 @@ PlusStatus vtkPlusSavedDataSource::ReadConfiguration(vtkXMLDataElement* rootConf
   if (vtkPlusConfig::GetInstance()->FindImagePath(this->SequenceFile, foundAbsoluteImagePath) == PLUS_FAIL)
   {
     std::string sequenceFileStr(this->SequenceFile);
-    std::string seqFileTrim = PlusCommon::Trim(sequenceFileStr);
+    std::string seqFileTrim = igsioCommon::Trim(sequenceFileStr);
     std::string foundAbsoluteImagePath;
     if (vtkPlusConfig::GetInstance()->FindImagePath(seqFileTrim, foundAbsoluteImagePath) == PLUS_SUCCESS)
     {

@@ -9,11 +9,11 @@
 #include "igsioTrackedFrame.h"
 #include "vtkPlusFanAngleDetectorAlgo.h"
 #include "vtkPlusFillHolesInVolume.h"
-#include "vtkIGSIOSequenceIO.h"
+#include "vtkPlusSequenceIO.h"
 #include "vtkIGSIOTrackedFrameList.h"
 #include "vtkIGSIOTransformRepository.h"
 #include "vtkPlusVolumeReconstructor.h"
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 
 // STL includes
 #include <limits>
@@ -678,7 +678,7 @@ PlusStatus vtkPlusVolumeReconstructor::SaveReconstructedVolumeToFile(vtkImageDat
   image.SetImageType(US_IMG_BRIGHTNESS);
   frame.SetImageData(image);
   list->AddTrackedFrame(&frame);
-  if (vtkIGSIOSequenceIO::Write(filename, list.GetPointer(), US_IMG_ORIENT_MF, useCompression) != PLUS_SUCCESS)
+  if (vtkPlusSequenceIO::Write(filename, list.GetPointer(), US_IMG_ORIENT_MF, useCompression) != PLUS_SUCCESS)
   {
     LOG_ERROR("Failed to save reconstructed volume in sequence metafile!");
     return PLUS_FAIL;

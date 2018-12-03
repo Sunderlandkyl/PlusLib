@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
   std::string inputConfigFileName;
   std::string inputBaselineFileName;
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments cmdargs;
   cmdargs.Initialize(argc, argv);
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   LOG_INFO("Initialize");
 
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
   for (int landmarkCounter = 0; landmarkCounter < numberOfLandmarks; ++landmarkCounter)
   {
     fakeTracker->SetCounter(landmarkCounter);
-    vtkPlusAccurateTimer::Delay(2.1 / fakeTracker->GetAcquisitionRate());
+    vtkIGSIOAccurateTimer::Delay(2.1 / fakeTracker->GetAcquisitionRate());
 
     vtkSmartPointer<vtkMatrix4x4> stylusTipToReferenceMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
@@ -175,7 +175,7 @@ int main(int argc, char* argv[])
     phantomRegistration->GetRecordedLandmarks_Reference()->InsertPoint(landmarkCounter, stylusTipPosition);
     phantomRegistration->GetRecordedLandmarks_Reference()->Modified();
 
-    vtkPlusLogger::PrintProgressbar((100.0 * landmarkCounter) / numberOfLandmarks);
+    vtkIGSIOLogger::PrintProgressbar((100.0 * landmarkCounter) / numberOfLandmarks);
   }
 
   if (phantomRegistration->LandmarkRegister(transformRepository) != PLUS_SUCCESS)
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  vtkPlusLogger::PrintProgressbar(100);
+  vtkIGSIOLogger::PrintProgressbar(100);
 
   LOG_INFO("Registration error = " << phantomRegistration->GetRegistrationErrorMm());
 
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
 
   std::string registrationResultFileName = "PhantomRegistrationTest.xml";
   vtksys::SystemTools::RemoveFile(registrationResultFileName.c_str());
-  PlusCommon::XML::PrintXML(registrationResultFileName.c_str(), configRootElement);
+  igsioCommon::XML::PrintXML(registrationResultFileName.c_str(), configRootElement);
 
   if (CompareRegistrationResultsWithBaseline(inputBaselineFileName.c_str(), registrationResultFileName.c_str(), phantomRegistration->GetPhantomCoordinateFrame(), phantomRegistration->GetReferenceCoordinateFrame()) != PLUS_SUCCESS)
   {

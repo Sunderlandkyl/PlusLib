@@ -8,7 +8,7 @@ See License.txt for details.
 #include "igsioTrackedFrame.h"
 #include "vtkImageData.h" 
 #include "vtkPlusRfProcessor.h"
-#include "vtkIGSIOSequenceIO.h"
+#include "vtkPlusSequenceIO.h"
 #include "vtkSmartPointer.h"
 #include "vtkIGSIOTrackedFrameList.h"
 #include "vtkTransform.h"
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
   std::string operation="BRIGHTNESS_SCAN_CONVERT";
   bool useCompression(true);
 
-  int verboseLevel=vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel=vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     exit(EXIT_SUCCESS);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if (inputConfigFileName.empty())
   {
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   LOG_DEBUG("Reading input meta file..."); 
   // frameList it will contain initially the RF data and the image data will be replaced by the processed output
   vtkSmartPointer< vtkIGSIOTrackedFrameList > frameList = vtkSmartPointer< vtkIGSIOTrackedFrameList >::New();
-  if( vtkIGSIOSequenceIO::Read(inputRfFile, frameList) != PLUS_SUCCESS )
+  if(vtkPlusSequenceIO::Read(inputRfFile, frameList) != PLUS_SUCCESS )
   {
     LOG_ERROR("Unable to load input sequences file.");
     exit(EXIT_FAILURE);
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
       ss << vtksys::SystemTools::GetFilenameWithoutExtension(outputImgFile) << "_OutputChannel_" << i << vtksys::SystemTools::GetFilenameExtension(outputImgFile);
     }
 
-    if( vtkIGSIOSequenceIO::Write(ss.str(), frameList, frameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS )
+    if(vtkPlusSequenceIO::Write(ss.str(), frameList, frameList->GetImageOrientation(), useCompression) != PLUS_SUCCESS )
     {
       // Error has already been logged
       exit(EXIT_FAILURE);

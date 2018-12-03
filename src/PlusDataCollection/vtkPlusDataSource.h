@@ -219,7 +219,7 @@ public:
   virtual PlusStatus AddItem(void* imageDataPtr,
                              US_IMAGE_ORIENTATION usImageOrientation,
                              const FrameSizeType& frameSizeInPx,
-                             PlusCommon::VTKScalarPixelType pixelType,
+                             igsioCommon::VTKScalarPixelType pixelType,
                              unsigned int numberOfScalarComponents,
                              US_IMAGE_TYPE imageType,
                              int numberOfBytesToSkip,
@@ -272,9 +272,9 @@ public:
   PlusStatus SetPortName(const char* portName);
 
   /*! Set the pixel type */
-  PlusStatus SetPixelType(PlusCommon::VTKScalarPixelType pixelType);
+  PlusStatus SetPixelType(igsioCommon::VTKScalarPixelType pixelType);
   /*! Get the pixel type */
-  virtual PlusCommon::VTKScalarPixelType GetPixelType();
+  virtual igsioCommon::VTKScalarPixelType GetPixelType();
 
   /*! Set the number of scalar components */
   PlusStatus SetNumberOfScalarComponents(unsigned int numberOfScalarComponents);

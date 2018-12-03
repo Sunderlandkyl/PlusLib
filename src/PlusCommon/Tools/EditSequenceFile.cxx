@@ -203,7 +203,7 @@ int main(int argc, char** argv)
 {
   // Parse command-line arguments
   bool                            printHelp = false;
-  int                             verboseLevel(vtkPlusLogger::LOG_LEVEL_UNDEFINED);
+  int                             verboseLevel(vtkIGSIOLogger::LOG_LEVEL_UNDEFINED);
   vtksys::CommandLineArguments    args;
 
   std::string                     inputFileName; // Sequence file name with path to edit
@@ -344,7 +344,7 @@ int main(int argc, char** argv)
     return EXIT_SUCCESS;
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   // Check command line arguments
   if (inputFileName.empty() && inputFileNames.empty())
@@ -365,60 +365,60 @@ int main(int argc, char** argv)
     operation = NO_OPERATION;
     LOG_INFO("No modification operation has been specified (specify --operation parameter to change the input sequence).");
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "UPDATE_FRAME_FIELD_NAME"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "UPDATE_FRAME_FIELD_NAME"))
   {
     operation = UPDATE_FRAME_FIELD_NAME;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "UPDATE_FRAME_FIELD_VALUE"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "UPDATE_FRAME_FIELD_VALUE"))
   {
     operation = UPDATE_FRAME_FIELD_VALUE;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "DELETE_FRAME_FIELD"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "DELETE_FRAME_FIELD"))
   {
     operation = DELETE_FRAME_FIELD;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "UPDATE_FIELD_NAME"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "UPDATE_FIELD_NAME"))
   {
     operation = UPDATE_FIELD_NAME;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "UPDATE_FIELD_VALUE"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "UPDATE_FIELD_VALUE"))
   {
     operation = UPDATE_FIELD_VALUE;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "DELETE_FIELD"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "DELETE_FIELD"))
   {
     operation = DELETE_FIELD;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "ADD_TRANSFORM"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "ADD_TRANSFORM"))
   {
     operation = ADD_TRANSFORM;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "TRIM"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "TRIM"))
   {
     operation = TRIM;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "DECIMATE"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "DECIMATE"))
   {
     operation = DECIMATE;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "APPEND"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "APPEND"))
   {
     operation = APPEND;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "MERGE"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "MERGE"))
   {
     LOG_WARNING("MERGE operation name is deprecated. Use APPEND instead.")
     operation = APPEND;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "MIX"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "MIX"))
   {
     operation = MIX;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "FILL_IMAGE_RECTANGLE"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "FILL_IMAGE_RECTANGLE"))
   {
     operation = FILL_IMAGE_RECTANGLE;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "CROP"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "CROP"))
   {
     if (rectOriginPix.size() != 2 && rectOriginPix.size() != 3 &&
         rectSizePix.size() != 2 && rectSizePix.size() != 3)
@@ -428,7 +428,7 @@ int main(int argc, char** argv)
     }
     operation = CROP;
   }
-  else if (PlusCommon::IsEqualInsensitive(strOperation, "REMOVE_IMAGE_DATA"))
+  else if (igsioCommon::IsEqualInsensitive(strOperation, "REMOVE_IMAGE_DATA"))
   {
     operation = REMOVE_IMAGE_DATA;
   }
@@ -611,7 +611,7 @@ int main(int argc, char** argv)
     // Add transform
     LOG_INFO("Add transform '" << transformNamesToAdd << "' using device set configuration file '" << deviceSetConfigurationFileName << "'");
     std::vector<std::string> transformNamesList;
-    PlusCommon::SplitStringIntoTokens(transformNamesToAdd, ',', transformNamesList);
+    igsioCommon::SplitStringIntoTokens(transformNamesToAdd, ',', transformNamesList);
     if (AddTransform(trackedFrameList, transformNamesList, deviceSetConfigurationFileName) != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to add transform '" << transformNamesToAdd << "' using device set configuration file '" << deviceSetConfigurationFileName << "'");
@@ -904,7 +904,7 @@ PlusStatus UpdateFrameFieldValue(FrameFieldUpdate& fieldUpdate)
     // Update field value
     if (!fieldName.empty() && !fieldUpdate.UpdatedFieldValue.empty())
     {
-      if (PlusCommon::IsEqualInsensitive(fieldUpdate.UpdatedFieldValue, FIELD_VALUE_FRAME_SCALAR))
+      if (igsioCommon::IsEqualInsensitive(fieldUpdate.UpdatedFieldValue, FIELD_VALUE_FRAME_SCALAR))
       {
         // Update it as a scalar variable
 
@@ -915,7 +915,7 @@ PlusStatus UpdateFrameFieldValue(FrameFieldUpdate& fieldUpdate)
         scalarVariable += fieldUpdate.FrameScalarIncrement;
 
       }
-      else if (PlusCommon::IsEqualInsensitive(fieldUpdate.UpdatedFieldValue, FIELD_VALUE_FRAME_TRANSFORM))
+      else if (igsioCommon::IsEqualInsensitive(fieldUpdate.UpdatedFieldValue, FIELD_VALUE_FRAME_TRANSFORM))
       {
         // Update it as a transform variable
 
@@ -928,7 +928,7 @@ PlusStatus UpdateFrameFieldValue(FrameFieldUpdate& fieldUpdate)
         {
           const char* frameIndexStr = trackedFrame->GetFrameField(fieldUpdate.FrameTransformIndexFieldName.c_str());
           int frameIndex = 0;
-          if (PlusCommon::StringToInt<int>(frameIndexStr, frameIndex) != PLUS_SUCCESS)
+          if (igsioCommon::StringToInt<int>(frameIndexStr, frameIndex) != PLUS_SUCCESS)
           {
             LOG_ERROR("Cannot retrieve frame index from value " << frameIndexStr);
           }

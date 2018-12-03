@@ -215,7 +215,7 @@ int main(int argc, char** argv)
   std::string outputTrackerBufferSequenceFileName;
   bool renderingOff(false);
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
     exit(EXIT_SUCCESS);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if (inputConfigFileName.empty())
   {
@@ -343,7 +343,7 @@ int main(int argc, char** argv)
       }
 
       std::string transformParameters = PlusMath::GetTransformParametersString(matrix);
-      std::string status = PlusCommon::ConvertToolStatusToString(bufferItem.GetStatus());
+      std::string status = igsioCommon::ConvertToolStatusToString(bufferItem.GetStatus());
 
       std::ostringstream message;
       message << "Tool name: " << tool->GetId() << "Transform:  ";

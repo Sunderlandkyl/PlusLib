@@ -540,7 +540,7 @@ void vtkPlusProbeCalibrationAlgo::SetAndValidateImageToProbeTransform(const vnl_
   igsioTransformName imageToProbeTransformName(this->ImageCoordinateFrame, this->ProbeCoordinateFrame);
   transformRepository->SetTransform(imageToProbeTransformName, imageToProbeMatrixVtk);
   transformRepository->SetTransformPersistent(imageToProbeTransformName, true);
-  transformRepository->SetTransformDate(imageToProbeTransformName, vtkPlusAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
+  transformRepository->SetTransformDate(imageToProbeTransformName, vtkIGSIOAccurateTimer::GetInstance()->GetDateAndTimeString().c_str());
 
   // Set calibration date
   this->SetCalibrationDate(vtksys::SystemTools::GetCurrentDateTime("%Y.%m.%d %X").c_str());
@@ -680,7 +680,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::SaveCalibrationResultAndErrorReportToXML
   if (status == PLUS_SUCCESS)
   {
     probeCalibrationResult->AddNestedElement(calibrationFile);
-    PlusCommon::XML::PrintXML(calibrationResultFileNameWithPath.c_str(), probeCalibrationResult);
+    igsioCommon::XML::PrintXML(calibrationResultFileNameWithPath.c_str(), probeCalibrationResult);
   }
 
   return status;

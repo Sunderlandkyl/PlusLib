@@ -8,7 +8,7 @@
 #define __vtkPlusVolumeReconstructor_h
 
 #include "PlusConfigure.h"
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 #include "vtkPlusVolumeReconstructionExport.h"
 #include "vtkPlusPasteSliceIntoVolume.h"
 #include "vtkImageAlgorithm.h"

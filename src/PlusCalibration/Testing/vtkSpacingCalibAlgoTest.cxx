@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 
   bool printHelp(false);
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     exit(EXIT_SUCCESS); 
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if ( inputSequenceMetafiles.empty() || inputConfigFileName.empty() || inputBaselineFileName.empty() )
   {
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
   vtkTable* reportTable = spacingCalibAlgo->GetReportTable(); 
   if ( reportTable != NULL )
   {
-    if ( vtkPlusLogger::Instance()->GetLogLevel() >= vtkPlusLogger::LOG_LEVEL_DEBUG )
+    if ( vtkIGSIOLogger::Instance()->GetLogLevel() >= vtkIGSIOLogger::LOG_LEVEL_DEBUG )
     {
       reportTable->Dump(25); 
     }

@@ -142,7 +142,7 @@ int main(int argc, char** argv)
   std::string imageToReferenceTransformNameStr;
   bool renderingOff(false);
 
-  int verboseLevel = vtkPlusLogger::LOG_LEVEL_UNDEFINED;
+  int verboseLevel = vtkIGSIOLogger::LOG_LEVEL_UNDEFINED;
 
   vtksys::CommandLineArguments args;
   args.Initialize(argc, argv);
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
     exit(EXIT_SUCCESS);
   }
 
-  vtkPlusLogger::Instance()->SetLogLevel(verboseLevel);
+  vtkIGSIOLogger::Instance()->SetLogLevel(verboseLevel);
 
   if (inputSequenceFilename.empty())
   {
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
   int numberOfFrames = trackedFrameList->GetNumberOfTrackedFrames();
   for (int frameIndex = 0; frameIndex < numberOfFrames; frameIndex++)
   {
-    vtkPlusLogger::PrintProgressbar((100.0 * frameIndex) / numberOfFrames);
+    vtkIGSIOLogger::PrintProgressbar((100.0 * frameIndex) / numberOfFrames);
     igsioTrackedFrame* frame = trackedFrameList->GetTrackedFrame(frameIndex);
 
     // Update transform repository
@@ -277,7 +277,7 @@ int main(int argc, char** argv)
     imageActors->AddItem(imageActor);
   }
 
-  vtkPlusLogger::PrintProgressbar(100);
+  vtkIGSIOLogger::PrintProgressbar(100);
   std::cout << std::endl;
 
   for (int i = 0; i < imageActors->GetNumberOfItems(); i++)

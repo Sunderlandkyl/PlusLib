@@ -22,7 +22,7 @@ vtkStandardNewMacro(vtkPlusUsSimulatorVideoSource);
 vtkPlusUsSimulatorVideoSource::vtkPlusUsSimulatorVideoSource()
   : UsSimulator(NULL)
   , LastProcessedTrackingDataTimestamp(0)
-  , GracePeriodLogLevel(vtkPlusLogger::LOG_LEVEL_DEBUG)
+  , GracePeriodLogLevel(vtkIGSIOLogger::LOG_LEVEL_DEBUG)
 {
   // Create and set up US simulator
   vtkSmartPointer<vtkPlusUsSimulatorAlgo> usSimulator = vtkSmartPointer<vtkPlusUsSimulatorAlgo>::New();
@@ -68,7 +68,7 @@ PlusStatus vtkPlusUsSimulatorVideoSource::InternalUpdate()
 
   if (this->HasGracePeriodExpired())
   {
-    this->GracePeriodLogLevel = vtkPlusLogger::LOG_LEVEL_WARNING;
+    this->GracePeriodLogLevel = vtkIGSIOLogger::LOG_LEVEL_WARNING;
   }
 
   // Get image to tracker transform from the tracker (only request 1 frame, the latest)
@@ -91,7 +91,7 @@ PlusStatus vtkPlusUsSimulatorVideoSource::InternalUpdate()
   if (this->InputChannels[0]->GetTrackedFrameList(this->LastProcessedTrackingDataTimestamp, trackingFrames, 1) != PLUS_SUCCESS)
   {
     LOG_ERROR("Error while getting tracked frame list from data collector during capturing. Last recorded timestamp: " << std::fixed << this->LastProcessedTrackingDataTimestamp << ". Device ID: " << this->GetDeviceId());
-    this->LastProcessedTrackingDataTimestamp = vtkPlusAccurateTimer::GetSystemTime(); // forget about the past, try to add frames that are acquired from now on
+    this->LastProcessedTrackingDataTimestamp = vtkIGSIOAccurateTimer::GetSystemTime(); // forget about the past, try to add frames that are acquired from now on
     return PLUS_FAIL;
   }
   if (trackingFrames->GetNumberOfTrackedFrames() < 1)

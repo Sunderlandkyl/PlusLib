@@ -107,7 +107,7 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::InternalConnect()
     LOG_WARNING("vtkPlusVirtualVolumeReconstructor acquisition rate is not known");
   }
 
-  m_LastUpdateTime = vtkPlusAccurateTimer::GetSystemTime();
+  m_LastUpdateTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   return PLUS_SUCCESS;
 }
@@ -130,13 +130,13 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::InternalUpdate()
 
   if (m_LastUpdateTime == 0.0)
   {
-    m_LastUpdateTime = vtkPlusAccurateTimer::GetSystemTime();
+    m_LastUpdateTime = vtkIGSIOAccurateTimer::GetSystemTime();
   }
   if (m_NextFrameToBeRecordedTimestamp == 0.0)
   {
-    m_NextFrameToBeRecordedTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    m_NextFrameToBeRecordedTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   }
-  double startTimeSec = vtkPlusAccurateTimer::GetSystemTime();
+  double startTimeSec = vtkIGSIOAccurateTimer::GetSystemTime();
 
   m_TimeWaited += startTimeSec - m_LastUpdateTime;
 
@@ -195,20 +195,20 @@ PlusStatus vtkPlusVirtualVolumeReconstructor::InternalUpdate()
   this->TotalFramesRecorded += nbFramesRecorded;
 
   // Check whether the reconstruction needed more time than the sampling interval
-  double recordingTimeSec = vtkPlusAccurateTimer::GetSystemTime() - startTimeSec;
+  double recordingTimeSec = vtkIGSIOAccurateTimer::GetSystemTime() - startTimeSec;
   if (recordingTimeSec > GetSamplingPeriodSec())
   {
     LOG_WARNING("Volume reconstruction of the acquired " << nbFramesRecorded << " frames takes too long time (" << recordingTimeSec << "sec instead of the allocated " << GetSamplingPeriodSec() << "sec). This can cause slow-down of the application and non-uniform sampling. Reduce the image acquisition rate, output size, or image clip rectangle size to resolve the problem.");
   }
-  double recordingLagSec = vtkPlusAccurateTimer::GetSystemTime() - m_NextFrameToBeRecordedTimestamp;
+  double recordingLagSec = vtkIGSIOAccurateTimer::GetSystemTime() - m_NextFrameToBeRecordedTimestamp;
 
   if (recordingLagSec > MAX_ALLOWED_RECONSTRUCTION_LAG_SEC)
   {
     LOG_ERROR("Volume reconstruction cannot keep up with the acquisition. Skip " << recordingLagSec << " seconds of the data stream to catch up.");
-    m_NextFrameToBeRecordedTimestamp = vtkPlusAccurateTimer::GetSystemTime();
+    m_NextFrameToBeRecordedTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
   }
 
-  m_LastUpdateTime = vtkPlusAccurateTimer::GetSystemTime();
+  m_LastUpdateTime = vtkIGSIOAccurateTimer::GetSystemTime();
 
   return PLUS_SUCCESS;
 }

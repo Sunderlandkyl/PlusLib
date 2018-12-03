@@ -9,7 +9,7 @@ See License.txt for details.
 #include "vtkPlusTrackedFrameProcessor.h"
 #include "vtkIGSIOTrackedFrameList.h"
 #include "vtkIGSIOTransformRepository.h"
-#include "PlusCommon.h"
+#include "igsioCommon.h"
 
 //----------------------------------------------------------------------------
 vtkCxxSetObjectMacro( vtkPlusTrackedFrameProcessor, InputFrames, vtkIGSIOTrackedFrameList );
