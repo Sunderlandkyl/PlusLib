@@ -565,7 +565,7 @@ PlusStatus vtkPlusProbeCalibrationAlgo::ComputeReprojectionErrors3D(PreProcessed
     }
   }
 
-  PlusMath::ComputePercentile(reprojectionErrors, this->ErrorConfidenceLevel,
+  igsioMath::ComputePercentile(reprojectionErrors, this->ErrorConfidenceLevel,
                               this->PreProcessedWirePositions[datasetType].NWireErrors.ReprojectionError3DMax,
                               this->PreProcessedWirePositions[datasetType].NWireErrors.ReprojectionError3DMean,
                               this->PreProcessedWirePositions[datasetType].NWireErrors.ReprojectionError3DStdDev);
@@ -600,10 +600,10 @@ PlusStatus vtkPlusProbeCalibrationAlgo::ComputeReprojectionErrors2D(PreProcessed
     }
     double xErrorMean = 0.0;
     double xErrorStdev = 0.0;
-    PlusMath::ComputeMeanAndStdev(xErrors, xErrorMean, xErrorStdev);
+    igsioMath::ComputeMeanAndStdev(xErrors, xErrorMean, xErrorStdev);
     double yErrorMean = 0.0;
     double yErrorStdev = 0.0;
-    PlusMath::ComputeMeanAndStdev(yErrors, yErrorMean, yErrorStdev);
+    igsioMath::ComputeMeanAndStdev(yErrors, yErrorMean, yErrorStdev);
     vnl_vector_fixed<double, 2> errorMean(xErrorMean, yErrorMean);
     this->PreProcessedWirePositions[datasetType].NWireErrors.ReprojectionError2DMeans.push_back(errorMean);
     vnl_vector_fixed<double, 2> errorStdev(xErrorStdev, yErrorStdev);
@@ -1112,8 +1112,8 @@ void vtkPlusProbeCalibrationAlgo::ComputeError2d(PreProcessedWirePositionIdType 
     }
   }
 
-  PlusMath::ComputeMeanAndStdev(reprojectionErrors, errorMean, errorStDev);
-  PlusMath::ComputeRms(reprojectionErrors, errorRms);
+  igsioMath::ComputeMeanAndStdev(reprojectionErrors, errorMean, errorStDev);
+  igsioMath::ComputeRms(reprojectionErrors, errorRms);
 }
 
 //--------------------------------------------------------------------------------
@@ -1141,8 +1141,8 @@ void vtkPlusProbeCalibrationAlgo::ComputeError3d(const vnl_matrix_fixed<double, 
 {
   std::vector<double> reprojectionErrors;
   ComputeError3d(reprojectionErrors, CALIBRATION_NOT_OUTLIER, imageToProbeMatrix);
-  PlusMath::ComputeMeanAndStdev(reprojectionErrors, errorMean, errorStDev);
-  PlusMath::ComputeRms(reprojectionErrors, errorRms);
+  igsioMath::ComputeMeanAndStdev(reprojectionErrors, errorMean, errorStDev);
+  igsioMath::ComputeRms(reprojectionErrors, errorRms);
 }
 
 //--------------------------------------------------------------------------------

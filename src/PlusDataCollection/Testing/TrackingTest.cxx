@@ -16,7 +16,7 @@ writes the buffer to a metafile and displays the live transform in a 3D view.
 #include "vtkPlusChannel.h"
 #include "vtkPlusDataSource.h"
 #include "vtkPlusDevice.h"
-#include "PlusMath.h"
+#include "igsioMath.h"
 #include "vtkPlusToolAxesActor.h"
 
 // VTK includes
@@ -342,7 +342,7 @@ int main(int argc, char** argv)
         continue;
       }
 
-      std::string transformParameters = PlusMath::GetTransformParametersString(matrix);
+      std::string transformParameters = igsioMath::GetTransformParametersString(matrix);
       std::string status = igsioCommon::ConvertToolStatusToString(bufferItem.GetStatus());
 
       std::ostringstream message;

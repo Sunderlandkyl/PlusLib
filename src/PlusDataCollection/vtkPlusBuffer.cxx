@@ -6,7 +6,7 @@ See License.txt for details.
 
 // Local includes
 #include "PlusConfigure.h"
-#include "PlusMath.h"
+#include "igsioMath.h"
 #include "igsioTrackedFrame.h"
 #include "vtkPlusBuffer.h"
 #include "vtkPlusDevice.h"
@@ -1387,7 +1387,7 @@ ItemStatus vtkPlusBuffer::GetInterpolatedStreamBufferItemFromTime(double time, S
   double matrixBquat[4] = {0, 0, 0, 0};
   vtkMath::Matrix3x3ToQuaternion(matrixB, matrixBquat);
   double interpolatedRotationQuat[4] = {0, 0, 0, 0};
-  PlusMath::Slerp(interpolatedRotationQuat, itemBweight, matrixAquat, matrixBquat);
+  igsioMath::Slerp(interpolatedRotationQuat, itemBweight, matrixAquat, matrixBquat);
   double interpolatedRotation[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
   vtkMath::QuaternionToMatrix3x3(interpolatedRotationQuat, interpolatedRotation);
 

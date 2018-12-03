@@ -11,7 +11,7 @@ compares the results to a baseline
 */
 
 #include "PlusConfigure.h"
-#include "PlusMath.h"
+#include "igsioMath.h"
 #include "vtkPlusLineSegmentationAlgo.h"
 #include "vtkMath.h"
 #include "vtkIGSIOSequenceIO.h"
@@ -173,7 +173,7 @@ int CompareLineSegmentationResults( const std::vector<vtkPlusLineSegmentationAlg
     double currentLinePoint2[3] = {currentLinePoint1[0] + currentParam.lineDirectionVector_Image[0]* lineLen,
                                    currentLinePoint1[1] + currentParam.lineDirectionVector_Image[1]* lineLen, 0
                                   };
-    double distanceOfBaselineOriginFromCurrentLinePx = PlusMath::ComputeDistanceLinePoint( currentLinePoint1, currentLinePoint2, baselineOrigin3d );
+    double distanceOfBaselineOriginFromCurrentLinePx = igsioMath::ComputeDistanceLinePoint( currentLinePoint1, currentLinePoint2, baselineOrigin3d );
     if ( distanceOfBaselineOriginFromCurrentLinePx > MAX_ORIGIN_DISTANCE_PIXEL )
     {
       LOG_ERROR( "Line position mismatch in Frame #" << frameIndex << ": baseline origin point distance from current line is " << distanceOfBaselineOriginFromCurrentLinePx << " pixels" );

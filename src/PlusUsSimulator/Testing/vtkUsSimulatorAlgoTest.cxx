@@ -5,7 +5,7 @@ See License.txt for details.
 =========================================================Plus=header=end*/
 
 #include "PlusConfigure.h"
-#include "PlusMath.h"
+#include "igsioMath.h"
 #include "igsioTrackedFrame.h"
 #include "vtkAppendPolyData.h"
 #include "vtkCubeSource.h"
@@ -353,7 +353,7 @@ int main(int argc, char** argv)
 
   double meanTimeElapsedPerFrameSec = 0;
   double stdevTimeElapsedPerFrameSec = 0;
-  PlusMath::ComputeMeanAndStdev(timeElapsedPerFrameSec, meanTimeElapsedPerFrameSec, stdevTimeElapsedPerFrameSec);
+  igsioMath::ComputeMeanAndStdev(timeElapsedPerFrameSec, meanTimeElapsedPerFrameSec, stdevTimeElapsedPerFrameSec);
   LOG_INFO(" Average computation time per frame (sec): " << meanTimeElapsedPerFrameSec) ;
   LOG_INFO(" Standard dev computation time per frame (sec): " << stdevTimeElapsedPerFrameSec) ;
   LOG_INFO(" Average fps:  " << 1 / meanTimeElapsedPerFrameSec) ;

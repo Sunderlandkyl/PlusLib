@@ -316,7 +316,7 @@ void vtkPlusPivotCalibrationAlgo::ComputeCalibrationError()
 
   double mean = 0;
   double stdev = 0;
-  PlusMath::ComputeMeanAndStdev(errorValues, mean, stdev);
+  igsioMath::ComputeMeanAndStdev(errorValues, mean, stdev);
 
   this->CalibrationError = mean;
 }

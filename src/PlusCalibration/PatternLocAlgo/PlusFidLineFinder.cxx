@@ -6,7 +6,7 @@ See License.txt for details.
 
 #include "PlusConfigure.h"
 #include "PlusFidLineFinder.h"
-#include "PlusMath.h"
+#include "igsioMath.h"
 #include "PlusFidSegmentation.h"
 #include "vtkMath.h"
 #include <algorithm>
@@ -425,7 +425,7 @@ double PlusFidLineFinder::ComputeDistancePointLine(const PlusFidDot& dot, const 
   z[1] = dot.GetY();
   z[2] = 0;
 
-  return PlusMath::ComputeDistanceLinePoint(x, y, z);
+  return igsioMath::ComputeDistanceLinePoint(x, y, z);
 }
 
 //-----------------------------------------------------------------------------

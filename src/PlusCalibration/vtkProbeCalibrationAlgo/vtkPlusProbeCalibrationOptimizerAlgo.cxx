@@ -240,7 +240,7 @@ PlusStatus vtkPlusProbeCalibrationOptimizerAlgo::Update()
   {
     vtkSmartPointer<vtkMatrix4x4> vtkMatrix=vtkSmartPointer<vtkMatrix4x4>::New();
     PlusMath::ConvertVnlMatrixToVtkMatrix(this->ImageToProbeSeedTransformMatrix, vtkMatrix); 
-    PlusMath::LogVtkMatrix(vtkMatrix);
+    igsioMath::LogVtkMatrix(vtkMatrix);
   }
 
   double initialError=costFunction->GetValue(imageToProbeSeedTransformParameters);
@@ -250,7 +250,7 @@ PlusStatus vtkPlusProbeCalibrationOptimizerAlgo::Update()
     DistanceToWiresCostFunction::GetTransformMatrix(imageToProbeTransform_vnl, imageToProbeSeedTransformParameters);
     vtkSmartPointer<vtkMatrix4x4> vtkMatrix=vtkSmartPointer<vtkMatrix4x4>::New();
     PlusMath::ConvertVnlMatrixToVtkMatrix(imageToProbeTransform_vnl, vtkMatrix); 
-    PlusMath::LogVtkMatrix(vtkMatrix);
+    igsioMath::LogVtkMatrix(vtkMatrix);
   }
 
   OptimizerType::Pointer  optimizer = OptimizerType::New();
@@ -324,7 +324,7 @@ PlusStatus vtkPlusProbeCalibrationOptimizerAlgo::Update()
   {
     vtkSmartPointer<vtkMatrix4x4> vtkMatrix=vtkSmartPointer<vtkMatrix4x4>::New();
     PlusMath::ConvertVnlMatrixToVtkMatrix(this->ImageToProbeTransformMatrix, vtkMatrix); 
-    PlusMath::LogVtkMatrix(vtkMatrix);
+    igsioMath::LogVtkMatrix(vtkMatrix);
   }
 
   // Store the optimized parameters and show the results

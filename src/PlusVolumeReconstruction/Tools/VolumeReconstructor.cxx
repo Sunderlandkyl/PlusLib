@@ -235,7 +235,7 @@ int main(int argc, char* argv[])
       ss << frameIndex;
       ss << outputFrameFileName.substr(found);
 
-      frame->WriteToFile(ss.str(), imageToReferenceTransformMatrix);
+      PlusCommon::WriteToFile(frame, ss.str(), imageToReferenceTransformMatrix);
     }
   }
 
