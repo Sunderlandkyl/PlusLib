@@ -22,10 +22,6 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
 # Build the library
 SET(${PROJECT_NAME}_LIBS
   vtkPlusCommon
-  vtkInteractionStyle
-  vtkRenderingFreeType
-  vtkRendering${VTK_RENDERING_BACKEND}
-  vtkRenderingVolume${VTK_RENDERING_BACKEND}
   vtkVolumeReconstruction
   )
 

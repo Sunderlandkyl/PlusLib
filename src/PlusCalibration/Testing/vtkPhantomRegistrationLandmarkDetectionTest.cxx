@@ -16,7 +16,9 @@ compares the results to a baseline
 #include "vtkAxis.h"
 #include "vtkChartXY.h"
 #include "vtkContextScene.h"
+#ifdef PLUS_RENDERING_ENABLED
 #include "vtkContextView.h"
+#endif
 #include "vtkPlusDataCollector.h"
 #include "vtkDirectory.h"
 #include "vtkDoubleArray.h"

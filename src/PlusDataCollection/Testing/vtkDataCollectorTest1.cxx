@@ -68,8 +68,10 @@ public:
         RfProcessor->SetRfFrame(trackedFrame.GetImageData()->GetImage(), trackedFrame.GetImageData()->GetImageType());
         this->ImageData->ShallowCopy(RfProcessor->GetBrightnessScanConvertedImage());
       }
+
       this->Viewer->SetInputData(this->ImageData);
       this->Viewer->Modified();
+
     }
 
     if (TransformName.IsValid())
@@ -100,11 +102,14 @@ public:
 
     //update the timer so it will trigger again
     this->RenderWindowInteractor->CreateTimer(VTKI_TIMER_UPDATE);
+
   }
 
   vtkPlusDataCollector* DataCollector;
   vtkPlusChannel* BroadcastChannel;
+
   vtkImageViewer* Viewer;
+
   vtkRenderWindowInteractor* RenderWindowInteractor;
   vtkTextActor* StepperTextActor;
   igsioTransformName TransformName;
@@ -296,6 +301,7 @@ int main(int argc, char** argv)
     call->StepperTextActor = stepperTextActor;
     call->ImageData = imageData;
     call->RfProcessor = rfProc;
+    #
 
     if (!inputTransformName.empty())
     {
@@ -312,8 +318,8 @@ int main(int argc, char** argv)
     //iren must be initialized so that it can handle events
     iren->Initialize();
     iren->Start();
-  }
 
+  }
   dataCollector->Disconnect();
 
   std::cout << "vtkPlusDataCollectorTest1 completed successfully!" << std::endl;
