@@ -43,8 +43,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   - \xmlAtt FrameType Type of stream to capture. \RequiredAtt
     - \c RGB
     - \c DEPTH
-  - \xmlAtt FrameSize Size of the video stream in pixels. Consult the RealSense documentation for your device to find appropriate frame size / frame rate combinations.
-  - \xmlAtt FrameRate Acquisition frequence for this stream.
+  - \xmlAtt StreamIndex Index of the RealSense stream to acquire the data from \OptionalAtt{0}.
+  - \xmlAtt FrameSize Size of the video stream in pixels. Consult the RealSense documentation for your device to find appropriate frame size / frame rate combinations. \OptionalAtt{640 480}
+  - \xmlAtt FrameRate Acquisition frequence for this stream. \OptionalAtt{30}
   - \xmlAtt \ref PortUsImageOrientation \OptionalAtt{UN}
 
 \section DeviceIntelRealSensExampleConfigFile Example configuration file PlusDeviceSet_Server_IntelRealSenseVideo.xml
