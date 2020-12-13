@@ -97,7 +97,11 @@ public:
     rs2::device Device;
     rs2::sensor Sensor;
     rs2::stream_profile StreamProfile;
+
+    // RealSense vars required for alignment
+    Stream* StreamToAlignTo;
     rs2::align* Align;  // rs2::align doesn't have a default constructor, so we must use a pointer
+    rs2::frame LastFrame;
   };
 
   // MEMBER FUNCTIONS
@@ -136,7 +140,7 @@ public:
   PlusStatus SetDepthScaleToMm(rs2::sensor& sensor, float& depth_scale_to_mm);
 
   // Find the color channel to align the depth frame to
-  PlusStatus SetStreamToAlignTo(const Stream& stream, rs2::align* align);
+  Stream* GetStreamToAlignTo(const Stream& stream);
 
   // Logs info about the connected RealSense devices
   void PrintRSDevicesInfo();
@@ -145,7 +149,7 @@ public:
   void PrintStreamList();
 
   // Callback for new frames
-  void FrameCallback(const vtkInternal::Stream& stream, rs2::frame frame);
+  void FrameCallback(const vtkInternal::Stream stream, rs2::frame frame);
 
   // MEMBER VARIABLES
    
@@ -335,8 +339,24 @@ PlusStatus vtkPlusIntelRealSense::vtkInternal::SetDepthScaleToMm(rs2::sensor& se
 }
 
 //----------------------------------------------------------------------------
-PlusStatus vtkPlusIntelRealSense::vtkInternal::SetStreamToAlignTo(const Stream& stream, rs2::align* align)
+vtkPlusIntelRealSense::vtkInternal::Stream* vtkPlusIntelRealSense::vtkInternal::GetStreamToAlignTo(const Stream& stream)
 {
+
+  for (Stream& candidate_stream : this->StreamList)
+  {
+    // check is color stream
+    if (candidate_stream.StreamType != RS2_STREAM_COLOR)
+    {
+      continue;
+    }
+
+    // check is from the same device
+    if (candidate_stream.Device == stream.Device)
+    {
+      return &candidate_stream;
+    }
+  }
+
   // TODO: implement
   //Given a vector of streams, we try to find a depth stream and another stream to align depth with.
   //We prioritize color streams to make the view look better.
@@ -375,7 +395,6 @@ PlusStatus vtkPlusIntelRealSense::vtkInternal::SetStreamToAlignTo(const Stream& 
   //  return PLUS_FAIL;
   //}
   //this->AlignTo = align_to;
-  return PLUS_SUCCESS;
 }
 
 //----------------------------------------------------------------------------
@@ -451,8 +470,23 @@ void vtkPlusIntelRealSense::vtkInternal::PrintStreamList()
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusIntelRealSense::vtkInternal::FrameCallback(const vtkInternal::Stream& stream, rs2::frame frame)
+void vtkPlusIntelRealSense::vtkInternal::FrameCallback(vtkInternal::Stream stream, rs2::frame frame)
 {
+  // store frame in case it's needed for other processing
+  stream.LastFrame = frame;
+
+  // align if applicable
+  if (stream.AlignDepthStream)
+  {
+    rs2::frame_queue q(2, true);
+    q.enqueue(frame);
+    q.enqueue(stream.StreamToAlignTo->LastFrame);
+    rs2::frameset fs = q.wait_for_frame();
+    fs = stream.Align->process(fs);
+    frame = fs.get_depth_frame();
+  }
+
+  // colorize if applicable
   if (stream.UseRealSenseColorizer)
   {
     frame = this->RSColorizer.colorize(frame);
@@ -730,11 +764,8 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
   {
     if (stream.StreamType == RS2_STREAM_DEPTH && stream.AlignDepthStream)
     {
-      if (this->Internal->SetStreamToAlignTo(stream, stream.Align) != PLUS_SUCCESS)
-      {
-        // descriptive error already logged in SetStreamToAlignTo
-        return PLUS_FAIL;
-      }
+      stream.Align = new rs2::align(RS2_STREAM_COLOR);
+      stream.StreamToAlignTo = this->Internal->GetStreamToAlignTo(stream);
     }
   }
 
