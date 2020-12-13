@@ -24,9 +24,14 @@ See License.txt for details.
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkPlusIntelRealSense);
-#define REALSENSE_DEFAULT_FRAME_WIDTH 640
-#define REALSENSE_DEFAULT_FRAME_HEIGHT 480
-#define REALSENSE_DEFAULT_FRAME_RATE 30
+
+//----------------------------------------------------------------------------
+// constants
+static const unsigned int REALSENSE_DEFAULT_FRAME_WIDTH = 640;
+static const unsigned int REALSENSE_DEFAULT_FRAME_HEIGHT = 480;
+static const unsigned int REALSENSE_DEFAULT_FRAME_RATE = 30;
+static const bool DEFAULT_ALIGN_DEPTH_STREAM = false;
+static const bool DEFAULT_USE_REALSENSE_COLORIZER = false;
 
 //----------------------------------------------------------------------------
 class vtkPlusIntelRealSense::vtkInternal
@@ -537,7 +542,7 @@ PlusStatus vtkPlusIntelRealSense::ReadConfiguration(vtkXMLDataElement* rootConfi
       // get Intel RealSense video parameters for this source
 
       // get optional RealSense device serial number (for multi-camera setups)
-      std::string devSerialNum = "";
+      std::string devSerialNum = ""; // if null string will use first available device
       XML_READ_STRING_ATTRIBUTE_NONMEMBER_OPTIONAL(DeviceSerialNumber, devSerialNum, dataElement);
 
       // source type
@@ -551,7 +556,7 @@ PlusStatus vtkPlusIntelRealSense::ReadConfiguration(vtkXMLDataElement* rootConfi
       XML_READ_SCALAR_ATTRIBUTE_NONMEMBER_OPTIONAL(int, FrameRate, frameRate, dataElement);
 
       // align depth stream
-      bool alignDepthStream = false;
+      bool alignDepthStream = DEFAULT_ALIGN_DEPTH_STREAM;
       if (streamType != RS2_STREAM_DEPTH && dataElement->GetAttribute("AlignDepthStream") != 0)
       {
         // applies to depth streams only
@@ -576,7 +581,7 @@ PlusStatus vtkPlusIntelRealSense::ReadConfiguration(vtkXMLDataElement* rootConfi
       }
 
       // use RealSense colorizer
-      bool useRealSenseColorizer = false;
+      bool useRealSenseColorizer = DEFAULT_USE_REALSENSE_COLORIZER;
       if (streamType != RS2_STREAM_DEPTH && dataElement->GetAttribute("UseRealSenseColorizer") != 0)
       {
         // applies to depth streams only
