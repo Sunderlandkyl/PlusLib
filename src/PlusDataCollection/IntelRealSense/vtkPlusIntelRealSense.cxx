@@ -51,7 +51,9 @@ public:
       unsigned int width,
       unsigned int height,
       unsigned int frame_rate,
-      std::string plus_source_id)
+      std::string plus_source_id,
+      bool align_depth_stream,
+      bool use_realsense_colorizer)
     {
       this->DeviceSerialNumber = serial_num;
       this->StreamType = stream_type;
@@ -59,6 +61,8 @@ public:
       this->Height = height;
       this->FrameRate = frame_rate;
       this->PlusSourceId = plus_source_id;
+      this->AlignDepthStream = align_depth_stream;
+      this->UseRealSenseColorizer = use_realsense_colorizer;
 
       this->Align = nullptr;
     }
@@ -77,7 +81,7 @@ public:
 
     // settings for processing the depth frames
     bool UseRealSenseColorizer;
-    bool AlignDepthStreamToColorStream;
+    bool AlignDepthStream;
     float DepthScaleToMm;
 
     // RealSense member vars
@@ -290,7 +294,7 @@ PlusStatus vtkPlusIntelRealSense::vtkInternal::ConfigurePLUSChannel(const Stream
     source->SetInputFrameSize(stream.Width, stream.Height, 1);
     return PLUS_SUCCESS;
   }
-  else if (stream.StreamType == RS2_STREAM_DEPTH && stream.UseRealSenseColorizer)
+  else if (stream.StreamType == RS2_STREAM_DEPTH && !stream.UseRealSenseColorizer)
   {
     // depth output is raw depth data
     source->SetImageType(US_IMG_BRIGHTNESS);
@@ -378,6 +382,7 @@ void vtkPlusIntelRealSense::vtkInternal::PrintStreamList()
   {
     // stream type
     std::stringstream stream_str;
+    stream_str << "---------------" << std::endl;
     if (stream.StreamType == RS2_STREAM_COLOR)
     {
       stream_str << "Color stream";
@@ -418,17 +423,36 @@ void vtkPlusIntelRealSense::vtkInternal::PrintStreamList()
     // frame rate
     stream_str << "Frame rate: " << stream.FrameRate << std::endl;
 
-    // UseRealSenseColorizer
-    stream_str << "Use RealSense colorizer: " << (stream.UseRealSenseColorizer ? "TRUE" : "FALSE") << std::endl;
+    // depth stream only options
+    if (stream.StreamType == RS2_STREAM_DEPTH)
+    {
+      // UseRealSenseColorizer
+      stream_str << "Use RealSense colorizer: " << (stream.UseRealSenseColorizer ? "TRUE" : "FALSE") << std::endl;
 
-    // AlignDepthStreamToColorStream
-    stream_str << "Align depth stream to color stream: " << (stream.AlignDepthStreamToColorStream ? "TRUE" : "FALSE") << std::endl;
+      // AlignDepthStreamToColorStream
+      stream_str << "Align depth stream to color stream: " << (stream.AlignDepthStream ? "TRUE" : "FALSE") << std::endl;
 
-    // TODO: Print Id of stream aligning to if align enabled
+      // TODO: Print Id of stream aligning to if align enabled
+    }
 
-    LOG_INFO(stream_str.str() << std::endl);
+    LOG_INFO(stream_str.str());
   }
+}
 
+//----------------------------------------------------------------------------
+void vtkPlusIntelRealSense::vtkInternal::FrameCallback(const vtkInternal::Stream& stream, rs2::frame frame)
+{
+  vtkPlusDataSource* src = stream.PlusDataSource;
+  src->AddItem(
+    (void*)frame.get_data(),
+    src->GetInputImageOrientation(),
+    src->GetInputFrameSize(),
+    src->GetPixelType(),
+    src->GetNumberOfScalarComponents(),
+    src->GetImageType(),
+    0, // number of bytes to skip
+    frame.get_frame_number()
+  );
 }
 
 //----------------------------------------------------------------------------
@@ -467,11 +491,27 @@ PlusStatus vtkPlusIntelRealSense::ReadConfiguration(vtkXMLDataElement* rootConfi
 {
   XML_FIND_DEVICE_ELEMENT_REQUIRED_FOR_READING(deviceConfig, rootConfigElement);
   
-  // TODO: check if AlignDepthStream or UseRealSenseColorizer are provided at device level
-  // if so, ensure these settings are applied to all streams, but log a warning
-  // this ensures existing config files continue to work correctly
+  // handle specification of AlignDepthStream at device level
+  bool DeviceAlignDepthStreamSpecified = false;
+  bool DeviceAlignDepthStreamValue = false;
+  if (deviceConfig->GetAttribute("AlignDepthStream") != 0)
+  {
+    DeviceAlignDepthStreamSpecified = true;
+    XML_READ_BOOL_ATTRIBUTE_NONMEMBER_OPTIONAL(AlignDepthStream, DeviceAlignDepthStreamValue, deviceConfig);
+    LOG_WARNING("The AlignDepthStream attribute has been deprecated at the PLUS config Device level. We recommend specifying AlignDepthStream for each DEPTH DataSource individually.");
+  }
 
+  // handle specification of UseRealSenseColorizer at device level
+  bool DeviceUseRSColorizerSpecified = false;
+  bool DeviceUseRSColorizerValue = false;
+  if (deviceConfig->GetAttribute("UseRealSenseColorizer") != 0)
+  {
+    DeviceUseRSColorizerSpecified = true;
+    XML_READ_BOOL_ATTRIBUTE_NONMEMBER_OPTIONAL(UseRealSenseColorizer, DeviceUseRSColorizerValue, deviceConfig);
+    LOG_WARNING("The UseRealSenseColorizer attribute has been deprecated at the PLUS config Device level. We recommend specifying UseRealSenseColorizer for each DEPTH DataSource individually.");
+  }
 
+  // read DataSources
   XML_FIND_NESTED_ELEMENT_REQUIRED(dataSourcesElement, deviceConfig, "DataSources");
   for (int nestedElementIndex = 0; nestedElementIndex < dataSourcesElement->GetNumberOfNestedElements(); nestedElementIndex++)
   {
@@ -510,9 +550,55 @@ PlusStatus vtkPlusIntelRealSense::ReadConfiguration(vtkXMLDataElement* rootConfi
       int frameRate = REALSENSE_DEFAULT_FRAME_RATE;
       XML_READ_SCALAR_ATTRIBUTE_NONMEMBER_OPTIONAL(int, FrameRate, frameRate, dataElement);
 
-      // TODO: if depth stream, did user request using the RealSense colorizer or 
-      // XML_READ_BOOL_ATTRIBUTE_NONMEMBER_OPTIONAL(UseRealSenseColorizer, this->Internal->UseRealSenseColorizer, deviceConfig);
-      // XML_READ_BOOL_ATTRIBUTE_NONMEMBER_OPTIONAL(AlignDepthStream, this->Internal->AlignDepthStream, deviceConfig);
+      // align depth stream
+      bool alignDepthStream = false;
+      if (streamType != RS2_STREAM_DEPTH && dataElement->GetAttribute("AlignDepthStream") != 0)
+      {
+        // applies to depth streams only
+        LOG_ERROR("AlignDepthStream DataSource attribute only applies to DataSources with FrameType=DEPTH. Please remove the AlignDepthStream attribute from DataSource " << toolId);
+        return PLUS_FAIL;
+      }
+      else if (DeviceAlignDepthStreamSpecified && dataElement->GetAttribute("AlignDepthStream") != 0)
+      {
+        // should only be able to specify AlignDepthStream at Device level (legacy) OR DataSource level
+        LOG_ERROR("Attempt to specify AlignDepthStream attribute in both the Device and DataSource XML blocks. Please remove the AlignDepthStream attribute from the RealSense Device block.");
+        return PLUS_FAIL;
+      }
+      else if (DeviceAlignDepthStreamSpecified)
+      {
+        // use the device level AlignDepthStream value
+        alignDepthStream = DeviceAlignDepthStreamValue;
+      }
+      else
+      {
+        // read AlignDepthStream value from DataSource
+        XML_READ_BOOL_ATTRIBUTE_NONMEMBER_OPTIONAL(AlignDepthStream, alignDepthStream, dataElement);
+      }
+
+      // use RealSense colorizer
+      bool useRealSenseColorizer = false;
+      if (streamType != RS2_STREAM_DEPTH && dataElement->GetAttribute("UseRealSenseColorizer") != 0)
+      {
+        // applies to depth streams only
+        LOG_ERROR("UseRealSenseColorizer DataSource attribute only applies to DataSources with FrameType=DEPTH. Please remove the UseRealSenseColorizer attribute from DataSource " << toolId);
+        return PLUS_FAIL;
+      }
+      else if (DeviceUseRSColorizerSpecified && dataElement->GetAttribute("UseRealSenseColorizer") != 0)
+      {
+        // should only be able to specify UseRealSenseColorizer at Device level (legacy) OR DataSource level
+        LOG_ERROR("Attempt to specify UseRealSenseColorizer attribute in both the Device and DataSource XML blocks. Please remove the UseRealSenseColorizer attribute from the RealSense Device block.");
+        return PLUS_FAIL;
+      }
+      else if (DeviceUseRSColorizerSpecified)
+      {
+        // use the device level UseRealSenseColorizer value
+        useRealSenseColorizer = DeviceUseRSColorizerValue;
+      }
+      else
+      {
+        // read UseRealSenseColorizer value from DataSource
+        XML_READ_BOOL_ATTRIBUTE_NONMEMBER_OPTIONAL(UseRealSenseColorizer, useRealSenseColorizer, dataElement);
+      }
 
       // add stream to VideoSources
       vtkInternal::Stream stream(
@@ -521,7 +607,9 @@ PlusStatus vtkPlusIntelRealSense::ReadConfiguration(vtkXMLDataElement* rootConfi
         frameSize[0],
         frameSize[1],
         frameRate,
-        toolId
+        toolId,
+        alignDepthStream,
+        useRealSenseColorizer
       );
       this->Internal->StreamList.push_back(stream);
     }
@@ -625,7 +713,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
   // configure the align object for depth streams where alignment was requested
   for (vtkInternal::Stream& stream : this->Internal->StreamList)
   {
-    if (stream.StreamType == RS2_STREAM_DEPTH && stream.AlignDepthStreamToColorStream)
+    if (stream.StreamType == RS2_STREAM_DEPTH && stream.AlignDepthStream)
     {
       if (this->Internal->SetStreamToAlignTo(stream, stream.Align) != PLUS_SUCCESS)
       {
@@ -706,30 +794,6 @@ PlusStatus vtkPlusIntelRealSense::NotifyConfigured()
 {
   // TODO: Implement some configuration checks here
   return PLUS_SUCCESS;
-}
-
-//----------------------------------------------------------------------------
-void vtkPlusIntelRealSense::vtkInternal::FrameCallback(const vtkInternal::Stream& stream, rs2::frame frame)
-{
-  if (stream.StreamType == RS2_STREAM_COLOR)
-  {
-    LOG_INFO("COLOR");
-  }
-  else
-  {
-    LOG_INFO("DEPTH");
-  }
-  vtkPlusDataSource* src = stream.PlusDataSource;
-  src->AddItem(
-    (void*)frame.get_data(),
-    src->GetInputImageOrientation(),
-    src->GetInputFrameSize(),
-    src->GetPixelType(),
-    src->GetNumberOfScalarComponents(),
-    src->GetImageType(),
-    0, // number of bytes to skip
-    frame.get_frame_number()
-  );
 }
 
 //----------------------------------------------------------------------------
