@@ -140,7 +140,7 @@ public:
   // Logs info about the selected streams
   void PrintStreamList();
 
-  // CALLBACK FOR NEW FRAMES
+  // Callback for new frames
   void FrameCallback(const vtkInternal::Stream& stream, rs2::frame frame);
 
   // MEMBER VARIABLES
@@ -383,7 +383,7 @@ void vtkPlusIntelRealSense::vtkInternal::PrintStreamList()
 {
   LOG_INFO(std::endl << "Listing enabled RealSense streams...");
 
-  for (auto& stream : StreamList)
+  for (Stream& stream : StreamList)
   {
     // stream type
     std::stringstream stream_str;
@@ -641,21 +641,20 @@ PlusStatus vtkPlusIntelRealSense::WriteConfiguration(vtkXMLDataElement* rootConf
 PlusStatus vtkPlusIntelRealSense::InternalConnect()
 {
   // loop over requested streams and setup their stream_profile's
-  std::vector<vtkInternal::Stream>::iterator it;
-  for (it = this->Internal->StreamList.begin(); it != this->Internal->StreamList.end(); it++)
+  for (vtkInternal::Stream& stream : this->Internal->StreamList)
   {
     PlusStatus status;
 
     // get Plus data source for this stream
-    status = this->GetVideoSource(it->PlusSourceId.c_str(), it->PlusDataSource);
+    status = this->GetVideoSource(stream.PlusSourceId.c_str(), stream.PlusDataSource);
     if (status != PLUS_SUCCESS)
     {
-      LOG_ERROR("Failed to find video source for data source with Id: " << it->PlusSourceId);
+      LOG_ERROR("Failed to find video source for data source with Id: " << stream.PlusSourceId);
       return PLUS_FAIL;
     }
 
     // set the stream format
-    status = this->Internal->SetStreamFormat(it->StreamType, it->StreamFormat);
+    status = this->Internal->SetStreamFormat(stream.StreamType, stream.StreamFormat);
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in SetStreamFormat
@@ -663,7 +662,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     }
 
     // get the device to use for this stream
-    status = this->Internal->GetRequestedRSDevice(it->DeviceSerialNumber, it->Device);
+    status = this->Internal->GetRequestedRSDevice(stream.DeviceSerialNumber, stream.Device);
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in GetRequestedRSDevice
@@ -671,7 +670,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     }
 
     // get the sensor to use for this stream
-    status = this->Internal->GetRequestedRSSensor(it->Device, it->StreamType, it->Sensor);
+    status = this->Internal->GetRequestedRSSensor(stream.Device, stream.StreamType, stream.Sensor);
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in GetRequestedRSSensor
@@ -680,13 +679,13 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
 
     // get the stream_profile required to retrieve the data format requested by the user
     status = this->Internal->GetRequestedRSStreamProfile(
-      it->Sensor,
-      it->StreamType,
-      it->StreamFormat,
-      it->Width,
-      it->Height,
-      it->FrameRate,
-      it->StreamProfile
+      stream.Sensor,
+      stream.StreamType,
+      stream.StreamFormat,
+      stream.Width,
+      stream.Height,
+      stream.FrameRate,
+      stream.StreamProfile
     );
     if (status != PLUS_SUCCESS)
     {
@@ -695,9 +694,9 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     }
 
     // set the depth scale for stream, if applicable
-    if (it->StreamType == RS2_STREAM_DEPTH)
+    if (stream.StreamType == RS2_STREAM_DEPTH)
     {
-      status = this->Internal->SetDepthScaleToMm(it->Sensor, it->DepthScaleToMm);
+      status = this->Internal->SetDepthScaleToMm(stream.Sensor, stream.DepthScaleToMm);
       if (status != PLUS_SUCCESS)
       {
         // descriptive error already logged in SetDepthScaleToMm
@@ -706,7 +705,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     }
 
     // configure the PLUS channel for this stream
-    status = this->Internal->ConfigurePLUSChannel(*it, it->PlusDataSource);
+    status = this->Internal->ConfigurePLUSChannel(stream, stream.PlusDataSource);
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in ConfigurePLUSChannel
@@ -746,21 +745,17 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIntelRealSense::InternalDisconnect()
 {
-  std::vector<vtkInternal::Stream>::iterator it;
-  for (it = this->Internal->StreamList.begin(); it != this->Internal->StreamList.end(); it++)
+  for (vtkInternal::Stream& stream : this->Internal->StreamList)
   {
-    // delete the Align classes
-    if (it->Align != nullptr)
-    {
-      delete it->Align;
-      it->Align = nullptr;
-    }
-  }
-
-  // close all streams in StreamList
-  for (vtkInternal::Stream stream : this->Internal->StreamList)
-  {
+    // close the stream
     stream.Sensor.close();
+
+    // delete the stream's Align class
+    if (stream.Align != nullptr)
+    {
+      delete stream.Align;
+      stream.Align = nullptr;
+    }
   }
 
   return PLUS_SUCCESS;
@@ -769,8 +764,6 @@ PlusStatus vtkPlusIntelRealSense::InternalDisconnect()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIntelRealSense::InternalStartRecording()
 {
-  this->FrameNumber = 0;
-
   // loop over all requested streams and start
   for (vtkInternal::Stream& stream : this->Internal->StreamList)
   {
@@ -786,7 +779,7 @@ PlusStatus vtkPlusIntelRealSense::InternalStartRecording()
 PlusStatus vtkPlusIntelRealSense::InternalStopRecording()
 {
   // stop all streams in StreamList
-  for (vtkInternal::Stream stream : this->Internal->StreamList)
+  for (vtkInternal::Stream& stream : this->Internal->StreamList)
   {
     stream.Sensor.stop();
   }
