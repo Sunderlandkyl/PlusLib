@@ -42,6 +42,10 @@ public:
   vtkInternal(vtkPlusIntelRealSense* external)
     : External(external)
   {
+    // setup colorizer
+    this->RSColorizer.set_option(RS2_OPTION_HISTOGRAM_EQUALIZATION_ENABLED, 1);
+    this->RSColorizer.set_option(RS2_OPTION_MIN_DISTANCE, 0.6);
+    this->RSColorizer.set_option(RS2_OPTION_MAX_DISTANCE, 1.0);
   }
 
   virtual ~vtkInternal()
@@ -149,6 +153,8 @@ public:
   std::vector<Stream> StreamList;
 
   rs2::context RSContext;
+
+  rs2::colorizer RSColorizer;
 };
 
 //----------------------------------------------------------------------------
@@ -447,6 +453,11 @@ void vtkPlusIntelRealSense::vtkInternal::PrintStreamList()
 //----------------------------------------------------------------------------
 void vtkPlusIntelRealSense::vtkInternal::FrameCallback(const vtkInternal::Stream& stream, rs2::frame frame)
 {
+  if (stream.UseRealSenseColorizer)
+  {
+    frame = this->RSColorizer.colorize(frame);
+  }
+
   vtkPlusDataSource* src = stream.PlusDataSource;
   src->AddItem(
     (void*)frame.get_data(),
