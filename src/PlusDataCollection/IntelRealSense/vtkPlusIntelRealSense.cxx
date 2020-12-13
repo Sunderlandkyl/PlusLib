@@ -15,6 +15,7 @@ See License.txt for details.
 #include <rs.hpp>
 
 // stl includes
+#include <sstream>
 #include <vector>
 
 // VTK includes
@@ -58,6 +59,8 @@ public:
       this->Height = height;
       this->FrameRate = frame_rate;
       this->PlusSourceId = plus_source_id;
+
+      this->Align = nullptr;
     }
 
     // configuration member vars
@@ -70,7 +73,7 @@ public:
 
     // PLUS member vars
     std::string PlusSourceId;
-    vtkPlusDataSource* DataSource; // set when frame created for the first time
+    vtkPlusDataSource* PlusDataSource; // set when frame created for the first time
 
     // settings for processing the depth frames
     bool UseRealSenseColorizer;
@@ -107,10 +110,10 @@ public:
     const rs2::sensor& sensor,
     rs2_stream stream_type,
     rs2_format format,
-    unsigned int height,
     unsigned int width,
+    unsigned int height,
     unsigned int frame_rate,
-    rs2::stream_profile& requested_stream_profil
+    rs2::stream_profile& requested_stream_profile
   );
 
   // Configure PLUS channel
@@ -228,8 +231,9 @@ PlusStatus vtkPlusIntelRealSense::vtkInternal::GetRequestedRSStreamProfile(
   const rs2::sensor& sensor,
   rs2_stream stream_type,
   rs2_format format,
-  unsigned int height,
   unsigned int width,
+  unsigned int height,
+
   unsigned int frame_rate,
   rs2::stream_profile& requested_stream_profile)
 {
@@ -249,12 +253,12 @@ PlusStatus vtkPlusIntelRealSense::vtkInternal::GetRequestedRSStreamProfile(
 
     rs2::video_stream_profile vsp = stream_profile.as<rs2::video_stream_profile>();
 
-    bool correct_height = (height == vsp.height());
     bool correct_width = (width == vsp.width());
+    bool correct_height = (height == vsp.height());
     bool correct_frame_rate = (frame_rate == vsp.fps());
 
     // if correct stream format, set requested_stream_profile and return success
-    if (correct_stream_type && correct_format && correct_height && correct_width && correct_frame_rate)
+    if (correct_stream_type && correct_format && correct_width && correct_height && correct_frame_rate)
     {
       requested_stream_profile = stream_profile;
       return PLUS_SUCCESS;
@@ -362,12 +366,68 @@ PlusStatus vtkPlusIntelRealSense::vtkInternal::SetStreamToAlignTo(const Stream& 
 //----------------------------------------------------------------------------
 void vtkPlusIntelRealSense::vtkInternal::PrintRSDevicesInfo()
 {
-  LOG_INFO("IMPLEMENT!");
+  LOG_INFO("IMPLMENT PRINT RS DEVICES INFO!");
 }
 
 //----------------------------------------------------------------------------
 void vtkPlusIntelRealSense::vtkInternal::PrintStreamList()
 {
+  LOG_INFO(std::endl << "Listing enabled RealSense streams...");
+
+  for (auto& stream : StreamList)
+  {
+    // stream type
+    std::stringstream stream_str;
+    if (stream.StreamType == RS2_STREAM_COLOR)
+    {
+      stream_str << "Color stream";
+    }
+    else if (stream.StreamType == RS2_STREAM_DEPTH)
+    {
+      stream_str << "Depth stream";
+    }
+
+    // device info
+    if (stream.Device.supports(RS2_CAMERA_INFO_NAME))
+    {
+      stream_str << " on " << stream.Device.get_info(RS2_CAMERA_INFO_NAME);
+    }
+    else
+    {
+      stream_str << " on unknown RealSense device";
+    }
+
+    // device serial number
+    if (stream.Device.supports(RS2_CAMERA_INFO_SERIAL_NUMBER))
+    {
+      stream_str << " (SN: " << stream.Device.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER) << ")";
+    }
+    else
+    {
+      stream_str << " (unknown SN)";
+    }
+    
+    stream_str << std::endl;
+
+    // PlusSourceId
+    stream_str << "Plus source id: " << stream.PlusSourceId << std::endl;
+
+    // frame size
+    stream_str << "Frame size: [" << stream.Width << ", " << stream.Height << "]" << std::endl;
+
+    // frame rate
+    stream_str << "Frame rate: " << stream.FrameRate << std::endl;
+
+    // UseRealSenseColorizer
+    stream_str << "Use RealSense colorizer: " << (stream.UseRealSenseColorizer ? "TRUE" : "FALSE") << std::endl;
+
+    // AlignDepthStreamToColorStream
+    stream_str << "Align depth stream to color stream: " << (stream.AlignDepthStreamToColorStream ? "TRUE" : "FALSE") << std::endl;
+
+    // TODO: Print Id of stream aligning to if align enabled
+
+    LOG_INFO(stream_str.str() << std::endl);
+  }
 
 }
 
@@ -494,7 +554,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     PlusStatus status;
 
     // get Plus data source for this stream
-    status = this->GetVideoSource(it->PlusSourceId.c_str(), it->DataSource);
+    status = this->GetVideoSource(it->PlusSourceId.c_str(), it->PlusDataSource);
     if (status != PLUS_SUCCESS)
     {
       LOG_ERROR("Failed to find video source for data source with Id: " << it->PlusSourceId);
@@ -530,8 +590,8 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
       it->Sensor,
       it->StreamType,
       it->StreamFormat,
-      it->Height,
       it->Width,
+      it->Height,
       it->FrameRate,
       it->StreamProfile
     );
@@ -553,7 +613,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     }
 
     // configure the PLUS channel for this stream
-    status = this->Internal->ConfigurePLUSChannel(*it, it->DataSource);
+    status = this->Internal->ConfigurePLUSChannel(*it, it->PlusDataSource);
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in ConfigurePLUSChannel
@@ -563,16 +623,22 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
 
   // now that all requested streams have been processed, we can
   // configure the align object for depth streams where alignment was requested
-  for (it = this->Internal->StreamList.begin(); it != this->Internal->StreamList.end(); it++)
+  for (vtkInternal::Stream& stream : this->Internal->StreamList)
   {
-    if (it->StreamType == RS2_STREAM_DEPTH && it->AlignDepthStreamToColorStream)
+    if (stream.StreamType == RS2_STREAM_DEPTH && stream.AlignDepthStreamToColorStream)
     {
-      if (this->Internal->SetStreamToAlignTo(*it, it->Align) != PLUS_SUCCESS)
+      if (this->Internal->SetStreamToAlignTo(stream, stream.Align) != PLUS_SUCCESS)
       {
         // descriptive error already logged in SetStreamToAlignTo
         return PLUS_FAIL;
       }
     }
+  }
+
+  // open the stream profiles
+  for (vtkInternal::Stream& stream : this->Internal->StreamList)
+  {
+    stream.Sensor.open(stream.StreamProfile);
   }
 
   // log info about connected cameras for debugging
@@ -598,6 +664,12 @@ PlusStatus vtkPlusIntelRealSense::InternalDisconnect()
     }
   }
 
+  // close all streams in StreamList
+  for (vtkInternal::Stream stream : this->Internal->StreamList)
+  {
+    stream.Sensor.close();
+  }
+
   return PLUS_SUCCESS;
 }
 
@@ -607,10 +679,11 @@ PlusStatus vtkPlusIntelRealSense::InternalStartRecording()
   this->FrameNumber = 0;
 
   // loop over all requested streams and start
-  std::vector<vtkInternal::Stream>::iterator it;
-  for (it = this->Internal->StreamList.begin(); it != this->Internal->StreamList.end(); it++)
+  for (vtkInternal::Stream& stream : this->Internal->StreamList)
   {
-
+    stream.Sensor.start([&](rs2::frame f) {
+      this->Internal->FrameCallback(stream, f);
+      });
   }
 
   return PLUS_SUCCESS;
@@ -619,11 +692,10 @@ PlusStatus vtkPlusIntelRealSense::InternalStartRecording()
 //----------------------------------------------------------------------------
 PlusStatus vtkPlusIntelRealSense::InternalStopRecording()
 {
-  // close all streams in StreamList
+  // stop all streams in StreamList
   for (vtkInternal::Stream stream : this->Internal->StreamList)
   {
-    // close the sensor stream
-    stream.Sensor.close();
+    stream.Sensor.stop();
   }
 
   return PLUS_SUCCESS;
@@ -639,36 +711,25 @@ PlusStatus vtkPlusIntelRealSense::NotifyConfigured()
 //----------------------------------------------------------------------------
 void vtkPlusIntelRealSense::vtkInternal::FrameCallback(const vtkInternal::Stream& stream, rs2::frame frame)
 {
-
-  // if requested and applicable, align depth to color
-
-  //if (it->Source->AddItem((void*)frame.get_data(), it->Source->GetInputImageOrientation(), frameSizeColor, VTK_UNSIGNED_CHAR, 3, US_IMG_RGB_COLOR, 0, this->FrameNumber) == PLUS_FAIL)
-  //{
-  //  LOG_ERROR("vtkPlusIntelRealSense::InternalUpdate Unable to send RGB image. Skipping frame.");
-  //  return PLUS_FAIL;
-  //}
-
-  //if (this->Internal->UseRealSenseColorizer)
-  //{
-  //  rs2::colorizer color;
-  //  color.set_option(RS2_OPTION_HISTOGRAM_EQUALIZATION_ENABLED, 1);
-  //  color.set_option(RS2_OPTION_MIN_DISTANCE, 0.6);
-  //  color.set_option(RS2_OPTION_MAX_DISTANCE, 1.0);
-  //  rs2::video_frame vfr = color.colorize(frame);
-
-  //  {
-  //    LOG_ERROR("vtkPlusIntelRealSense::InternalUpdate Unable to send RGB image. Skipping frame.");
-  //    return PLUS_FAIL;
-  //  }
-  //}
-  //else
-  //{
-  //  if (it->Source->AddItem((void*)frame.get_data(), it->Source->GetInputImageOrientation(), frameSizeDepth, VTK_TYPE_UINT16, 1, US_IMG_BRIGHTNESS, 0, this->FrameNumber) == PLUS_FAIL)
-  //  {
-  //    LOG_ERROR("vtkPlusIntelRealSense::InternalUpdate Unable to send DEPTH image. Skipping frame.");
-  //    return PLUS_FAIL;
-  //  }
-  //}
+  if (stream.StreamType == RS2_STREAM_COLOR)
+  {
+    LOG_INFO("COLOR");
+  }
+  else
+  {
+    LOG_INFO("DEPTH");
+  }
+  vtkPlusDataSource* src = stream.PlusDataSource;
+  src->AddItem(
+    (void*)frame.get_data(),
+    src->GetInputImageOrientation(),
+    src->GetInputFrameSize(),
+    src->GetPixelType(),
+    src->GetNumberOfScalarComponents(),
+    src->GetImageType(),
+    0, // number of bytes to skip
+    frame.get_frame_number()
+  );
 }
 
 //----------------------------------------------------------------------------

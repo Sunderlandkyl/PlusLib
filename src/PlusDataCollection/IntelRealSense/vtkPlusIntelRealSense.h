@@ -61,8 +61,7 @@ private:
 
   class vtkInternal;
   vtkInternal* Internal;
-  
-  unsigned long FrameNumber;
+
 };
 
 #endif
