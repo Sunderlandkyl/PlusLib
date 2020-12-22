@@ -101,7 +101,7 @@ public:
     // RealSense vars required for alignment
     Stream* StreamToAlignTo;
     rs2::align* Align;  // rs2::align doesn't have a default constructor, so we must use a pointer
-    rs2::frame LastFrame;
+    rs2::frame LastFrame = nullptr;
   };
 
   // MEMBER FUNCTIONS
@@ -149,7 +149,7 @@ public:
   void PrintStreamList();
 
   // Callback for new frames
-  void FrameCallback(const vtkInternal::Stream stream, rs2::frame frame);
+  void FrameCallback(vtkInternal::Stream& stream, rs2::frame frame);
 
   // MEMBER VARIABLES
    
@@ -356,7 +356,9 @@ vtkPlusIntelRealSense::vtkInternal::Stream* vtkPlusIntelRealSense::vtkInternal::
       return &candidate_stream;
     }
   }
-
+  
+  // TODO: remove this error and fix the logic above
+  LOG_ERROR("FAILED TO FIND ALIGNMENT STREAM.");
   // TODO: implement
   //Given a vector of streams, we try to find a depth stream and another stream to align depth with.
   //We prioritize color streams to make the view look better.
@@ -470,7 +472,7 @@ void vtkPlusIntelRealSense::vtkInternal::PrintStreamList()
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusIntelRealSense::vtkInternal::FrameCallback(vtkInternal::Stream stream, rs2::frame frame)
+void vtkPlusIntelRealSense::vtkInternal::FrameCallback(vtkInternal::Stream& stream, rs2::frame frame)
 {
   // store frame in case it's needed for other processing
   stream.LastFrame = frame;
@@ -478,10 +480,28 @@ void vtkPlusIntelRealSense::vtkInternal::FrameCallback(vtkInternal::Stream strea
   // align if applicable
   if (stream.AlignDepthStream)
   {
-    rs2::frame_queue q(2, true);
-    q.enqueue(frame);
-    q.enqueue(stream.StreamToAlignTo->LastFrame);
+    // check if color frame ready
+    if (!stream.StreamToAlignTo->LastFrame)
+    {
+      return;
+    }
+
+    std::vector<rs2::frame> bundle;
+    rs2::processing_block bundler([&](rs2::frame f, rs2::frame_source& src) {
+      bundle.push_back(f);
+      if (bundle.size() == 2)
+      {
+        auto fs = src.allocate_composite_frame(bundle);
+        src.frame_ready(fs);
+        bundle.clear();
+      }
+      });
+    rs2::frame_queue q;
+    bundler.start(q);
+    bundler.invoke(frame);
+    bundler.invoke(stream.StreamToAlignTo->LastFrame);
     rs2::frameset fs = q.wait_for_frame();
+
     fs = stream.Align->process(fs);
     frame = fs.get_depth_frame();
   }
@@ -703,6 +723,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in SetStreamFormat
+      LOG_ERROR("Failed to set stream format.");
       return PLUS_FAIL;
     }
 
@@ -711,6 +732,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in GetRequestedRSDevice
+      LOG_ERROR("Failed to find requested RealSense device.");
       return PLUS_FAIL;
     }
 
@@ -719,6 +741,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in GetRequestedRSSensor
+      LOG_ERROR("Failed to find requested RealSense sensor.");
       return PLUS_FAIL;
     }
 
@@ -735,6 +758,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in GetRequestedRSStreamProfile
+      LOG_ERROR("Failed to get requested RealSense stream profile.");
       return PLUS_FAIL;
     }
 
@@ -745,6 +769,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
       if (status != PLUS_SUCCESS)
       {
         // descriptive error already logged in SetDepthScaleToMm
+        LOG_ERROR("Failed to set depth scale to Mm.");
         return PLUS_FAIL;
       }
     }
@@ -754,6 +779,7 @@ PlusStatus vtkPlusIntelRealSense::InternalConnect()
     if (status != PLUS_SUCCESS)
     {
       // descriptive error already logged in ConfigurePLUSChannel
+      LOG_ERROR("Failed to configure PLUS channel.");
       return PLUS_FAIL;
     }
   }
