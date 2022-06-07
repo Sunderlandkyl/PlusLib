@@ -38,12 +38,20 @@ protected:
 
   vtkPlusDataSource* GazeTool;
   vtkNew<vtkMatrix4x4> GazeToTracker;
+  ToolStatus GazePointDataStatus;
+
   vtkPlusDataSource* LeftGazeOriginTool;
   vtkNew<vtkMatrix4x4> LeftGazeOriginToTracker;
+  ToolStatus LeftGazeOriginStatus;
+
   vtkPlusDataSource* RightGazeOriginTool;
   vtkNew<vtkMatrix4x4> RightGazeOriginToTracker;
+  ToolStatus RightGazeOriginStatus;
+
   vtkPlusDataSource* HeadTool;
   vtkNew<vtkMatrix4x4> HeadToTracker;
+  ToolStatus HeadPoseStatus;
+
   vtkPlusDataSource* InteractorFieldData;
   vtkPlusDataSource* PresenceFieldData;
 
@@ -69,7 +77,8 @@ protected:
   std::string NoFocusName;
 
   IL::InteractorId FocusedInteractor;
-  IL::Presence Present;
+  IL::InteractorId HasFocus;
+  IL::Presence Presence;
 
 protected:
   static void OnGazePointDataCallback(IL::GazePointData evt, void* context);
@@ -88,16 +97,21 @@ vtkPlusTobiiInteractionSDKTracker::vtkInternal::vtkInternal(vtkPlusTobiiInteract
   : External(ext)
   , InteractionLib(IL::UniqueInteractionLibPtr(IL::CreateInteractionLib(IL::FieldOfUse::Interactive)))
   , GazeTool(NULL)
+  , GazePointDataStatus(TOOL_OUT_OF_VIEW)
   , LeftGazeOriginTool(NULL)
+  , LeftGazeOriginStatus(TOOL_OUT_OF_VIEW)
   , RightGazeOriginTool(NULL)
+  , RightGazeOriginStatus(TOOL_OUT_OF_VIEW)
   , HeadTool(NULL)
+  , HeadPoseStatus(TOOL_OUT_OF_VIEW)
   , InteractorFieldData(NULL)
   , PresenceFieldData(NULL)
   , ScreenSize{ -1.0, -1.0 }
   , ScreenOffset{ 0.0, 0.0 }
   , NoFocusName("None")
-  , FocusedInteractor(-1)
-  , Present(IL::Presence::Unknown)
+  , FocusedInteractor(0)
+  , HasFocus(false)
+  , Presence(IL::Presence::Unknown)
 {
 }
 
@@ -111,14 +125,7 @@ void vtkPlusTobiiInteractionSDKTracker::vtkInternal::OnGazePointDataCallback(IL:
   self->GazeToTracker->Identity();
   self->GazeToTracker->SetElement(0, 3, evt.x);
   self->GazeToTracker->SetElement(1, 3, evt.y);
-
-  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
-  self->External->ToolTimeStampedUpdate(
-    self->GazeTool->GetId(),
-    self->GazeToTracker,
-    evt.validity == IL_Validity::IL_Validity_Valid ? TOOL_OK : TOOL_INVALID,
-    self->External->FrameNumber,
-    unfilteredTimestamp);
+  self->GazePointDataStatus = evt.validity == IL_Validity_Valid ? TOOL_OK : TOOL_OUT_OF_VIEW;
 }
 
 //----------------------------------------------------------------------------
@@ -134,13 +141,7 @@ void vtkPlusTobiiInteractionSDKTracker::vtkInternal::OnGazeOriginDataCallback(IL
     self->LeftGazeOriginToTracker->SetElement(0, 3, evt.left_xyz[0]);
     self->LeftGazeOriginToTracker->SetElement(1, 3, -evt.left_xyz[2]);
     self->LeftGazeOriginToTracker->SetElement(2, 3, evt.left_xyz[1]);
-    double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
-    self->External->ToolTimeStampedUpdate(
-      self->LeftGazeOriginTool->GetId(),
-      self->LeftGazeOriginToTracker,
-      evt.leftValidity == IL_Validity::IL_Validity_Valid ? TOOL_OK : TOOL_INVALID,
-      self->External->FrameNumber,
-      unfilteredTimestamp);
+    self->LeftGazeOriginStatus = evt.leftValidity == IL_Validity::IL_Validity_Valid ? TOOL_OK : TOOL_OUT_OF_VIEW;
   }
 
   if (self->RightGazeOriginTool)
@@ -149,13 +150,7 @@ void vtkPlusTobiiInteractionSDKTracker::vtkInternal::OnGazeOriginDataCallback(IL
     self->RightGazeOriginToTracker->SetElement(0, 3, evt.right_xyz[0]);
     self->RightGazeOriginToTracker->SetElement(1, 3, -evt.right_xyz[2]);
     self->RightGazeOriginToTracker->SetElement(2, 3, evt.right_xyz[1]);
-    double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
-    self->External->ToolTimeStampedUpdate(
-      self->RightGazeOriginTool->GetId(),
-      self->RightGazeOriginToTracker,
-      evt.rightValidity == IL_Validity::IL_Validity_Valid ? TOOL_OK : TOOL_INVALID,
-      self->External->FrameNumber,
-      unfilteredTimestamp);
+    self->RightGazeOriginStatus = evt.rightValidity == IL_Validity::IL_Validity_Valid ? TOOL_OK : TOOL_INVALID;
   }
 
 }
@@ -173,21 +168,13 @@ void vtkPlusTobiiInteractionSDKTracker::vtkInternal::OnHeadPoseDataCallback(IL::
   headTransform->RotateY(vtkMath::DegreesFromRadians(-evt.rotation_xyz[2]));
   headTransform->RotateZ(vtkMath::DegreesFromRadians(evt.rotation_xyz[1]));
   headTransform->Translate(evt.position_xyz[0], -evt.position_xyz[2], evt.position_xyz[1]);
-
   self->HeadToTracker->DeepCopy(headTransform->GetMatrix());
 
   bool toolValid =
     evt.rotation_validity_xyz[0] == IL_Validity::IL_Validity_Valid &&
     evt.rotation_validity_xyz[1] == IL_Validity::IL_Validity_Valid &&
     evt.rotation_validity_xyz[2] == IL_Validity::IL_Validity_Valid;
-
-  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
-  self->External->ToolTimeStampedUpdate(
-    self->HeadTool->GetId(),
-    self->HeadToTracker,
-    toolValid ? TOOL_OK : TOOL_INVALID,
-    self->External->FrameNumber,
-    unfilteredTimestamp);
+  self->HeadPoseStatus = toolValid ? TOOL_OK : TOOL_OUT_OF_VIEW;
 }
 
 //----------------------------------------------------------------------------
@@ -196,22 +183,8 @@ void vtkPlusTobiiInteractionSDKTracker::vtkInternal::OnGazeFocusEventCallback(IL
   LOG_DEBUG("vtkPlusTobiiInteractionSDKTracker: OnGazeFocusEventCallback");
 
   vtkPlusTobiiInteractionSDKTracker::vtkInternal* self = static_cast<vtkPlusTobiiInteractionSDKTracker::vtkInternal*>(context);
-
-  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
-
-  {
-    std::string interactorName = self->NoFocusName;
-    auto interactorDataIt = self->Interactors.find(evt.id);
-    if (evt.hasFocus && interactorDataIt != self->Interactors.end())
-    {
-      interactorName = interactorDataIt->second.Name;
-    }
-
-    igsioFieldMapType fieldMap;
-    fieldMap[self->InteractorFieldData->GetId()].first = FRAMEFIELD_NONE;
-    fieldMap[self->InteractorFieldData->GetId()].second = interactorName;
-    self->InteractorFieldData->AddItem(fieldMap, self->External->FrameNumber, unfilteredTimestamp);
-  }
+  self->FocusedInteractor = evt.id;
+  self->HasFocus = evt.hasFocus;
 }
 
 //----------------------------------------------------------------------------
@@ -220,23 +193,7 @@ void vtkPlusTobiiInteractionSDKTracker::vtkInternal::OnPresenceDataCallback(IL::
   LOG_DEBUG("vtkPlusTobiiInteractionSDKTracker: OnPresenceDataCallback");
 
   vtkPlusTobiiInteractionSDKTracker::vtkInternal* self = static_cast<vtkPlusTobiiInteractionSDKTracker::vtkInternal*>(context);
-
-  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
-
-  std::string presenceString = "Unknown";
-  if (evt.presence == IL::Presence::Away)
-  {
-    presenceString = "Away";
-  }
-  else if (evt.presence == IL::Presence::Present)
-  {
-    presenceString = "Present";
-  }
-
-  igsioFieldMapType fieldMap;
-  fieldMap[self->PresenceFieldData->GetId()].first = FRAMEFIELD_NONE;
-  fieldMap[self->PresenceFieldData->GetId()].second = presenceString;
-  self->PresenceFieldData->AddItem(fieldMap, self->External->FrameNumber, unfilteredTimestamp);
+  self->Presence = static_cast<IL::Presence>(evt.presence);
 }
 
 
@@ -383,6 +340,7 @@ PlusStatus vtkPlusTobiiInteractionSDKTracker::InternalConnect()
   {
     LOG_ERROR("Could not begin interactor update");
   }
+  this->Internal->InteractionLib->ClearInteractors();
 
   for (auto interactorDataIt : this->Internal->Interactors)
   {
@@ -473,7 +431,98 @@ PlusStatus vtkPlusTobiiInteractionSDKTracker::InternalDisconnect()
 PlusStatus vtkPlusTobiiInteractionSDKTracker::InternalUpdate()
 {
   LOG_DEBUG("vtkPlusTobiiInteractionSDKTracker: InternalUpdate");
-  this->Internal->InteractionLib->WaitAndUpdate();
+
+  IL::Result result = this->Internal->InteractionLib->WaitAndUpdate();
+  if (result < IL::Result::Ok)
+  {
+    LOG_ERROR("Error getting updating data from Tobii");
+    return PLUS_FAIL;
+  }
+  else if (result == IL::Result::Warning_NoDeviceAvailable)
+  {
+    LOG_WARNING("No device connected. Ensure that your camera is plugged in, and Tobii experience is running");
+    return PLUS_FAIL;
+  }
+  else if (result > IL::Result::Ok)
+  {
+    LOG_WARNING("Unknown warning");
+    return PLUS_FAIL;
+  }
+
+
+  double unfilteredTimestamp = vtkIGSIOAccurateTimer::GetSystemTime();
+
+  if (this->Internal->HeadTool)
+  {
+    this->ToolTimeStampedUpdate(
+      this->Internal->HeadTool->GetId(),
+      this->Internal->HeadToTracker,
+      this->Internal->HeadPoseStatus,
+      this->FrameNumber,
+      unfilteredTimestamp);
+  }
+
+  if (this->Internal->GazeTool)
+  {
+    this->ToolTimeStampedUpdate(
+      this->Internal->GazeTool->GetId(),
+      this->Internal->GazeToTracker,
+      this->Internal->GazePointDataStatus,
+      this->FrameNumber,
+      unfilteredTimestamp);
+  }
+
+  if (this->Internal->LeftGazeOriginTool)
+  {
+    this->ToolTimeStampedUpdate(
+      this->Internal->LeftGazeOriginTool->GetId(),
+      this->Internal->LeftGazeOriginToTracker,
+      this->Internal->LeftGazeOriginStatus,
+      this->FrameNumber,
+      unfilteredTimestamp);
+  }
+
+  if (this->Internal->RightGazeOriginTool)
+  {
+    this->ToolTimeStampedUpdate(
+      this->Internal->RightGazeOriginTool->GetId(),
+      this->Internal->RightGazeOriginToTracker,
+      this->Internal->RightGazeOriginStatus,
+      this->FrameNumber,
+      unfilteredTimestamp);
+  }
+
+  if (this->Internal->InteractorFieldData)
+  {
+    std::string interactorName = this->Internal->NoFocusName;
+    auto interactorDataIt = this->Internal->Interactors.find(this->Internal->FocusedInteractor);
+    if (this->Internal->HasFocus && interactorDataIt != this->Internal->Interactors.end())
+    {
+      interactorName = interactorDataIt->second.Name;
+    }
+    igsioFieldMapType fieldMap;
+    fieldMap[this->Internal->InteractorFieldData->GetId()].first = FRAMEFIELD_NONE;
+    fieldMap[this->Internal->InteractorFieldData->GetId()].second = interactorName;
+    this->Internal->InteractorFieldData->AddItem(fieldMap, this->FrameNumber, unfilteredTimestamp);
+  }
+
+  if (this->Internal->PresenceFieldData)
+  {
+    std::string presenceString = "Unknown";
+    if (this->Internal->Presence == IL::Presence::Away)
+    {
+      presenceString = "Away";
+    }
+    else if (this->Internal->Presence == IL::Presence::Present)
+    {
+      presenceString = "Present";
+    }
+    igsioFieldMapType fieldMap;
+    fieldMap[this->Internal->PresenceFieldData->GetId()].first = FRAMEFIELD_NONE;
+    fieldMap[this->Internal->PresenceFieldData->GetId()].second = presenceString;
+    this->Internal->PresenceFieldData->AddItem(fieldMap, this->FrameNumber, unfilteredTimestamp);
+  }
+
   ++this->FrameNumber;
   return PLUS_SUCCESS;
 };
