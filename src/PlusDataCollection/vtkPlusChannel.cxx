@@ -1189,7 +1189,7 @@ PlusStatus vtkPlusChannel::GetOldestTimestamp(double& ts)
   }
 
   // If the video timestamp is older (smaller) than the tracker timestamp, then use the earliest video timestamp that comes after the first tracker timestamp
-  if (oldestVideoTimestamp < oldestTrackerTimestamp)
+  if (this->VideoSource && oldestVideoTimestamp < oldestTrackerTimestamp)
   {
     // Get the video timestamp that is closest to the oldest tracker timestamp
     BufferItemUidType videoUid(0);
@@ -1222,7 +1222,7 @@ PlusStatus vtkPlusChannel::GetOldestTimestamp(double& ts)
   }
 
   // If the video timestamp is older (smaller) than the field data timestamp, then use the earliest video timestamp that comes after the first field data timestamp
-  if (oldestVideoTimestamp < oldestFieldDataTimestamp)
+  if (this->VideoSource && oldestVideoTimestamp < oldestFieldDataTimestamp)
   {
     // Get the video timestamp that is closest to the oldest field data timestamp
     BufferItemUidType videoUid(0);
@@ -1416,7 +1416,7 @@ PlusStatus vtkPlusChannel::GetMostRecentTimestamp(double& ts)
   }
 
   // If the video timestamp is newer than the tracker timestamp, then use the latest video timestamp that comes before the first tracker timestamp
-  if (latestVideoTimestamp > latestTrackerTimestamp)
+  if (this->VideoSource && latestVideoTimestamp > latestTrackerTimestamp)
   {
     // Get the timestamp of the video item that is closest to the latest tracker item
     BufferItemUidType videoUid(0);
@@ -1449,7 +1449,7 @@ PlusStatus vtkPlusChannel::GetMostRecentTimestamp(double& ts)
   }
 
   // If the video timestamp is newer than the field data timestamp, then use the latest video timestamp that comes before the first field data timestamp
-  if (latestVideoTimestamp > latestFieldDataTimestamp)
+  if (this->VideoSource && latestVideoTimestamp > latestFieldDataTimestamp)
   {
     // Get the timestamp of the video item that is closest to the latest field data item
     BufferItemUidType videoUid(0);

@@ -104,6 +104,8 @@ IF(UNIX AND NOT APPLE)
   OPTION(PLUS_USE_V4L2 "Provide support for video4linux devices" OFF)
 ENDIF()
 
+OPTION(PLUS_USE_TOBII_INTERACTION "Provide support for Tobii head/gaze tracking devices with Interactor SDK" OFF)
+
 # --------------------------------------------------------------------------
 # Haptics
 ADD_SUBDIRECTORY(Haptics)
@@ -2567,6 +2569,36 @@ IF(PLUS_USE_REVOPOINT3DCAMERA)
     ${REVOPOINT3DSDK_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}3DCamera${CMAKE_SHARED_LIBRARY_SUFFIX}
     ${REVOPOINT3DSDK_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}HandEye${CMAKE_SHARED_LIBRARY_SUFFIX}
   )
+ENDIF()
+
+IF(PLUS_USE_TOBII_INTERACTION)
+  SET(TobiiInteractionSDK_HDRS
+    TobiiInteractionSDK/vtkPlusTobiiInteractionSDKTracker.h
+    )
+  LIST(APPEND ${PROJECT_NAME}_HDRS
+    ${Revopoint3DCamera_HDRS}
+    )
+
+  SET(TobiiInteractionSDK_SRCS
+    TobiiInteractionSDK/vtkPlusTobiiInteractionSDKTracker.cxx
+    )
+  LIST(APPEND ${PROJECT_NAME}_SRCS
+    ${TobiiInteractionSDK_SRCS}
+    )
+
+  LIST(APPEND ${PROJECT_NAME}_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/TobiiInteractionSDK
+    ${TobiiInteractionSDK_INCLUDE_DIR}
+    )
+
+  LIST(APPEND ${PROJECT_NAME}_PRIVATE_LIBS
+    ${TobiiInteractionSDK_LIBRARIES}
+    )
+
+  LIST(APPEND External_Libraries_Install
+    ${TobiiInteractionSDK_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}tobii_interaction_lib${CMAKE_SHARED_LIBRARY_SUFFIX}
+    ${TobiiInteractionSDK_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}tobii_stream_engine${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )
 ENDIF()
 
 # --------------------------------------------------------------------------
