@@ -80,6 +80,8 @@ protected:
   IL::InteractorId HasFocus;
   IL::Presence Presence;
 
+  std::string ConvertResultToString(IL::Result);
+
 protected:
   static void OnGazePointDataCallback(IL::GazePointData evt, void* context);
   static void OnGazeOriginDataCallback(IL::GazeOriginData evt, void* context);
@@ -90,7 +92,6 @@ protected:
 private:
   vtkPlusTobiiInteractionSDKTracker* External;
 };
-
 
 //----------------------------------------------------------------------------
 vtkPlusTobiiInteractionSDKTracker::vtkInternal::vtkInternal(vtkPlusTobiiInteractionSDKTracker* ext)
@@ -196,6 +197,56 @@ void vtkPlusTobiiInteractionSDKTracker::vtkInternal::OnPresenceDataCallback(IL::
   self->Presence = static_cast<IL::Presence>(evt.presence);
 }
 
+//----------------------------------------------------------------------------
+std::string vtkPlusTobiiInteractionSDKTracker::vtkInternal::ConvertResultToString(IL::Result result)
+{
+  switch (result)
+  {
+
+  case IL::Result::Error_Unknown:
+    return "Unknown error";
+  case IL::Result::Error_StreamTypeNotAvailable:
+    return "Stream type is not available";
+  case IL::Result::Error_NotInTransaction:
+    return "Not in transaction";
+  case IL::Result::Error_UnknownInteractorId:
+    return "Unknown interactor ID";
+  case IL::Result::Error_UnknownWeightDistributionId:
+    return "Unknown weight distribution ID";
+  case IL::Result::Error_CustomWeightDistributionInUse:
+    return "Custom weight distribution already in use";
+  case IL::Result::Error_InvalidParamValue:
+    return "Invalid parameter value";
+  case IL::Result::Error_NoAdapterSet:
+    return "No adapter has been set";
+  case IL::Result::Error_AllocationFailed:
+    return "Allocation failed";
+  case IL::Result::Ok:
+    return "Ok";
+  case IL::Result::Warning_NotInTransaction:
+    return "Not in transaction";
+  case IL::Result::Warning_AlreadyInTransaction:
+    return "Already in transaction";
+  case IL::Result::Warning_UnknownInteractorId:
+    return "Unknown interactor ID";
+  case IL::Result::Warning_UnknownWeightDistributionId:
+    return "Unknown weight distribution ID";
+  case IL::Result::Warning_InsufficientInformationForCoordinateTransform:
+    return "Insufficient information for coordinate transform";
+  case IL::Result::Warning_NoAdapterSet:
+    return "No adapter set";
+  case IL::Result::Warning_NoDeviceAvailable:
+    return "No device available";
+  case IL::Result::Warning_Timeout:
+    return "Timeout";
+  }
+  return "";
+}
+
+
+//-------------------------------------------------------------------------------------------------
+// vtkPlusTobiiInteractionSDKTracker
+//-------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 vtkPlusTobiiInteractionSDKTracker* vtkPlusTobiiInteractionSDKTracker::instance;
@@ -272,15 +323,10 @@ PlusStatus vtkPlusTobiiInteractionSDKTracker::ReadConfiguration(vtkXMLDataElemen
     {
       continue;
     }
+
     vtkInternal::InteractorData interactorData;
     interactorData.ID = i;
     XML_READ_STRING_ATTRIBUTE_NONMEMBER_REQUIRED(Name, interactorData.Name, interactor);
-    if (interactorData.Name == "None")
-    {
-      LOG_ERROR("Invalid interactor name \"None\" is reserved");
-      return PLUS_FAIL;
-    }
-
     XML_READ_VECTOR_ATTRIBUTE_NONMEMBER_REQUIRED(double, 2, Origin, interactorData.Origin, interactor);
     XML_READ_VECTOR_ATTRIBUTE_NONMEMBER_REQUIRED(double, 2, Size, interactorData.Size, interactor);
     XML_READ_SCALAR_ATTRIBUTE_NONMEMBER_OPTIONAL(double, Z, interactorData.Z, interactor);
@@ -295,22 +341,34 @@ PlusStatus vtkPlusTobiiInteractionSDKTracker::WriteConfiguration(vtkXMLDataEleme
 {
   LOG_TRACE("vtkPlusTobiiInteractionSDKTracker::WriteConfiguration");
   XML_FIND_DEVICE_ELEMENT_REQUIRED_FOR_WRITING(deviceConfig, rootConfigElement);
+
+  deviceConfig->SetVectorAttribute("ScreenSize", 2, this->Internal->ScreenSize);
+  deviceConfig->SetVectorAttribute("ScreenOffset", 2, this->Internal->ScreenOffset);
+  deviceConfig->SetAttribute("NoFocusName", this->Internal->NoFocusName.c_str());
+
+  // Write interactor regions to  the config file.
+  vtkNew<vtkXMLDataElement> interactorsConfig;
+  interactorsConfig->SetName("Interactors");
+  deviceConfig->AddNestedElement(interactorsConfig);
+  for (std::map<IL::InteractorId, vtkInternal::InteractorData>::iterator interactorsIt = this->Internal->Interactors.begin();
+    interactorsIt != this->Internal->Interactors.end();
+    ++interactorsIt)
+  {
+    vtkNew<vtkXMLDataElement> interactorConfig;
+    interactorConfig->SetName("Interactor");
+
+    vtkInternal::InteractorData interactorData = interactorsIt->second;
+    interactorConfig->SetAttribute("Name", interactorData.Name.c_str());
+    /*interactorConfig->SetVectorAttribute)*/
+
+    //XML_READ_VECTOR_ATTRIBUTE_NONMEMBER_REQUIRED(double, 2, Origin, interactorData.Origin, interactor);
+    //XML_READ_VECTOR_ATTRIBUTE_NONMEMBER_REQUIRED(double, 2, Size, interactorData.Size, interactor);
+    //XML_READ_SCALAR_ATTRIBUTE_NONMEMBER_OPTIONAL(double, Z, interactorData.Z, interactor);
+    //XML_READ_ENUM2_ATTRIBUTE_NONMEMBER_OPTIONAL(SizeMode, interactorData.SizeMode, interactor, "ABSOLUTE", vtkInternal::SIZE_MODE_ABSOLUTE, "RELATIVE", vtkInternal::SIZE_MODE_RELATIVE);
+    this->Internal->Interactors[interactorData.ID] = interactorData;
+  }
   return PLUS_SUCCESS;
 }
-
-//----------------------------------------------------------------------------
-PlusStatus vtkPlusTobiiInteractionSDKTracker::NotifyConfigured()
-{
-  LOG_TRACE("vtkPlusTobiiInteractionSDKTracker::NotifyConfigured");
-  return PLUS_SUCCESS;
-}
-
-//----------------------------------------------------------------------------
-PlusStatus vtkPlusTobiiInteractionSDKTracker::Probe()
-{
-  LOG_TRACE("vtkPlusTobiiInteractionSDKTracker: Probe");
-  return PLUS_SUCCESS;
-};
 
 //----------------------------------------------------------------------------
 std::string vtkPlusTobiiInteractionSDKTracker::vtkPlusTobiiInteractionSDKTracker::GetSdkVersion()
@@ -334,11 +392,11 @@ PlusStatus vtkPlusTobiiInteractionSDKTracker::InternalConnect()
   this->Internal->InteractionLib->CoordinateTransformSetOriginOffset(
     this->Internal->ScreenOffset[0], this->Internal->ScreenOffset[1]);
 
-
   // Add interactors
   if (this->Internal->InteractionLib->BeginInteractorUpdates() != IL::Result::Ok)
   {
     LOG_ERROR("Could not begin interactor update");
+    return PLUS_FAIL;
   }
   this->Internal->InteractionLib->ClearInteractors();
 
@@ -369,7 +427,8 @@ PlusStatus vtkPlusTobiiInteractionSDKTracker::InternalConnect()
     if (this->Internal->InteractionLib->AddOrUpdateInteractor(interactorData.ID, interactorRectangle, interactorData.Z)
       != IL::Result::Ok)
     {
-      LOG_ERROR("Could not add or update interactor");
+      LOG_ERROR("Could not add or update interactor \"" << interactorData.Name << "\"");
+      return PLUS_FAIL;
     }
   }
 
@@ -377,6 +436,7 @@ PlusStatus vtkPlusTobiiInteractionSDKTracker::InternalConnect()
     != IL::Result::Ok)
   {
     LOG_ERROR("Could not commit interactor updates");
+    return PLUS_FAIL;
   }
 
 

@@ -15,9 +15,8 @@
 
 /*!
 \class vtkPlusTobiiInteractionSDKTracker
-\brief Interface to the Clarius ultrasound scans
-This class talks with a Clarius Scanner over the Clarius API.
-Requires PLUS_USE_CLARIUS option in CMake.
+\brief Interface for Tobii eye trackers using the Interaction SDK.
+Requires PLUS_USE_TOBII_INTERACTION option in CMake.
  \ingroup PlusLibDataCollection
 */
 class vtkPlusDataCollectionExport vtkPlusTobiiInteractionSDKTracker : public vtkPlusDevice
@@ -37,11 +36,6 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;
 
   /*!
-  Probe to see to see if the device is connected to the computer.
-  */
-  PlusStatus Probe() override;
-
-  /*!
   Hardware device SDK version. 
   */
   std::string GetSdkVersion() override;
@@ -51,14 +45,6 @@ public:
 
   /*! Write configuration to xml data */
   PlusStatus WriteConfiguration(vtkXMLDataElement* config) override;
-
-  /*! Perform any completion tasks once configured
-   a multi-purpose function which is called after all devices have been configured,
-   all inputs and outputs have been connected between devices,
-   but before devices begin collecting data.
-   This is the last chance for your device to raise an error about improper or insufficient configuration.
-  */
-  PlusStatus NotifyConfigured() override;
 
   bool IsTracker() const override { return true; }
 
