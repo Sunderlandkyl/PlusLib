@@ -163,7 +163,8 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
-      dir: ${{github.workspace}}/Qt
+      with:
+        dir: ${{github.workspace}}/Qt
 
     - name: Configure CMake
       working-directory: ${{github.workspace}}
