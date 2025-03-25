@@ -161,10 +161,14 @@ jobs:
       run: |
         git clone https://github.com/PlusToolkit/PlusBuild.git
 
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      dir: ${{github.workspace}}/Qt
+
     - name: Configure CMake
       working-directory: ${{github.workspace}}
       run: |
-        cmake -S ${{github.workspace}}/PlusBuild -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4'
+        cmake -S ${{github.workspace}}/PlusBuild -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
 
     - name: Experimental Build
       if: ${{ github.event_name != 'schedule' }}
