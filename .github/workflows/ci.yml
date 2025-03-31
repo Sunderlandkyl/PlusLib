@@ -20,6 +20,7 @@ jobs:
   update_vtk:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Release]
@@ -80,6 +81,7 @@ jobs:
     # BUILD AND CACHE ITK
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Release]
