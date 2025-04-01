@@ -194,7 +194,9 @@ jobs:
         cd PlusLib-bin
         ctest -C ${{ matrix.build_type }} -D Nightly -V
 
+    - uses: ilammy/msvc-dev-cmd@v1
     - name: Package
+      if: contains(matrix.os, 'windows')
       working-directory: ${{github.workspace}}/build/PlusApp-bin
       run: |
         ls
