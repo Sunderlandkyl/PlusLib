@@ -196,7 +196,6 @@ jobs:
 
     - name: Package
       working-directory: ${{github.workspace}}/build/PlusApp-bin
-      shell: bash
       run: |
         ls
         ./CreatePackage.bat
