@@ -196,8 +196,10 @@ jobs:
 
     - name: Package
       working-directory: ${{github.workspace}}/build/PlusApp-bin
+      shell: bash
       run: |
-        CreatePackage.bat
+        ls
+        ./CreatePackage.bat
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
