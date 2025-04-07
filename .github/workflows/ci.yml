@@ -25,7 +25,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
 
-    steps:
+    steps:        
     - name: Cache VTK Build
       id: cache-vtk
       uses: actions/cache@v4
@@ -40,6 +40,11 @@ jobs:
       run: |
         sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
 
+    - name: Setup cmake
+      if: steps.cache-vtk.outputs.cache-hit != 'true'
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.16.x'
 
     - name: Install Qt
       if: steps.cache-vtk.outputs.cache-hit != 'true'
@@ -94,7 +99,13 @@ jobs:
         lookup-only: true
         path: itk-install
         key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
-
+        
+    - name: Setup cmake
+      if: steps.cache-itk.outputs.cache-hit != 'true'
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.16.x'
+        
     - name: Install Dependencies
       if: contains(matrix.os, 'ubuntu') && steps.cache-itk.outputs.cache-hit != 'true'
       shell: bash
@@ -150,6 +161,11 @@ jobs:
       run: |
         echo "Installing system dependencies..."
         sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
+
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.16.x'
 
     - name: Restore VTK Cache
       id: cache-vtk
