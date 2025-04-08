@@ -7,77 +7,102 @@ on:
     branches: [ "master" ]
 
 env:
-  # Specify VTK version
+  # VTK and ITK versions
   VTK_HASH: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
-  # Specify ITK version
   ITK_HASH: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
-  # PlusBuild build options
+
+  # Example extra build options
   BUILD_OPTIONS: -DIGSIO_BUILD_VOLUMERECONSTRUCTION=ON
 
 jobs:
-  ########
-  # BUILD AND CACHE VTK
+  ##############################################################################
+  # 1) BUILD AND CACHE VTK
   update_vtk:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [windows-latest]
         build_type: [Release]
 
-    steps:        
+    steps:
+    - uses: actions/checkout@v4
+
+    # --- Short Path Setup (Windows => C:\b, Linux/macOS => /b) ---
+    - name: Move repo to short path
+      id: short-path
+      run: |
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          echo "Creating C:\\b and copying workspace..."
+          mkdir C:\b
+          # Use PowerShell or robocopy:
+          powershell -Command "robocopy $env:GITHUB_WORKSPACE C:\\b /E"
+          echo "BUILD_PREFIX=C:\\b" >> $GITHUB_ENV
+        else
+          echo "Creating /b and copying workspace..."
+          sudo mkdir /b
+          sudo chmod 777 /b
+          cp -r $GITHUB_WORKSPACE/. /b
+          echo "BUILD_PREFIX=/b" >> $GITHUB_ENV
+        fi
+
     - name: Cache VTK Build
       id: cache-vtk
       uses: actions/cache@v4
       with:
-        path: vtk-install
-        lookup-only: true
+        # We store VTK install tree under $BUILD_PREFIX/vtk-install
+        path: ${{ env.BUILD_PREFIX }}/vtk-install
         key: vtk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.VTK_HASH }}
+        # option: restore-keys: ...
 
-    - name: Install Dependencies
-      if: contains(matrix.os, 'ubuntu') && steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
+    - name: Install Dependencies (Linux)
+      if: ${{ runner.os == 'Linux' && steps.cache-vtk.outputs.cache-hit != 'true' }}
       run: |
-        sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
+        sudo apt update
+        sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
 
-    - name: Install Qt
+    - name: Install Qt (only if not cached)
       if: steps.cache-vtk.outputs.cache-hit != 'true'
       uses: jurplel/install-qt-action@v4
       with:
-        dir: ${{github.workspace}}/Qt
+        dir: ${{ env.BUILD_PREFIX }}/Qt
 
     - name: Clone VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
-        mkdir vtk
-        cd vtk
+        mkdir -p ${{ env.BUILD_PREFIX }}/vtk
+        cd ${{ env.BUILD_PREFIX }}/vtk
         git init
         git remote add origin https://gitlab.kitware.com/vtk/vtk.git
-        git fetch --depth 1 origin $VTK_HASH
+        git fetch --depth 1 origin ${{ env.VTK_HASH }}
         git checkout FETCH_HEAD
 
     - name: Configure VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
-        cmake -S vtk -B vtk-build -DCMAKE_INSTALL_PREFIX=vtk-install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_SHARED_LIBS=ON -DVTK_BUILD_TESTING=OFF -DVTK_VERSIONED_INSTALL=OFF -DVTK_GROUP_ENABLE_Qt:STRING=YES -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
+        cmake -S ${{ env.BUILD_PREFIX }}/vtk \
+              -B ${{ env.BUILD_PREFIX }}/vtk-build \
+              -DCMAKE_INSTALL_PREFIX=${{ env.BUILD_PREFIX }}/vtk-install \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DBUILD_SHARED_LIBS=ON \
+              -DVTK_BUILD_TESTING=OFF \
+              -DVTK_VERSIONED_INSTALL=OFF \
+              -DVTK_GROUP_ENABLE_Qt=YES \
+              -DQt5_Dir='${{ env.BUILD_PREFIX }}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
 
     - name: Build VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
-        cmake --build vtk-build --parallel 4 --config ${{ matrix.build_type }}
+        cmake --build ${{ env.BUILD_PREFIX }}/vtk-build --config ${{ matrix.build_type }} --parallel 4
 
     - name: Install VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
-        cmake --install vtk-build
+        cmake --install ${{ env.BUILD_PREFIX }}/vtk-build
 
+  ##############################################################################
+  # 2) BUILD AND CACHE ITK
   update_itk:
-    ########
-    # BUILD AND CACHE ITK
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -86,27 +111,44 @@ jobs:
         build_type: [Release]
 
     steps:
+    - uses: actions/checkout@v4
+
+    # --- Short Path Setup again ---
+    - name: Move repo to short path
+      id: short-path
+      run: |
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          echo "Creating C:\\b and copying workspace..."
+          mkdir C:\b
+          powershell -Command "robocopy $env:GITHUB_WORKSPACE C:\\b /E"
+          echo "BUILD_PREFIX=C:\\b" >> $GITHUB_ENV
+        else
+          echo "Creating /b and copying workspace..."
+          sudo mkdir /b
+          sudo chmod 777 /b
+          cp -r $GITHUB_WORKSPACE/. /b
+          echo "BUILD_PREFIX=/b" >> $GITHUB_ENV
+        fi
+
     - name: Cache ITK Build
       id: cache-itk
       uses: actions/cache@v4
       with:
-        lookup-only: true
-        path: itk-install
+        path: ${{ env.BUILD_PREFIX }}/itk-install
         key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
-        
-    - name: Install Dependencies
-      if: contains(matrix.os, 'ubuntu') && steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
+
+    - name: Install Dependencies (Linux)
+      if: ${{ runner.os == 'Linux' && steps.cache-itk.outputs.cache-hit != 'true' }}
       run: |
-        sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
+        sudo apt update
+        sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
 
     - name: Clone ITK
       if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
         echo "Cloning ITK..."
-        mkdir itk
-        cd itk
+        mkdir -p ${{ env.BUILD_PREFIX }}/itk
+        cd ${{ env.BUILD_PREFIX }}/itk
         git init
         git remote add origin https://github.com/InsightSoftwareConsortium/ITK.git
         git fetch --depth 1 origin $ITK_HASH
@@ -114,25 +156,27 @@ jobs:
 
     - name: Configure ITK
       if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
-        cmake -S itk -B itk-build -DCMAKE_INSTALL_PREFIX=itk-install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF
+        cmake -S ${{ env.BUILD_PREFIX }}/itk \
+              -B ${{ env.BUILD_PREFIX }}/itk-build \
+              -DCMAKE_INSTALL_PREFIX=${{ env.BUILD_PREFIX }}/itk-install \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DBUILD_SHARED_LIBS=ON \
+              -DBUILD_TESTING=OFF
 
     - name: Build ITK
       if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
-        cmake --build itk-build --parallel 4 --config ${{ matrix.build_type }}
+        cmake --build ${{ env.BUILD_PREFIX }}/itk-build --parallel 4 --config ${{ matrix.build_type }}
 
     - name: Install ITK
       if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
       run: |
-        cmake --install itk-build
+        cmake --install ${{ env.BUILD_PREFIX }}/itk-build
 
+  ##############################################################################
+  # 3) BUILD, TEST, AND PACKAGE PlusBuild
   build:
-    ########
-    # BUILD AND TEST PlusBuild
     needs: [update_vtk, update_itk]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -140,75 +184,102 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
+
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Dependencies
-      if: contains(matrix.os, 'ubuntu')
-      shell: bash
+    # --- Short Path Setup yet again ---
+    - name: Move repo to short path
+      id: short-path
       run: |
-        echo "Installing system dependencies..."
-        sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          echo "Creating C:\\b and copying workspace..."
+          mkdir C:\b
+          powershell -Command "robocopy $env:GITHUB_WORKSPACE C:\\b /E"
+          echo "BUILD_PREFIX=C:\\b" >> $GITHUB_ENV
+        else
+          echo "Creating /b and copying workspace..."
+          sudo mkdir /b
+          sudo chmod 777 /b
+          cp -r $GITHUB_WORKSPACE/. /b
+          echo "BUILD_PREFIX=/b" >> $GITHUB_ENV
+        fi
 
     - name: Restore VTK Cache
       id: cache-vtk
-      uses: actions/cache/restore@v4
+      uses: actions/cache@v4
       with:
-        path: vtk-install
+        path: ${{ env.BUILD_PREFIX }}/vtk-install
         key: vtk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.VTK_HASH }}
 
     - name: Restore ITK Cache
       id: cache-itk
-      uses: actions/cache/restore@v4
+      uses: actions/cache@v4
       with:
-        path: itk-install
+        path: ${{ env.BUILD_PREFIX }}/itk-install
         key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
 
-    - name: Check VTK install
-      shell: bash
-      working-directory: ${{github.workspace}}/vtk-install/lib/cmake/vtk
+    - name: Install Dependencies (Linux)
+      if: ${{ runner.os == 'Linux' }}
       run: |
-        ls
-
-    - name: Clone PlusBuild
-      working-directory: ${{github.workspace}}
-      run: |
-        git clone https://github.com/PlusToolkit/PlusBuild.git
+        sudo apt update
+        sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
 
     - name: Install Qt
+      if: ${{ runner.os == 'Windows' }}
       uses: jurplel/install-qt-action@v4
       with:
-        dir: ${{github.workspace}}/Qt
+        dir: ${{ env.BUILD_PREFIX }}/Qt
+
+    - name: Clone PlusBuild
+      run: |
+        git clone https://github.com/PlusToolkit/PlusBuild.git ${{ env.BUILD_PREFIX }}/PlusBuild
 
     - name: Configure CMake
-      working-directory: ${{github.workspace}}
       run: |
-        cmake -S ${{github.workspace}}/PlusBuild -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
+        cmake -S ${{ env.BUILD_PREFIX }}/PlusBuild \
+              -B ${{ env.BUILD_PREFIX }}/build \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DVTK_DIR='${{ env.BUILD_PREFIX }}/vtk-install/lib/cmake/vtk' \
+              -DITK_DIR='${{ env.BUILD_PREFIX }}/itk-install/lib/cmake/ITK-5.4' \
+              -DQt5_Dir='${{ env.BUILD_PREFIX }}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake' \
+              ${{ env.BUILD_OPTIONS }}
 
+    # Example "Experimental" build & test (CTest)
     - name: Experimental Build
       if: ${{ github.event_name != 'schedule' }}
-      working-directory: ${{github.workspace}}/build
       run: |
-        ctest -C ${{ matrix.build_type }} -D Experimental -V
+        ctest -C ${{ matrix.build_type }} \
+              -D Experimental \
+              -V \
+              --test-dir ${{ env.BUILD_PREFIX }}/build
 
+    # Example "Nightly" build
     - name: Nightly Build
       if: ${{ github.event_name == 'schedule' }}
-      working-directory: ${{github.workspace}}/build
       run: |
-        ctest -C ${{ matrix.build_type }} -D Nightly -V
-        cd PlusLib-bin
+        ctest -C ${{ matrix.build_type }} \
+              -D Nightly \
+              -V \
+              --test-dir ${{ env.BUILD_PREFIX }}/build
+        # If you have a second run inside PlusLib-bin:
+        cd ${{ env.BUILD_PREFIX }}/build/PlusLib-bin
         ctest -C ${{ matrix.build_type }} -D Nightly -V
 
+    # On Windows, set up MSVC dev prompt if needed
     - uses: ilammy/msvc-dev-cmd@v1
-    - name: Package
-      if: contains(matrix.os, 'windows')
-      working-directory: ${{github.workspace}}/build/PlusApp-bin
-      run: |
-        ./CreatePackage.bat
+      if: ${{ runner.os == 'Windows' }}
 
-    - name: Upload artifact
+    - name: Package (on Windows)
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        cd ${{ env.BUILD_PREFIX }}/build/PlusApp-bin
+        # Your existing script that eventually calls cpack
+        .\CreatePackage.bat
+
+    - name: Upload artifact (installer .exe)
       uses: actions/upload-artifact@v4
+      if: ${{ runner.os == 'Windows' }}
       with:
         name: PlusInstaller
-        path: ${{github.workspace}}/build/PlusApp-bin/Plus.*exe
-  
+        path: ${{ env.BUILD_PREFIX }}/build/PlusApp-bin/Plus.*exe
