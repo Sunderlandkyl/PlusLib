@@ -164,6 +164,12 @@ jobs:
         path: itk-install
         key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
 
+    - name: Check VTK install
+      shell: bash
+      working-directory: ${{github.workspace}}/vtk-install/lib/cmake/vtk
+      run: |
+        ls
+
     - name: Clone PlusBuild
       working-directory: ${{github.workspace}}
       run: |
