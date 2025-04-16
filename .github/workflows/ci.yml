@@ -180,10 +180,26 @@ jobs:
       with:
         dir: ${{github.workspace}}/Qt
 
+    - name: Set environment (PR)
+      # If event is a pull request, use the PR head repo and branch.
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        echo "PLUSLIB_GIT_REPOSITORY=https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git" >> $GITHUB_ENV
+        echo "PLUSLIB_GIT_TAG=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set environment (push)
+      # If event is a direct push, use the current repo and ref.
+      if: ${{ github.event_name == 'push' }}
+      run: |
+        echo "PLUSLIB_GIT_REPOSITORY=https://github.com/${{ github.repository }}.git" >> $GITHUB_ENV
+        echo "PLUSLIB_GIT_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+      shell: bash
+
     - name: Configure CMake
       working-directory: ${{github.workspace}}
       run: |
-        cmake -S ${{github.workspace}}/PlusBuild -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
+        cmake -S ${{github.workspace}}/PlusBuild -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DPLUSLIB_GIT_REPOSITORY=${PLUSLIB_GIT_REPOSITORY} -DPLUSLIB_GIT_REVISION=${PLUSLIB_GIT_TAG} -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
 
     - name: Experimental Build
       if: ${{ github.event_name != 'schedule' }}
