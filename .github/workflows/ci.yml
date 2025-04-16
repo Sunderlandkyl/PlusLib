@@ -199,7 +199,7 @@ jobs:
     - name: Configure CMake
       working-directory: ${{github.workspace}}
       run: |
-        cmake -S ${{github.workspace}}/PlusBuild -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DPLUSLIB_GIT_REPOSITORY=${PLUSLIB_GIT_REPOSITORY} -DPLUSLIB_GIT_REVISION=${PLUSLIB_GIT_TAG} -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
+        cmake -S ${{github.workspace}}/PlusBuild -B '${{github.workspace}}/build' -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DPLUSLIB_GIT_REPOSITORY='${PLUSLIB_GIT_REPOSITORY}' -DPLUSLIB_GIT_REVISION='${PLUSLIB_GIT_TAG}' -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
 
     - name: Experimental Build
       if: ${{ github.event_name != 'schedule' }}
