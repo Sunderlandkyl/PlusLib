@@ -229,5 +229,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: PlusInstaller
-        path: ${{github.workspace}}/build/PlusApp-bin/Plus.*exe
+        path: build/PlusApp-bin/Plus.*exe
   
