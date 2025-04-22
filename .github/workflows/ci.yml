@@ -179,6 +179,7 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         dir: ${{github.workspace}}/Qt
+        version: '5.15.2'
 
     - name: Set environment (PR)
       # If event is a pull request, use the PR head repo and branch.
