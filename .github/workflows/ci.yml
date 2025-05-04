@@ -22,15 +22,14 @@ jobs:
   test_clone:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [windows-latest]
         build_type: [Release]
 
-
-    steps:          
+    steps:
     - name: Clone PLTools
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: PerkLab/PLTools
         ref: main
