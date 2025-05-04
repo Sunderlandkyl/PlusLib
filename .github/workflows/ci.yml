@@ -175,6 +175,13 @@ jobs:
       run: |
         git clone https://github.com/PlusToolkit/PlusBuild.git
 
+    - name: Clone PLTools
+      uses: actions/checkout@v2
+      with:
+        repository: PerkLab/PLTools
+        ref: main
+        token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
