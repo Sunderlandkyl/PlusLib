@@ -15,6 +15,27 @@ env:
   BUILD_OPTIONS: -DIGSIO_BUILD_VOLUMERECONSTRUCTION=ON
 
 jobs:
+
+
+    ########
+  # BUILD AND CACHE VTK
+  test_clone:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+
+
+    steps:          
+    - name: Clone PLTools
+      uses: actions/checkout@v2
+      with:
+        repository: PerkLab/PLTools
+        ref: main
+        token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+
   ########
   # BUILD AND CACHE VTK
   update_vtk:
