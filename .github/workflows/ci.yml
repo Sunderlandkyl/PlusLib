@@ -12,30 +12,10 @@ env:
   # Specify ITK version
   ITK_HASH: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
   # PlusBuild build options
-  BUILD_OPTIONS: -DIGSIO_BUILD_VOLUMERECONSTRUCTION=ON
+  PLUS_COMMON_CONFIG: -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON -DPLUS_USE_Ascension3DGm:BOOL=OFF -DPLUS_USE_BKPROFOCUS_VIDEO:BOOL=ON -DPLUS_USE_EPIPHAN:BOOL=ON -DPLUS_USE_ICCAPTURING_VIDEO:BOOL=ON -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON -DPLUS_USE_NDI:BOOL=ON -DPLUS_USE_VFW_VIDEO:BOOL=ON -DPLUS_USE_OPTITRACK:BOOL=ON -DPLUS_USE_INTELREALSENSE:BOOL=ON -DPLUSBUILD_PREFER_MicronTracker_36:BOOL=OFF -DPLUS_USE_TextRecognizer:BOOL=ON -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON -DPLUS_USE_MKV_IO:BOOL=ON -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON -DPLUS_USE_VP9:BOOL=ON -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package
+  PLUS_x64_COMMON_CONFIG: -DPLUS_USE_Ascension3DG:BOOL=OFF -DPLUS_USE_BRACHY_TRACKER:BOOL=OFF -DPLUS_USE_NDI_CERTUS:BOOL=OFF -DPLUS_USE_ULTRASONIX_VIDEO:BOOL=OFF
 
 jobs:
-
-
-    ########
-  # BUILD AND CACHE VTK
-  test_clone:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [windows-latest]
-        build_type: [Release]
-
-    steps:
-    - name: Clone PLTools
-      uses: actions/checkout@v4
-      with:
-        repository: PerkLab/PLTools
-        ref: master
-        path: PLTools
-        token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
-
   ########
   # BUILD AND CACHE VTK
   update_vtk:
@@ -197,10 +177,11 @@ jobs:
         git clone https://github.com/PlusToolkit/PlusBuild.git
 
     - name: Clone PLTools
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: PerkLab/PLTools
-        ref: main
+        ref: master
+        path: PLTools
         token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
 
     - name: Install Qt
@@ -230,7 +211,7 @@ jobs:
     - name: Configure CMake
       working-directory: ${{github.workspace}}
       run: |
-        cmake -S ${{github.workspace}}/PlusBuild -B '${{github.workspace}}/build' -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DPLUSLIB_GIT_REPOSITORY='${{env.PLUSLIB_GIT_REPOSITORY}}' -DPLUSLIB_GIT_REVISION='${{env.PLUSLIB_GIT_TAG}}' -DPLUSAPP_GIT_REPOSITORY='${{env.PLUSAPP_GIT_REPOSITORY}}' -DPLUSAPP_GIT_REVISION='${{env.PLUSAPP_GIT_TAG}}' -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
+        cmake -S ${{github.workspace}}/PlusBuild -B '${{github.workspace}}/build' -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DPLUSLIB_GIT_REPOSITORY='${{env.PLUSLIB_GIT_REPOSITORY}}' -DPLUSLIB_GIT_REVISION='${{env.PLUSLIB_GIT_TAG}}' -DPLUSAPP_GIT_REPOSITORY='${{env.PLUSAPP_GIT_REPOSITORY}}' -DPLUSAPP_GIT_REVISION='${{env.PLUSAPP_GIT_TAG}}' -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake' ${{env.PLUS_COMMON_CONFIG}} ${{env.PLUS_x64_COMMON_CONFIG}}
 
     - name: Experimental Build
       if: ${{ github.event_name != 'schedule' }}
