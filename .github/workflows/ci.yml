@@ -33,6 +33,7 @@ jobs:
       with:
         repository: PerkLab/PLTools
         ref: main
+        path: PLTools
         token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
 
   ########
