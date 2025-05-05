@@ -64,9 +64,10 @@ jobs:
         path: itk-install
         key: ${{ inputs.itk-cache-key }}
 
-    - name: Restore Plus Cache
+    - name: Plus Cache
       if: ${{ inputs.use-plus-cache && inputs.plus-cache-key != '' }}
-      uses: actions/cache/restore@v4
+      id: cache-plus
+      uses: actions/cache@v4
       with:
         path: build
         key: ${{ inputs.plus-cache-key }}
