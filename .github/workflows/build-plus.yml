@@ -1,0 +1,115 @@
+name: Build Plus (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      vtk-cache-key:
+        required: true
+        type: string
+      itk-cache-key:
+        required: true
+        type: string
+      plus-cache-key:
+        required: false
+        type: string
+      plus-config:
+        required: true
+        type: string
+      use-plus-cache:
+        required: false
+        type: boolean
+        default: false
+      archive-name:
+        required: false
+        type: string
+        default: PlusInstaller
+
+      # Default repos/tags for PlusLib and PlusApp
+      pluslib-repository:
+        required: false
+        type: string
+        default: https://github.com/PlusToolkit/PlusLib.git
+      pluslib-tag:
+        required: false
+        type: string
+        default: master
+      plusapp-repository:
+        required: false
+        type: string
+        default: https://github.com/Sunderlandkyl/PlusApp.git
+      plusapp-tag:
+        required: false
+        type: string
+        default: install_branch_temp
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Restore VTK Cache
+      uses: actions/cache/restore@v4
+      with:
+        path: vtk-install
+        key: ${{ inputs.vtk-cache-key }}
+
+    - name: Restore ITK Cache
+      uses: actions/cache/restore@v4
+      with:
+        path: itk-install
+        key: ${{ inputs.itk-cache-key }}
+
+    - name: Restore Plus Cache
+      if: ${{ inputs.use-plus-cache && inputs.plus-cache-key != '' }}
+      uses: actions/cache/restore@v4
+      with:
+        path: plus-cache
+        key: ${{ inputs.plus-cache-key }}
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        dir: ${{ github.workspace }}/Qt
+        version: '5.15.0'
+
+    - name: Set PLUSLIB/PLUSAPP environment
+      shell: bash
+      run: |
+        echo "PLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }}" >> $GITHUB_ENV
+        echo "PLUSLIB_GIT_TAG=${{ inputs.pluslib-tag }}" >> $GITHUB_ENV
+        echo "PLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }}" >> $GITHUB_ENV
+        echo "PLUSAPP_GIT_TAG=${{ inputs.plusapp-tag }}" >> $GITHUB_ENV
+
+    - name: Clone PlusBuild
+      run: git clone https://github.com/PlusToolkit/PlusBuild.git
+
+    - name: Configure PlusBuild
+      run: |
+        cmake -S PlusBuild -B build `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DPLUSLIB_GIT_REPOSITORY=$env:PLUSLIB_GIT_REPOSITORY `
+          -DPLUSLIB_GIT_REVISION=$env:PLUSLIB_GIT_TAG `
+          -DPLUSAPP_GIT_REPOSITORY=$env:PLUSAPP_GIT_REPOSITORY `
+          -DPLUSAPP_GIT_REVISION=$env:PLUSAPP_GIT_TAG `
+          -DVTK_DIR="${{ github.workspace }}/vtk-install/lib/cmake/vtk" `
+          -DITK_DIR="${{ github.workspace }}/itk-install/lib/cmake/ITK-5.4" `
+          -DQt5_Dir="${{ github.workspace }}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake" `
+          ${{ inputs.plus-config }}
+
+    - name: Build and Test
+      run: |
+        ctest -C Release -D Experimental -V
+        cd build/PlusLib-bin
+        ctest -C Release -D Experimental -V
+
+    - name: Package
+      working-directory: build/PlusApp-bin
+      run: ./CreatePackage.bat
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.archive-name }}
+        path: build/PlusApp-bin/*.exe
