@@ -15,10 +15,6 @@ on:
       plus-config:
         required: true
         type: string
-      use-plus-cache:
-        required: false
-        type: boolean
-        default: false
       archive-name:
         required: false
         type: string
@@ -65,7 +61,7 @@ jobs:
         key: ${{ inputs.itk-cache-key }}
 
     - name: Plus Cache
-      if: ${{ inputs.use-plus-cache && inputs.plus-cache-key != '' }}
+      if: ${{ inputs.plus-cache-key != '' }}
       id: cache-plus
       uses: actions/cache@v4
       with:

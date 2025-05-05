@@ -145,7 +145,6 @@ jobs:
     with:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
-      use-plus-cache: true
       plus-cache-key: plus-latest-x64
       archive-name: x64
       plus-config: >-
@@ -184,7 +183,6 @@ jobs:
     with:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
-      use-plus-cache: true
       plus-cache-key: plus-latest-x64
       archive-name: x64-Clarius
       plus-config: >-
@@ -204,7 +202,6 @@ jobs:
       with:
         vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
         itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
-        use-plus-cache: true
         plus-cache-key: plus-latest-x64
         archive-name: x64-ClariusOEM
         plus-config: >-
@@ -224,7 +221,6 @@ jobs:
     with:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
-      use-plus-cache: true
       plus-cache-key: plus-latest-x64
       archive-name: x64-Telemed
       plus-config: >-
