@@ -110,7 +110,6 @@ jobs:
           ${{ inputs.plus-config }}
 
     - name: Build
-      if: ${{ github.event_name == 'schedule' }}
       working-directory: ${{github.workspace}}/build
       run: |
         ctest -C Release -D Nightly -V
