@@ -68,7 +68,7 @@ jobs:
       if: ${{ inputs.use-plus-cache && inputs.plus-cache-key != '' }}
       uses: actions/cache/restore@v4
       with:
-        path: plus-cache
+        path: build
         key: ${{ inputs.plus-cache-key }}
 
     - name: Install Qt
