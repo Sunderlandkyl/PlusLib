@@ -143,8 +143,8 @@ jobs:
         os: [windows-latest]
         build_type: [Release]
     with:
-      vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.build_type }}-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4
-      itk-cache-key: itk-${{ matrix.os }}-${{ matrix.build_type }}-898def645183e6a2d3293058ade451ec416c4514
+      vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
       plus-config: >-
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
