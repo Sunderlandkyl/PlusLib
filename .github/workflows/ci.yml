@@ -135,27 +135,38 @@ jobs:
     ########
     # BUILD AND TEST PlusBuild
     needs: [update_vtk, update_itk]
-    runs-on: ${{ matrix.os }}
+    uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest]
         build_type: [Release]
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install Dependencies
-      if: contains(matrix.os, 'ubuntu')
-      shell: bash
-      run: |
-        echo "Installing system dependencies..."
-        sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
-
-    - name: Build Plus
-      uses: ./.github/workflows/build-plus.yml
-      with:
-        vtk-cache-key: vtk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.VTK_HASH }}
-        itk-cache-key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
-        plus-cache-key: plus-${{ runner.os }}-${{ matrix.build_type }}
-        plus-config: "${{ env.PLUS_COMMON_CONFIG }} ${{ env.PLUS_x64_COMMON_CONFIG }}"
-        use-plus-cache: true
+    with:
+      os-name: ${{ matrix.os }}
+      build-type: ${{ matrix.build_type }}
+      vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.build_type }}-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4
+      itk-cache-key: itk-${{ matrix.os }}-${{ matrix.build_type }}-898def645183e6a2d3293058ade451ec416c4514
+      plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
+      plus-config: >-
+        -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
+        -DPLUS_USE_Ascension3DGm:BOOL=OFF
+        -DPLUS_USE_BKPROFOCUS_VIDEO:BOOL=ON
+        -DPLUS_USE_EPIPHAN:BOOL=ON
+        -DPLUS_USE_ICCAPTURING_VIDEO:BOOL=ON
+        -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON
+        -DPLUS_USE_NDI:BOOL=ON
+        -DPLUS_USE_VFW_VIDEO:BOOL=ON
+        -DPLUS_USE_OPTITRACK:BOOL=ON
+        -DPLUS_USE_INTELREALSENSE:BOOL=ON
+        -DPLUSBUILD_PREFER_MicronTracker_36:BOOL=OFF
+        -DPLUS_USE_TextRecognizer:BOOL=ON
+        -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON
+        -DPLUS_USE_MKV_IO:BOOL=ON
+        -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON
+        -DPLUS_USE_VP9:BOOL=ON
+        -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package
+        -DPLUS_USE_Ascension3DG:BOOL=OFF
+        -DPLUS_USE_BRACHY_TRACKER:BOOL=OFF
+        -DPLUS_USE_NDI_CERTUS:BOOL=OFF
+        -DPLUS_USE_ULTRASONIX_VIDEO:BOOL=OFF
+      use-plus-cache: true
