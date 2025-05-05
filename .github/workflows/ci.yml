@@ -42,10 +42,10 @@ jobs:
         sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
 
     - name: Install Qt
-      if: steps.cache-vtk.outputs.cache-hit != 'true'
       uses: jurplel/install-qt-action@v4
       with:
         dir: ${{github.workspace}}/Qt
+        version: '5.15.0'
 
     - name: Clone VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
