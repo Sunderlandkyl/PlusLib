@@ -132,9 +132,7 @@ jobs:
       run: |
         cmake --install itk-build
 
-  build:
-    ########
-    # BUILD AND TEST PlusBuild
+  build_plus_x64:
     needs: [update_vtk, update_itk]
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -147,6 +145,7 @@ jobs:
     with:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+      use-plus-cache: true
       plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
       plus-config: >-
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
@@ -170,4 +169,21 @@ jobs:
         -DPLUS_USE_BRACHY_TRACKER:BOOL=OFF
         -DPLUS_USE_NDI_CERTUS:BOOL=OFF
         -DPLUS_USE_ULTRASONIX_VIDEO:BOOL=OFF
-      use-plus-cache: true
+
+  build_plus_x64_clarius_oem:
+      needs: [update_vtk, update_itk]
+      uses: ./.github/workflows/build-plus.yml
+      strategy:
+        fail-fast: false
+        matrix:
+          os: [windows-latest]
+          build_type: [Release]
+      secrets:
+        PLTOOLS_ACCESS_TOKEN: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+      with:
+        vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+        itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+        use-plus-cache: true
+        plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
+        plus-config: >-
+          -DPLUS_USE_CLARIUS_OEM:BOOL=ON:BOOL=ON
