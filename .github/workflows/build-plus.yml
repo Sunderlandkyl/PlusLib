@@ -85,6 +85,14 @@ jobs:
     - name: Clone PlusBuild
       run: git clone https://github.com/PlusToolkit/PlusBuild.git
 
+    - name: Clone PLTools
+      uses: actions/checkout@v4
+      with:
+        repository: PerkLab/PLTools
+        ref: master
+        path: PLTools
+        token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+
     - name: Configure PlusBuild
       run: |
         cmake -S PlusBuild -B build `
