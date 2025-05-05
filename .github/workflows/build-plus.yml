@@ -3,24 +3,36 @@ name: Build Plus (Reusable)
 on:
   workflow_call:
     inputs:
+
+      # Dependency versions
+      qt-version:
+        required: false
+        type: string
+        default: '5.15.0'
       vtk-cache-key:
         required: true
         type: string
       itk-cache-key:
         required: true
         type: string
+
+      # Plus cache
       plus-cache-key:
         required: false
         type: string
+
+      # Plus build options
       plus-config:
         required: true
         type: string
+
+      # Uploaded archive name
       archive-name:
         required: false
         type: string
         default: PlusInstaller
 
-      # Default repos/tags for PlusLib and PlusApp
+      # Repos/tags for PlusLib and PlusApp
       pluslib-repository:
         required: false
         type: string
@@ -37,8 +49,9 @@ on:
         required: false
         type: string
         default: install_branch_temp
+
     secrets:
-      PLTOOLS_ACCESS_TOKEN:
+      pltools-access-token:
         required: false
 
 jobs:
@@ -72,18 +85,14 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         dir: ${{ github.workspace }}/Qt
-        version: '5.15.0'
-
-    - name: Set PLUSLIB/PLUSAPP environment
-      shell: bash
-      run: |
-        echo "PLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }}" >> $GITHUB_ENV
-        echo "PLUSLIB_GIT_TAG=${{ inputs.pluslib-tag }}" >> $GITHUB_ENV
-        echo "PLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }}" >> $GITHUB_ENV
-        echo "PLUSAPP_GIT_TAG=${{ inputs.plusapp-tag }}" >> $GITHUB_ENV
+        version: ${{ inputs.qt-version }}
 
     - name: Clone PlusBuild
-      run: git clone https://github.com/PlusToolkit/PlusBuild.git
+      uses: actions/checkout@v4
+      with:
+        repository: PlusToolkit/PlusBuild
+        ref: master
+        path: PlusBuild
 
     - name: Clone PLTools
       uses: actions/checkout@v4
@@ -91,16 +100,16 @@ jobs:
         repository: PerkLab/PLTools
         ref: master
         path: PLTools
-        token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+        token: ${{ secrets.pltools-access-token }}
 
     - name: Configure PlusBuild
       run: |
         cmake -S PlusBuild -B build `
           -DCMAKE_BUILD_TYPE=Release `
-          -DPLUSLIB_GIT_REPOSITORY=${{ env.PLUSLIB_GIT_REPOSITORY }} `
-          -DPLUSLIB_GIT_REVISION=${{ env.PLUSLIB_GIT_TAG }} `
-          -DPLUSAPP_GIT_REPOSITORY=${{ env.PLUSAPP_GIT_REPOSITORY }} `
-          -DPLUSAPP_GIT_REVISION=${{ env.PLUSAPP_GIT_TAG }} `
+          -DPLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }} `
+          -DPLUSLIB_GIT_REVISION=${{ inputs.pluslib-tag }} `
+          -DPLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }} `
+          -DPLUSAPP_GIT_REVISION=${{ inputs.plusapp-tag }} `
           -DVTK_DIR="${{ github.workspace }}/vtk-install/lib/cmake/vtk" `
           -DITK_DIR="${{ github.workspace }}/itk-install/lib/cmake/ITK-5.4" `
           -DQt5_Dir="${{ github.workspace }}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake" `
