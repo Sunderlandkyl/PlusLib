@@ -41,6 +41,9 @@ on:
         required: false
         type: string
         default: install_branch_temp
+    secrets:
+      PLTOOLS_ACCESS_TOKEN:
+        required: false
 
 jobs:
   build:
