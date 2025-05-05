@@ -101,7 +101,7 @@ jobs:
         cmake -S PlusBuild -B build `
           -DCMAKE_BUILD_TYPE=Release `
           -DPLUSLIB_GIT_REPOSITORY=${{ env.PLUSLIB_GIT_REPOSITORY }}
-         -DPLUSLIB_GIT_REVISION=${{ env.PLUSLIB_GIT_TAG }}
+          -DPLUSLIB_GIT_REVISION=${{ env.PLUSLIB_GIT_TAG }}
           -DPLUSAPP_GIT_REPOSITORY=${{ env.PLUSAPP_GIT_REPOSITORY }}
           -DPLUSAPP_GIT_REVISION=${{ env.PLUSAPP_GIT_TAG }}
           -DVTK_DIR="${{ github.workspace }}/vtk-install/lib/cmake/vtk" `
