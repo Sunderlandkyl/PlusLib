@@ -142,7 +142,6 @@ jobs:
         os: [windows-latest]
         build_type: [Release]
     with:
-      os-name: ${{ matrix.os }}
       build-type: ${{ matrix.build_type }}
       vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.build_type }}-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4
       itk-cache-key: itk-${{ matrix.os }}-${{ matrix.build_type }}-898def645183e6a2d3293058ade451ec416c4514
