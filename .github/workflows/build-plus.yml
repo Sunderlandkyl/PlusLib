@@ -112,9 +112,7 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: |
-        ctest -C Release -D Nightly -V
-        cd PlusLib-bin
-        ctest -C Release -D Nightly -V
+        ctest -C Release -D Experimental -V
 
     - uses: ilammy/msvc-dev-cmd@v1
     - name: Package
