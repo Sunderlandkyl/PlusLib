@@ -142,6 +142,8 @@ jobs:
       matrix:
         os: [windows-latest]
         build_type: [Release]
+    secrets:
+      PLTOOLS_ACCESS_TOKEN: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
