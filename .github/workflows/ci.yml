@@ -151,92 +151,11 @@ jobs:
         echo "Installing system dependencies..."
         sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
 
-    - name: Restore VTK Cache
-      id: cache-vtk
-      uses: actions/cache/restore@v4
+    - name: Build Plus
+      uses: ./.github/workflows/build-plus.yml
       with:
-        path: vtk-install
-        key: vtk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.VTK_HASH }}
-
-    - name: Restore ITK Cache
-      id: cache-itk
-      uses: actions/cache/restore@v4
-      with:
-        path: itk-install
-        key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
-
-    - name: Check VTK install
-      shell: bash
-      working-directory: ${{github.workspace}}/vtk-install/lib/cmake/vtk
-      run: |
-        ls
-
-    - name: Clone PlusBuild
-      working-directory: ${{github.workspace}}
-      run: |
-        git clone https://github.com/PlusToolkit/PlusBuild.git
-
-    - name: Clone PLTools
-      uses: actions/checkout@v4
-      with:
-        repository: PerkLab/PLTools
-        ref: master
-        path: PLTools
-        token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
-
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        dir: ${{github.workspace}}/Qt
-        version: '5.15.0'
-
-    - name: Set environment (PR)
-      # If event is a pull request, use the PR head repo and branch.
-      if: ${{ github.event_name == 'pull_request' }}
-      run: |
-        echo "PLUSLIB_GIT_REPOSITORY=https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git" >> $GITHUB_ENV
-        echo "PLUSLIB_GIT_TAG=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Set environment (push)
-      # If event is a direct push, use the current repo and ref.
-      if: ${{ github.event_name == 'push' }}
-      run: |
-        echo "PLUSLIB_GIT_REPOSITORY=https://github.com/${{ github.repository }}.git" >> $GITHUB_ENV
-        echo "PLUSLIB_GIT_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-        echo "PLUSAPP_GIT_REPOSITORY=https://github.com/Sunderlandkyl/PlusApp.git" >> $GITHUB_ENV
-        echo "PLUSAPP_GIT_TAG=install_branch_temp" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Configure CMake
-      working-directory: ${{github.workspace}}
-      run: |
-        cmake -S ${{github.workspace}}/PlusBuild -B '${{github.workspace}}/build' -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DPLUSLIB_GIT_REPOSITORY='${{env.PLUSLIB_GIT_REPOSITORY}}' -DPLUSLIB_GIT_REVISION='${{env.PLUSLIB_GIT_TAG}}' -DPLUSAPP_GIT_REPOSITORY='${{env.PLUSAPP_GIT_REPOSITORY}}' -DPLUSAPP_GIT_REVISION='${{env.PLUSAPP_GIT_TAG}}' -DVTK_DIR='${{github.workspace}}/vtk-install/lib/cmake/vtk' -DITK_DIR='${{github.workspace}}/itk-install/lib/cmake/ITK-5.4' -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake' ${{env.PLUS_COMMON_CONFIG}} ${{env.PLUS_x64_COMMON_CONFIG}}
-
-    - name: Experimental Build
-      if: ${{ github.event_name != 'schedule' }}
-      working-directory: ${{github.workspace}}/build
-      run: |
-        ctest -C ${{ matrix.build_type }} -D Experimental -V
-
-    - name: Nightly Build
-      if: ${{ github.event_name == 'schedule' }}
-      working-directory: ${{github.workspace}}/build
-      run: |
-        ctest -C ${{ matrix.build_type }} -D Nightly -V
-        cd PlusLib-bin
-        ctest -C ${{ matrix.build_type }} -D Nightly -V
-
-    - uses: ilammy/msvc-dev-cmd@v1
-    - name: Package
-      if: contains(matrix.os, 'windows')
-      working-directory: ${{github.workspace}}/build/PlusApp-bin
-      run: |
-        ./CreatePackage.bat
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: PlusInstaller
-        path: ${{github.workspace}}/build/PlusApp-bin/*.exe
-  
+        vtk-cache-key: vtk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.VTK_HASH }}
+        itk-cache-key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
+        plus-cache-key: plus-${{ runner.os }}-${{ matrix.build_type }}
+        plus-config: "${{ env.PLUS_COMMON_CONFIG }} ${{ env.PLUS_x64_COMMON_CONFIG }}"
+        use-plus-cache: true
