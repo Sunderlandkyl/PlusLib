@@ -111,6 +111,7 @@ jobs:
 
     - name: Build and Test
       run: |
+        cd build
         ctest -C Release -D Experimental -V
         cd build/PlusLib-bin
         ctest -C Release -D Experimental -V
