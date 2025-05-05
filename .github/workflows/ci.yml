@@ -147,6 +147,7 @@ jobs:
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
       use-plus-cache: true
       plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
+      archive-name: x64
       plus-config: >-
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
         -DPLUS_USE_Ascension3DGm:BOOL=OFF
@@ -170,8 +171,28 @@ jobs:
         -DPLUS_USE_NDI_CERTUS:BOOL=OFF
         -DPLUS_USE_ULTRASONIX_VIDEO:BOOL=OFF
 
+  build_plus_x64_clarius_cast:
+    needs: [build_plus_x64] # Build off of the base x64 package
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+    secrets:
+      PLTOOLS_ACCESS_TOKEN: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+      use-plus-cache: true
+      plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
+      archive-name: x64-Clarius
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusCast"
+        -DPLUS_USE_CLARIUS:BOOL=ON
+
   build_plus_x64_clarius_oem:
-      needs: [update_vtk, update_itk]
+      needs: [build_plus_x64] # Build off of the base x64 package
       uses: ./.github/workflows/build-plus.yml
       strategy:
         fail-fast: false
@@ -185,5 +206,27 @@ jobs:
         itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
         use-plus-cache: true
         plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
+        archive-name: x64-ClariusOEM
         plus-config: >-
-          -DPLUS_USE_CLARIUS_OEM:BOOL=ON:BOOL=ON
+          -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusOEM"
+          -DPLUS_USE_CLARIUS_OEM:BOOL=ON
+
+  build_plus_x64_telemed:
+    needs: [build_plus_x64] # Build off of the base x64 package
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+    secrets:
+      PLTOOLS_ACCESS_TOKEN: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+      use-plus-cache: true
+      plus-cache-key: plus-${{ matrix.os }}-${{ matrix.build_type }}
+      archive-name: x64-Telemed
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="Telemed"
+        -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
