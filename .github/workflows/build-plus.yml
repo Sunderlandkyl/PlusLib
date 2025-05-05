@@ -125,5 +125,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: PlusInstaller
+        name: ${{ inputs.archive-name }}
         path: ${{github.workspace}}/build/PlusApp-bin/*.exe
