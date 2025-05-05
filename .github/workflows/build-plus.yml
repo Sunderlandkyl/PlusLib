@@ -109,19 +109,23 @@ jobs:
           -DQt5_Dir="${{ github.workspace }}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake" `
           ${{ inputs.plus-config }}
 
-    - name: Build and Test
+    - name: Build
+      if: ${{ github.event_name == 'schedule' }}
+      working-directory: ${{github.workspace}}/build
       run: |
-        cd build
-        ctest -C Release -D Experimental -V
-        cd build/PlusLib-bin
-        ctest -C Release -D Experimental -V
+        ctest -C Release -D Nightly -V
+        cd PlusLib-bin
+        ctest -C Release -D Nightly -V
 
+    - uses: ilammy/msvc-dev-cmd@v1
     - name: Package
-      working-directory: build/PlusApp-bin
-      run: ./CreatePackage.bat
+      if: contains(runner.os, 'windows')
+      working-directory: ${{github.workspace}}/build/PlusApp-bin
+      run: |
+        ./CreatePackage.bat
 
-    - name: Upload Artifact
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.archive-name }}
-        path: build/PlusApp-bin/*.exe
+        name: PlusInstaller
+        path: ${{github.workspace}}/build/PlusApp-bin/*.exe
