@@ -132,3 +132,8 @@ jobs:
       with:
         name: ${{ inputs.archive-name }}
         path: ${{github.workspace}}/build/PlusApp-bin/*.exe
+
+    # Delete the installer so that it isn't included in the cache.
+    - name: Delete installer
+      shell: bash
+      run: rm -f build/PlusApp-bin/*.exe
