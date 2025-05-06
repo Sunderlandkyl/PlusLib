@@ -146,7 +146,7 @@ jobs:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
-      archive-name: x64
+      archive-name: PlusApp-Win64
       plus-config: >-
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
         -DPLUS_USE_Ascension3DGm:BOOL=OFF
@@ -192,7 +192,7 @@ jobs:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
-      archive-name: x64-Clarius
+      archive-name: PlusApp-Clarius-Win64
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusCast"
         -DPLUS_USE_CLARIUS:BOOL=ON
@@ -211,7 +211,7 @@ jobs:
         vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
         itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
         plus-cache-key: plus-latest-x64
-        archive-name: x64-ClariusOEM
+        archive-name: PlusApp-ClariusOEM-Win64
         plus-config: >-
           -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusOEM"
           -DPLUS_USE_CLARIUS_OEM:BOOL=ON
@@ -230,7 +230,7 @@ jobs:
       vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
-      archive-name: x64-Telemed
+      archive-name: PlusApp-Telemed-Win64
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="Telemed"
         -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
