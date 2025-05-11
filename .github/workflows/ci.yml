@@ -11,9 +11,6 @@ env:
   VTK_HASH: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
   # Specify ITK version
   ITK_HASH: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
-  # PlusBuild build options
-  PLUS_COMMON_CONFIG: -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON -DPLUS_USE_Ascension3DGm:BOOL=OFF -DPLUS_USE_BKPROFOCUS_VIDEO:BOOL=ON -DPLUS_USE_EPIPHAN:BOOL=ON -DPLUS_USE_ICCAPTURING_VIDEO:BOOL=ON -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON -DPLUS_USE_NDI:BOOL=ON -DPLUS_USE_VFW_VIDEO:BOOL=ON -DPLUS_USE_OPTITRACK:BOOL=ON -DPLUS_USE_INTELREALSENSE:BOOL=ON -DPLUSBUILD_PREFER_MicronTracker_36:BOOL=OFF -DPLUS_USE_TextRecognizer:BOOL=ON -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON -DPLUS_USE_MKV_IO:BOOL=ON -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON -DPLUS_USE_VP9:BOOL=ON -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package
-  PLUS_x64_COMMON_CONFIG: -DPLUS_USE_Ascension3DG:BOOL=OFF -DPLUS_USE_BRACHY_TRACKER:BOOL=OFF -DPLUS_USE_NDI_CERTUS:BOOL=OFF -DPLUS_USE_ULTRASONIX_VIDEO:BOOL=OFF
 
 jobs:
   ########
@@ -25,6 +22,7 @@ jobs:
       matrix:
         os: [windows-latest]
         build_type: [Release]
+        arch: [x64, Win32]
 
     steps:        
     - name: Cache VTK Build
@@ -33,7 +31,7 @@ jobs:
       with:
         path: vtk-install
         lookup-only: true
-        key: vtk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.VTK_HASH }}
+        key: vtk-${{ runner.os }}-${{ matrix.arch }}-${{ env.VTK_HASH }}
 
     - name: Install Dependencies
       if: contains(matrix.os, 'ubuntu') && steps.cache-vtk.outputs.cache-hit != 'true'
@@ -63,7 +61,19 @@ jobs:
       if: steps.cache-vtk.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        cmake -S vtk -B vtk-build -DCMAKE_INSTALL_PREFIX=vtk-install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_SHARED_LIBS=ON -DVTK_BUILD_TESTING=OFF -DVTK_VERSIONED_INSTALL=OFF -DVTK_GROUP_ENABLE_Qt:STRING=YES -DQt5_Dir='${{github.workspace}}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake'
+        if [ "${{ matrix.arch }}" == "x64" ]; then
+          QT_DIR="${{ github.workspace }}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake"
+        else
+          QT_DIR="${{ github.workspace }}/Qt/Qt/5.15.0/msvc2019/lib/cmake"
+        fi
+        cmake -S vtk -B vtk-build -G "Visual Studio 17 2022" -A ${{ matrix.arch }} \
+          -DCMAKE_INSTALL_PREFIX=vtk-install \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DBUILD_SHARED_LIBS=ON \
+          -DVTK_BUILD_TESTING=OFF \
+          -DVTK_VERSIONED_INSTALL=OFF \
+          -DVTK_GROUP_ENABLE_Qt:STRING=YES \
+          -DQt5_DIR="${QT_DIR}"
 
     - name: Build VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
@@ -86,6 +96,7 @@ jobs:
       matrix:
         os: [windows-latest]
         build_type: [Release]
+        arch: [x64, Win32]
 
     steps:
     - name: Cache ITK Build
@@ -94,7 +105,7 @@ jobs:
       with:
         lookup-only: true
         path: itk-install
-        key: itk-${{ runner.os }}-${{ matrix.build_type }}-${{ env.ITK_HASH }}
+        key: itk-${{ runner.os }}-${{ matrix.arch }}-${{ env.ITK_HASH }}
         
     - name: Install Dependencies
       if: contains(matrix.os, 'ubuntu') && steps.cache-itk.outputs.cache-hit != 'true'
@@ -118,7 +129,7 @@ jobs:
       if: steps.cache-itk.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        cmake -S itk -B itk-build -DCMAKE_INSTALL_PREFIX=itk-install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF
+        cmake -S itk -B itk-build -G "Visual Studio 17 2022" -A ${{ matrix.arch }} -DCMAKE_INSTALL_PREFIX=itk-install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF
 
     - name: Build ITK
       if: steps.cache-itk.outputs.cache-hit != 'true'
@@ -140,11 +151,13 @@ jobs:
       matrix:
         os: [windows-latest]
         build_type: [Release]
+        arch: [x64]
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
-      itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+      arch: x64
+      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
@@ -164,7 +177,7 @@ jobs:
         -DPLUS_USE_MKV_IO:BOOL=ON
         -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON
         -DPLUS_USE_VP9:BOOL=ON
-        -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package
+        -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-x64
         -DPLUS_USE_Ascension3DG:BOOL=OFF
         -DPLUS_USE_BRACHY_TRACKER:BOOL=OFF
         -DPLUS_USE_NDI_CERTUS:BOOL=OFF
@@ -186,11 +199,12 @@ jobs:
       matrix:
         os: [windows-latest]
         build_type: [Release]
+        arch: [x64]
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
-      itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Clarius-Win64
       plus-config: >-
@@ -205,11 +219,12 @@ jobs:
         matrix:
           os: [windows-latest]
           build_type: [Release]
+          arch: [x64]
       secrets:
         pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
       with:
-        vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
-        itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+        vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+        itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
         plus-cache-key: plus-latest-x64
         archive-name: PlusApp-ClariusOEM-Win64
         plus-config: >-
@@ -224,13 +239,58 @@ jobs:
       matrix:
         os: [windows-latest]
         build_type: [Release]
+        arch: [x64]
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      vtk-cache-key: vtk-Windows-Release-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
-      itk-cache-key: itk-Windows-Release-898def645183e6a2d3293058ade451ec416c4514
+      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Telemed-Win64
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="Telemed"
         -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
+
+  build_plus_Win32:
+    needs: [update_vtk, update_itk]
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [Win32]
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      arch: x64
+      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      plus-cache-key: plus-latest-x64
+      archive-name: PlusApp-Win64
+      plus-config: >-
+        -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-Win32
+        -DPLUSBUILD_DOCUMENTATION:BOOL=OFF
+        -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
+        -DPLUS_USE_Ascension3DGm:BOOL=OFF
+        -DPLUS_USE_BKPROFOCUS_VIDEO:BOOL=OFF
+        -DPLUS_USE_EPIPHAN:BOOL=ON
+        -DPLUS_USE_ICCAPTURING_VIDEO:BOOL=ON
+        -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON
+        -DPLUS_USE_NDI:BOOL=ON
+        -DPLUS_USE_VFW_VIDEO:BOOL=ON
+        -DPLUS_USE_OPTITRACK:BOOL=ON
+        -DPLUS_USE_INTELREALSENSE:BOOL=ON
+        -DPLUSBUILD_PREFER_MicronTracker_36:BOOL=OFF
+        -DPLUS_USE_TextRecognizer:BOOL=ON
+        -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON 
+        -DPLUS_USE_MKV_IO:BOOL=ON
+        -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON
+        -DPLUS_USE_VP9:BOOL=ON
+        -DPLUS_USE_Ascension3DG:BOOL=ON
+        -DPLUS_USE_BRACHY_TRACKER:BOOL=ON
+        -DPLUS_USE_NDI_CERTUS:BOOL=ON
+        -DPLUS_USE_ULTRASONIX_VIDEO:BOOL=OFF
+        -DPLUS_ULTRASONIX_SDK_MAJOR_VERSION:STRING=6
+        -DPLUS_ULTRASONIX_SDK_MINOR_VERSION:STRING=1
+        -DPLUS_ULTRASONIX_SDK_PATCH_VERSION:STRING=1

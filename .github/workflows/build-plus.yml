@@ -3,7 +3,10 @@ name: Build Plus (Reusable)
 on:
   workflow_call:
     inputs:
-
+      arch:
+        required: true
+        type: string
+        default: x64
       # Dependency versions
       qt-version:
         required: false
@@ -104,6 +107,11 @@ jobs:
 
     - name: Configure PlusBuild
       run: |
+        if [ "${{ matrix.arch }}" == "x64" ]; then
+          QT_DIR="${{ github.workspace }}/Qt/Qt/${{ inputs.qt-version }}/msvc2019_64/lib/cmake"
+        else
+          QT_DIR="${{ github.workspace }}/Qt/Qt/${{ inputs.qt-version }}/msvc2019/lib/cmake"
+        fi
         cmake -S PlusBuild -B build `
           -DCMAKE_BUILD_TYPE=Release `
           -DPLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }} `
@@ -112,7 +120,7 @@ jobs:
           -DPLUSAPP_GIT_REVISION=${{ inputs.plusapp-tag }} `
           -DVTK_DIR="${{ github.workspace }}/vtk-install/lib/cmake/vtk" `
           -DITK_DIR="${{ github.workspace }}/itk-install/lib/cmake/ITK-5.4" `
-          -DQt5_Dir="${{ github.workspace }}/Qt/Qt/5.15.0/msvc2019_64/lib/cmake" `
+          -DQt5_Dir="${QT_DIR}"
           ${{ inputs.plus-config }}
 
     - name: Build
