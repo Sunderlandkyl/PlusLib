@@ -45,7 +45,7 @@ jobs:
       with:
         dir: ${{github.workspace}}/Qt
         version: '5.15.0'
-        arch: ${{ matrix.arch == 'x64' && 'win64_msvc2019_64' || 'win64_msvc2019' }}
+        arch: ${{ matrix.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' }}
 
     - name: Clone VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
