@@ -263,11 +263,11 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: x64
+      arch: Win32
       vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
-      plus-cache-key: plus-latest-x64
-      archive-name: PlusApp-Win64
+      plus-cache-key: plus-latest-Win32
+      archive-name: PlusApp-Win32
       plus-config: >-
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-Win32
         -DPLUSBUILD_DOCUMENTATION:BOOL=OFF
