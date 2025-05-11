@@ -203,6 +203,7 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
+      arch: x64
       vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
@@ -223,6 +224,7 @@ jobs:
       secrets:
         pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
       with:
+        arch: x64
         vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
         itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
         plus-cache-key: plus-latest-x64
@@ -243,6 +245,7 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
+      arch: x64
       vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
