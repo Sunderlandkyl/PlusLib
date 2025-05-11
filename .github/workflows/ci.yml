@@ -74,6 +74,7 @@ jobs:
           -DVTK_VERSIONED_INSTALL=OFF \
           -DVTK_GROUP_ENABLE_Qt:STRING=YES \
           -DQt5_DIR="${QT_DIR}"
+        echo "${QT_DIR}"
 
     - name: Build VTK
       if: steps.cache-vtk.outputs.cache-hit != 'true'
