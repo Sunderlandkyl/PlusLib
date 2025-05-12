@@ -141,4 +141,7 @@ jobs:
     # Delete the installer so that it isn't included in the cache.
     - name: Delete installer
       shell: bash
-      run: rm -f build/PlusApp-bin/*.exe
+      run: |
+        rm -f build/PlusApp-bin/*.exe
+        rm -f build/PlusApp-bin/*.zip
+        rm -rf build/PlusApp-bin/_CPack_Packages
