@@ -142,6 +142,6 @@ jobs:
     - name: Delete installer
       shell: bash
       run: |
-        rm -f build/PlusApp-bin/*.exe
-        rm -f build/PlusApp-bin/*.zip
-        rm -rf build/PlusApp-bin/_CPack_Packages
+        rm -rfv build/PlusApp-bin/*.exe
+        rm -rfv build/PlusApp-bin/*.zip
+        rm -rfv build/PlusApp-bin/_CPack_Packages
