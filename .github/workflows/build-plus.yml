@@ -89,6 +89,7 @@ jobs:
       with:
         dir: ${{ github.workspace }}/Qt
         version: ${{ inputs.qt-version }}
+        arch: ${{ inputs.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' }}
 
     - name: Clone PlusBuild
       uses: actions/checkout@v4
@@ -107,11 +108,6 @@ jobs:
 
     - name: Configure PlusBuild
       run: |
-        if [ "${{ inputs.arch }}" == "x64" ]; then
-          QT_DIR="${{ github.workspace }}/Qt/Qt/${{ inputs.qt-version }}/msvc2019_64/lib/cmake"
-        else
-          QT_DIR="${{ github.workspace }}/Qt/Qt/${{ inputs.qt-version }}/msvc2019/lib/cmake"
-        fi
         cmake -S PlusBuild -B build `
           -G -G "Visual Studio 17 2022" -A ${{ inputs.arch }}
           -DCMAKE_BUILD_TYPE=Release `
