@@ -117,7 +117,7 @@ jobs:
           -DPLUSAPP_GIT_REVISION=${{ inputs.plusapp-tag }} `
           -DVTK_DIR="${{ github.workspace }}/vtk-install/lib/cmake/vtk" `
           -DITK_DIR="${{ github.workspace }}/itk-install/lib/cmake/ITK-5.4" `
-          -DQt5_Dir="${QT_DIR}"
+          -DQt5_Dir="${QT_DIR}" `
           ${{ inputs.plus-config }}
 
     - name: Build
