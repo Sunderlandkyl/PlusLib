@@ -253,6 +253,53 @@ jobs:
         -DPLUSBUILD_BUILDNAME_POSTFIX=Telemed-gh-package-x64
         -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
 
+  build_plus_x64_sprytrack_telemed:
+    needs: [build_plus_x64] # Build off of the base x64 package
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [x64]
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      arch: x64
+      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+      plus-cache-key: plus-latest-x64
+      archive-name: PlusApp-spryTrack-Telemed-Win64
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="spryTrack-Telemed"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=spryTrack-Telemed-gh-package-x64
+        -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
+        -DPLUS_USE_ATRACSYS:BOOL=ON
+        -DPLUS_USE_ATRACSYS_DEVICE_TYPE:STRING="stk"
+
+  build_plus_x64_fusiontrack_telemed:
+    needs: [build_plus_x64] # Build off of the base x64 package
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [x64]
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      arch: x64
+      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+      plus-cache-key: plus-latest-x64
+      archive-name: PlusApp-fusionTrack-Win64
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="fusionTrack"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=fusionTrack-gh-package-x64
+        -DPLUS_USE_ATRACSYS:BOOL=ON
+        -DPLUS_USE_ATRACSYS_DEVICE_TYPE:STRING="ftk"
+
   build_plus_Win32:
     needs: [update_vtk, update_itk]
     uses: ./.github/workflows/build-plus.yml
@@ -298,9 +345,8 @@ jobs:
         -DPLUSBUILD_USE_OpenCV:BOOL=ON
         -DPLUSBUILD_USE_aruco:BOOL=ON
         -DPLUS_USE_OpenCV_VIDEO:BOOL=ON
-        
 
-  build_plus_Win32_Thorlabs:
+  build_plus_Win32_thorlabs:
     needs: [ build_plus_Win32 ]
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -322,7 +368,7 @@ jobs:
         -DPLUSBUILD_BUILDNAME_POSTFIX=Thorlabs-gh-package-Win32
         -DPLUS_USE_THORLABS_VIDEO:BOOL=ON
 
-  build_plus_Win32_Interson:
+  build_plus_Win32_interson:
     needs: [ build_plus_Win32 ]
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -344,7 +390,7 @@ jobs:
         -DPLUSBUILD_BUILDNAME_POSTFIX=Interson-gh-package-Win32
         -DPLUS_USE_INTERSON_VIDEO:BOOL=ON
 
-  build_plus_Win32_Telemed:
+  build_plus_Win32_telemed:
     needs: [ build_plus_Win32 ]
     uses: ./.github/workflows/build-plus.yml
     strategy:
