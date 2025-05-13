@@ -362,7 +362,7 @@ jobs:
       vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-Win32
-      archive-name: PlusApp-Win32
+      archive-name: PlusApp-Thorlabs-Win32
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="ThorLabs"
         -DPLUSBUILD_BUILDNAME_POSTFIX=Thorlabs-gh-package-Win32
@@ -384,7 +384,7 @@ jobs:
       vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-Win32
-      archive-name: PlusApp-Win32
+      archive-name: PlusApp-Interson-Win32
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="Interson"
         -DPLUSBUILD_BUILDNAME_POSTFIX=Interson-gh-package-Win32
@@ -406,7 +406,7 @@ jobs:
       vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-Win32
-      archive-name: PlusApp-Win32
+      archive-name: PlusApp-Telemed-Win32
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="Telemed"
         -DPLUSBUILD_BUILDNAME_POSTFIX=Telmed-gh-package-Win32
