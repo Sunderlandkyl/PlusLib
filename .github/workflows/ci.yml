@@ -277,7 +277,7 @@ jobs:
         -DPLUS_USE_ATRACSYS:BOOL=ON
         -DPLUS_USE_ATRACSYS_DEVICE_TYPE:STRING="stk"
 
-  build_plus_x64_fusiontrack_telemed:
+  build_plus_x64_fusiontrack:
     needs: [build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
