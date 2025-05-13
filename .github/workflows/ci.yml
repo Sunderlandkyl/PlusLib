@@ -157,6 +157,7 @@ jobs:
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
+        -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-x64
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
         -DPLUS_USE_Ascension3DGm:BOOL=OFF
         -DPLUS_USE_BKPROFOCUS_VIDEO:BOOL=OFF
@@ -173,7 +174,6 @@ jobs:
         -DPLUS_USE_MKV_IO:BOOL=ON
         -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON
         -DPLUS_USE_VP9:BOOL=ON
-        -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-x64
         -DPLUS_USE_Ascension3DG:BOOL=OFF
         -DPLUS_USE_BRACHY_TRACKER:BOOL=OFF
         -DPLUS_USE_NDI_CERTUS:BOOL=OFF
@@ -206,6 +206,7 @@ jobs:
       archive-name: PlusApp-Clarius-Win64
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusCast"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=ClariusCast-gh-package-x64
         -DPLUS_USE_CLARIUS:BOOL=ON
 
   build_plus_x64_clarius_oem:
@@ -227,6 +228,7 @@ jobs:
         archive-name: PlusApp-ClariusOEM-Win64
         plus-config: >-
           -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusOEM"
+          -DPLUSBUILD_BUILDNAME_POSTFIX=ClariusOEM-gh-package-x64
           -DPLUS_USE_CLARIUS_OEM:BOOL=ON
 
   build_plus_x64_telemed:
@@ -248,6 +250,7 @@ jobs:
       archive-name: PlusApp-Telemed-Win64
       plus-config: >-
         -DPLUSAPP_PACKAGE_EDITION:STRING="Telemed"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=Telemed-gh-package-x64
         -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
 
   build_plus_Win32:
@@ -268,10 +271,10 @@ jobs:
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Win32
       plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="" 
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-Win32
         -DPLUSBUILD_DOCUMENTATION:BOOL=OFF
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
-        -DPLUS_USE_Ascension3DGm:BOOL=OFF
         -DPLUS_USE_BKPROFOCUS_VIDEO:BOOL=OFF
         -DPLUS_USE_EPIPHAN:BOOL=ON
         -DPLUS_USE_ICCAPTURING_VIDEO:BOOL=ON
@@ -279,8 +282,7 @@ jobs:
         -DPLUS_USE_NDI:BOOL=ON
         -DPLUS_USE_VFW_VIDEO:BOOL=ON
         -DPLUS_USE_OPTITRACK:BOOL=ON
-        -DPLUS_USE_INTELREALSENSE:BOOL=ON
-        -DPLUSBUILD_PREFER_MicronTracker_36:BOOL=OFF
+        -DPLUS_USE_INTELREALSENSE:BOOL=ON       
         -DPLUS_USE_TextRecognizer:BOOL=ON
         -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON 
         -DPLUS_USE_MKV_IO:BOOL=ON
@@ -289,7 +291,78 @@ jobs:
         -DPLUS_USE_Ascension3DG:BOOL=ON
         -DPLUS_USE_BRACHY_TRACKER:BOOL=ON
         -DPLUS_USE_NDI_CERTUS:BOOL=ON
-        -DPLUS_USE_ULTRASONIX_VIDEO:BOOL=OFF
-        -DPLUS_ULTRASONIX_SDK_MAJOR_VERSION:STRING=6
-        -DPLUS_ULTRASONIX_SDK_MINOR_VERSION:STRING=1
-        -DPLUS_ULTRASONIX_SDK_PATCH_VERSION:STRING=1
+        -DPLUS_USE_MICRONTRACKER:BOOL=ON
+        -DPLUSBUILD_PREFER_MicronTracker_36:BOOL=OFF
+        -DPLUS_USE_MMF_VIDEO:BOOL=ON
+        -DPLUS_USE_OPTICAL_MARKER_TRACKER:BOOL=ON
+        -DPLUSBUILD_USE_OpenCV:BOOL=ON
+        -DPLUSBUILD_USE_aruco:BOOL=ON
+        -DPLUS_USE_OpenCV_VIDEO:BOOL=ON
+        
+
+  build_plus_Win32_Thorlabs:
+    needs: [ build_plus_Win32 ]
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [Win32]
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      arch: Win32
+      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      plus-cache-key: plus-latest-Win32
+      archive-name: PlusApp-Win32
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="ThorLabs"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=Thorlabs-gh-package-Win32
+        -DPLUS_USE_THORLABS_VIDEO:BOOL=ON
+
+  build_plus_Win32_Interson:
+    needs: [ build_plus_Win32 ]
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [Win32]
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      arch: Win32
+      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      plus-cache-key: plus-latest-Win32
+      archive-name: PlusApp-Win32
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="Interson"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=Interson-gh-package-Win32
+        -DPLUS_USE_INTERSON_VIDEO:BOOL=ON
+
+  build_plus_Win32_Telemed:
+    needs: [ build_plus_Win32 ]
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [Win32]
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      arch: Win32
+      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      plus-cache-key: plus-latest-Win32
+      archive-name: PlusApp-Win32
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="Telemed"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=Telmed-gh-package-Win32
+        -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
+        
