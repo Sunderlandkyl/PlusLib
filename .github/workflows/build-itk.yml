@@ -83,6 +83,7 @@ jobs:
 
       - name: Detect ITK CMake Install Path
         id: detect-install
+        shell: bash
         run: |
           ITK_DIR=$(find itk-install/lib/cmake -maxdepth 1 -type d -name "ITK-*")
           echo "install-path=${ITK_DIR}" >> $GITHUB_OUTPUT
