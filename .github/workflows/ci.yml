@@ -7,38 +7,42 @@ on:
     branches: [ "master" ]
 
 jobs:
-  ########
-  # BUILD AND CACHE VTK
-  update_vtk:
-    uses: ./.github/workflows/build-vtk.yml
+  update_dependencies:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest]
         build_type: [Release]
         arch: [x64, Win32]
-    with:
-      vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
-      os: ${{ matrix.os }}
-      arch: ${{ matrix.arch }}
 
-  ########
-  # BUILD AND CACHE ITK
-  update_itk:
-    uses: ./.github/workflows/build-itk.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
-        build_type: [Release]
-        arch: [x64, Win32]
-    with:
-      itk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v9.4.1
-      os: ${{ matrix.os }}
-      arch: ${{ matrix.arch }}
+    outputs:
+      vtk-cache-key: ${{ steps.update-vtk.outputs.cache-key }}
+      itk-cache-key: ${{ steps.update-itk.outputs.cache-key }}
+      vtk-install-path: ${{ steps.update-vtk.outputs.install-path }}
+      itk-install-path: ${{ steps.update-itk.outputs.install-path }}
+
+    steps:
+      - name: Update VTK
+        id: update-vtk
+        uses: ./.github/workflows/build-vtk.yml
+        with:
+          os: ${{ matrix.os }}
+          arch: ${{ matrix.arch }}
+          build-type: ${{ matrix.build_type }}
+          vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
+
+      - name: Update ITK
+        id: update-itk
+        uses: ./.github/workflows/build-itk.yml
+        with:
+          os: ${{ matrix.os }}
+          arch: ${{ matrix.arch }}
+          build-type: ${{ matrix.build_type }}
+          vtk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
 
   build_plus_x64:
-    needs: [update_vtk, update_itk]
+    needs: [update_dependencies]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -201,7 +205,7 @@ jobs:
         -DPLUS_USE_ATRACSYS_DEVICE_TYPE:STRING="ftk"
 
   build_plus_Win32:
-    needs: [update_vtk, update_itk]
+    needs: [update_dependencies]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -313,4 +317,3 @@ jobs:
         -DPLUSAPP_PACKAGE_EDITION:STRING="Telemed"
         -DPLUSBUILD_BUILDNAME_POSTFIX=Telmed-gh-package-Win32
         -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
-        
