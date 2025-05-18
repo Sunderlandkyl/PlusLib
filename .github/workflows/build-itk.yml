@@ -39,7 +39,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: itk-install
-          lookup-only: true
           key: itk-Windows-${{ inputs.arch }}-${{ inputs.itk-hash }}
 
       - name: Install Dependencies
