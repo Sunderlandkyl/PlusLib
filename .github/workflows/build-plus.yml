@@ -118,8 +118,6 @@ jobs:
           -DPLUSLIB_GIT_REVISION=${{ inputs.pluslib-tag }} `
           -DPLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }} `
           -DPLUSAPP_GIT_REVISION=${{ inputs.plusapp-tag }} `
-          -DVTK_DIR="${{ github.workspace }}/vtk-install/lib/cmake/vtk" `
-          -DITK_DIR="${{ github.workspace }}/itk-install/lib/cmake/ITK-5.4" `
           -DQt5_Dir="${QT_DIR}" `
           ${{ inputs.plus-config }}
 
