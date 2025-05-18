@@ -7,8 +7,6 @@ on:
     branches: [ "master" ]
 
 env:
-  # Specify VTK version
-  VTK_HASH: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
   # Specify ITK version
   ITK_HASH: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
 
@@ -16,72 +14,17 @@ jobs:
   ########
   # BUILD AND CACHE VTK
   update_vtk:
-    runs-on: ${{ matrix.os }}
+    uses: ./.github/workflows/build-vtk.yml
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest]
         build_type: [Release]
         arch: [x64, Win32]
-
-    steps:        
-    - name: Cache VTK Build
-      id: cache-vtk
-      uses: actions/cache@v4
-      with:
-        path: vtk-install
-        lookup-only: true
-        key: vtk-${{ runner.os }}-${{ matrix.arch }}-${{ env.VTK_HASH }}
-
-    - name: Install Dependencies
-      if: contains(matrix.os, 'ubuntu') && steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
-
-    - name: Install Qt
-      if: steps.cache-vtk.outputs.cache-hit != 'true'
-      uses: jurplel/install-qt-action@v4
-      with:
-        dir: ${{github.workspace}}/Qt
-        version: '5.15.0'
-        arch: ${{ matrix.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' }}
-
-    - name: Clone VTK
-      if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        mkdir vtk
-        cd vtk
-        git init
-        git remote add origin https://gitlab.kitware.com/vtk/vtk.git
-        git fetch --depth 1 origin $VTK_HASH
-        git checkout FETCH_HEAD
-
-    - name: Configure VTK
-      if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        cmake -S vtk -B vtk-build -G "Visual Studio 17 2022" -A ${{ matrix.arch }} \
-          -DCMAKE_INSTALL_PREFIX=vtk-install \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DBUILD_SHARED_LIBS=ON \
-          -DVTK_BUILD_TESTING=OFF \
-          -DVTK_VERSIONED_INSTALL=OFF \
-          -DVTK_GROUP_ENABLE_Qt:STRING=YES \
-          -DQt5_DIR="${QT_DIR}"
-
-    - name: Build VTK
-      if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        cmake --build vtk-build --parallel 4 --config ${{ matrix.build_type }}
-
-    - name: Install VTK
-      if: steps.cache-vtk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        cmake --install vtk-build
+    with:
+      vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
 
   update_itk:
     ########
@@ -152,7 +95,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: x64
-      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
@@ -200,7 +143,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: x64
-      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Clarius-Win64
@@ -222,7 +165,7 @@ jobs:
         pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
       with:
         arch: x64
-        vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+        vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
         itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
         plus-cache-key: plus-latest-x64
         archive-name: PlusApp-ClariusOEM-Win64
@@ -244,7 +187,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: x64
-      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Telemed-Win64
@@ -266,7 +209,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: x64
-      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-spryTrack-Telemed-Win64
@@ -290,7 +233,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: x64
-      vtk-cache-key: vtk-Windows-x64-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-fusionTrack-Win64

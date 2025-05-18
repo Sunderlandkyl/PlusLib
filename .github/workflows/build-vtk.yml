@@ -1,0 +1,101 @@
+name: Build VTK
+
+on:
+  workflow_call:
+    inputs:
+      arch:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+      build-type:
+          required: false
+          type: string
+          default: Release
+      vtk-hash:
+        required: true
+        type: string
+    outputs:
+      cache-key:
+        value: ${{ jobs.vtk.outputs.cache-key }}
+      install-path:
+        value: ${{ jobs.vtk.outputs.install-path }}
+
+jobs:
+  vtk:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      cache-key: ${{ steps.set-cache.outputs.cache-key }}
+      install-path: ${{ steps.set-cache.outputs.install-path }}
+
+    steps:
+      - id: set-cache
+        run: |
+          echo "cache-key=vtk-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.vtk-hash }}" >> $GITHUB_OUTPUT
+          echo "install-path=${{ github.workspace }}/vtk-install/lib/cmake/vtk" >> $GITHUB_OUTPUT
+
+      - name: Cache VTK
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vtk-install
+          key: vtk-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.vtk-hash }}
+          lookup-only: true
+
+      - name: Cache VTK Build
+        id: cache-vtk
+        uses: actions/cache@v4
+        with:
+          path: vtk-install
+          lookup-only: true
+          key: ${{ steps.set-cache.outputs.cache-key }}
+
+      - name: Install Dependencies
+        if: contains(inputs.os, 'ubuntu') && steps.cache-vtk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
+
+      - name: Install Qt
+        if: steps.cache-vtk.outputs.cache-hit != 'true'
+        uses: jurplel/install-qt-action@v4
+        with:
+          dir: ${{github.workspace}}/Qt
+          version: '5.15.0'
+          arch: ${{ inputs.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' }}
+
+      - name: Clone VTK
+        if: steps.cache-vtk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir vtk
+          cd vtk
+          git init
+          git remote add origin https://gitlab.kitware.com/vtk/vtk.git
+          git fetch --depth 1 origin $VTK_HASH
+          git checkout FETCH_HEAD
+
+      - name: Configure VTK
+        if: steps.cache-vtk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          cmake -S vtk -B vtk-build -G "Visual Studio 17 2022" -A ${{ inputs.arch }} \
+            -DCMAKE_INSTALL_PREFIX=vtk-install \
+            -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
+            -DBUILD_SHARED_LIBS=ON \
+            -DVTK_BUILD_TESTING=OFF \
+            -DVTK_VERSIONED_INSTALL=OFF \
+            -DVTK_GROUP_ENABLE_Qt:STRING=YES \
+            -DQt5_DIR="${QT_DIR}"
+
+      - name: Build VTK
+        if: steps.cache-vtk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          cmake --build vtk-build --parallel 4 --config ${{ inputs.build-type }}
+
+      - name: Install VTK
+        if: steps.cache-vtk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          cmake --install vtk-build
