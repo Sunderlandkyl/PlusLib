@@ -21,7 +21,7 @@ jobs:
       vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-  
+
   ########
   # BUILD AND CACHE ITK
   update_itk:

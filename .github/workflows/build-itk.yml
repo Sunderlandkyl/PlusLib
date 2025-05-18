@@ -32,6 +32,7 @@ jobs:
     steps:
       - name: Set ITK Cache Key
         id: set-cache
+        shell: bash
         run: |
           echo "cache-key=itk-Windows-${{ inputs.arch }}-${{ inputs.itk-hash }}" >> $GITHUB_OUTPUT
 
