@@ -116,8 +116,6 @@ jobs:
         -DPLUSBUILD_USE_aruco:BOOL=ON
 
   build_plus_x64_clarius_cast:
-    # Only run nightly
-    if: ${{ github.event_name != 'schedule' }}
     needs: [build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -140,8 +138,6 @@ jobs:
         -DPLUS_USE_CLARIUS:BOOL=ON
 
   build_plus_x64_clarius_oem:
-      # Only run nightly
-      if: ${{ github.event_name != 'schedule' }}
       needs: [build_plus_x64] # Build off of the base x64 package
       uses: ./.github/workflows/build-plus.yml
       strategy:
@@ -164,8 +160,6 @@ jobs:
           -DPLUS_USE_CLARIUS_OEM:BOOL=ON
 
   build_plus_x64_telemed:
-    # Only run nightly
-    if: ${{ github.event_name != 'schedule' }}
     needs: [build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -188,8 +182,6 @@ jobs:
         -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
 
   build_plus_x64_sprytrack_telemed:
-    # Only run nightly
-    if: ${{ github.event_name != 'schedule' }}
     needs: [build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -214,8 +206,6 @@ jobs:
         -DPLUS_USE_ATRACSYS_DEVICE_TYPE:STRING="stk"
 
   build_plus_x64_fusiontrack:
-    # Only run nightly
-    if: ${{ github.event_name != 'schedule' }}
     needs: [build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -287,8 +277,6 @@ jobs:
         -DPLUS_USE_OpenCV_VIDEO:BOOL=ON
 
   build_plus_Win32_thorlabs:
-    # Only run nightly
-    if: ${{ github.event_name != 'schedule' }}
     needs: [ build_plus_Win32 ]
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -311,8 +299,6 @@ jobs:
         -DPLUS_USE_THORLABS_VIDEO:BOOL=ON
 
   build_plus_Win32_interson:
-    # Only run nightly
-    if: ${{ github.event_name != 'schedule' }}
     needs: [ build_plus_Win32 ]
     uses: ./.github/workflows/build-plus.yml
     strategy:
@@ -335,8 +321,6 @@ jobs:
         -DPLUS_USE_INTERSON_VIDEO:BOOL=ON
 
   build_plus_Win32_telemed:
-    # Only run nightly
-    if: ${{ github.event_name != 'schedule' }}
     needs: [ build_plus_Win32 ]
     uses: ./.github/workflows/build-plus.yml
     strategy:
