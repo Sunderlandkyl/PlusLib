@@ -110,7 +110,7 @@ jobs:
       run: |
         cmake -S PlusBuild -B build `
           -G "Visual Studio 17 2022" -A ${{ inputs.arch }} `
-          -DCMAKE_`=Release `
+          -DCMAKE_BUILD_TYPE=Release `
           -DPLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }} `
           -DPLUSLIB_GIT_REVISION=${{ inputs.pluslib-tag }} `
           -DPLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }} `
