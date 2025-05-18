@@ -51,12 +51,14 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: x64
+      arch: ${{ matrix.arch }}
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
+        -DVTK_DIR=${{ needs.update_vtk.output.install-path }}
+        -DITK_DIR=${{ needs.update_itk.output.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-x64
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
         -DPLUS_USE_Ascension3DGm:BOOL=OFF
@@ -101,7 +103,7 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: x64
+      arch: ${{ matrix.arch }}
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -127,7 +129,7 @@ jobs:
       secrets:
         pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
       with:
-        arch: x64
+        arch: ${{ matrix.arch }}
         vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
         itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
         plus-cache-key: plus-latest-x64
@@ -151,7 +153,7 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: x64
+      arch: ${{ matrix.arch }}
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -175,7 +177,7 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: x64
+      arch: ${{ matrix.arch }}
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -201,7 +203,7 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: x64
+      arch: ${{ matrix.arch }}
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
