@@ -62,7 +62,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+
+    - name: Print VTK
+      run: echo ${{ inputs.vtk-cache-key }}
 
     - name: Restore VTK Cache
       uses: actions/cache/restore@v4
