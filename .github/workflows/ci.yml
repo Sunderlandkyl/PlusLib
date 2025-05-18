@@ -11,14 +11,28 @@ on:
 jobs:
   ########
   # BUILD AND CACHE VTK
-  update_vtk:
+  update_vtk_x64:
     uses: ./.github/workflows/build-vtk.yml
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest]
         build_type: [Release]
-        arch: [x64, Win32]
+        arch: [x64]
+    with:
+      vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      build-type: ${{ matrix.build_type }}
+
+  update_vtk_Win32:
+    uses: ./.github/workflows/build-vtk.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [Win32]
     with:
       vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
       os: ${{ matrix.os }}
@@ -27,14 +41,28 @@ jobs:
 
   ########
   # BUILD AND CACHE ITK
-  update_itk:
+  update_itk_x64:
     uses: ./.github/workflows/build-itk.yml
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest]
         build_type: [Release]
-        arch: [x64, Win32]
+        arch: [x64]
+    with:
+      itk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      build-type: ${{ matrix.build_type }}
+
+  update_itk_Win32:
+    uses: ./.github/workflows/build-itk.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [Win32]
     with:
       itk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
       os: ${{ matrix.os }}
@@ -42,7 +70,7 @@ jobs:
       build-type: ${{ matrix.build_type }}
 
   build_plus_x64:
-    needs: [update_vtk, update_itk]
+    needs: [update_vtk_x64, update_itk_x64]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -54,13 +82,13 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
+      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk.output.install-path }}
-        -DITK_DIR=${{ needs.update_itk.output.install-path }}
+        -DVTK_DIR=${{ needs.update_vtk_x64.output.install-path }}
+        -DITK_DIR=${{ needs.update_itk_x64.output.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-x64
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
         -DPLUS_USE_Ascension3DGm:BOOL=OFF
@@ -106,8 +134,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
+      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Clarius-Win64
       plus-config: >-
@@ -130,8 +158,8 @@ jobs:
         pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
       with:
         arch: ${{ matrix.arch }}
-        vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-        itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
+        vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
+        itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
         plus-cache-key: plus-latest-x64
         archive-name: PlusApp-ClariusOEM-Win64
         plus-config: >-
@@ -154,8 +182,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
+      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Telemed-Win64
       plus-config: >-
@@ -178,8 +206,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
+      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-spryTrack-Telemed-Win64
       plus-config: >-
@@ -204,8 +232,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
+      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-fusionTrack-Win64
       plus-config: >-
@@ -215,7 +243,7 @@ jobs:
         -DPLUS_USE_ATRACSYS_DEVICE_TYPE:STRING="ftk"
 
   build_plus_Win32:
-    needs: [update_vtk, update_itk]
+    needs: [update_vtk_Win32, update_itk_Win32]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -227,13 +255,13 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Win32
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk.output.install-path }}
-        -DITK_DIR=${{ needs.update_itk.output.install-path }}
+        -DVTK_DIR=${{ needs.update_vtk_Win32.output.install-path }}
+        -DITK_DIR=${{ needs.update_itk_Win32.output.install-path }}
         -DPLUSAPP_PACKAGE_EDITION:STRING="" 
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-package-Win32
         -DPLUSBUILD_DOCUMENTATION:BOOL=OFF
@@ -277,8 +305,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Thorlabs-Win32
       plus-config: >-
@@ -301,8 +329,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Interson-Win32
       plus-config: >-
@@ -325,8 +353,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
+      vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Telemed-Win32
       plus-config: >-
