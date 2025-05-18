@@ -23,7 +23,7 @@ jobs:
       vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-      build_type: ${{ matrix.build_type }}
+      build-type: ${{ matrix.build_type }}
 
   ########
   # BUILD AND CACHE ITK
@@ -39,7 +39,7 @@ jobs:
       itk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-      build_type: ${{ matrix.build_type }}
+      build-type: ${{ matrix.build_type }}
 
   build_plus_x64:
     needs: [update_vtk, update_itk]
