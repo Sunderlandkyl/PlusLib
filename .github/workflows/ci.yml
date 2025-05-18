@@ -99,7 +99,7 @@ jobs:
     with:
       arch: x64
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Clarius-Win64
       plus-config: >-
@@ -121,7 +121,7 @@ jobs:
       with:
         arch: x64
         vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-        itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+        itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
         plus-cache-key: plus-latest-x64
         archive-name: PlusApp-ClariusOEM-Win64
         plus-config: >-
@@ -143,7 +143,7 @@ jobs:
     with:
       arch: x64
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Telemed-Win64
       plus-config: >-
@@ -165,7 +165,7 @@ jobs:
     with:
       arch: x64
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-spryTrack-Telemed-Win64
       plus-config: >-
@@ -189,7 +189,7 @@ jobs:
     with:
       arch: x64
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-fusionTrack-Win64
       plus-config: >-
@@ -211,7 +211,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Win32
@@ -257,7 +257,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Thorlabs-Win32
@@ -279,7 +279,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Interson-Win32
@@ -301,7 +301,7 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
-      vtk-cache-key: vtk-Windows-Win32-6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # todo: fix
+      vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
       itk-cache-key: itk-Windows-Win32-898def645183e6a2d3293058ade451ec416c4514
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Telemed-Win32

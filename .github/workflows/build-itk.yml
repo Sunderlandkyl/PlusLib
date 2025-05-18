@@ -30,7 +30,8 @@ jobs:
       install-path: ${{ steps.detect-install.outputs.install-path }}
 
     steps:
-      - id: set-cache
+      - name: Set ITK Cache Key
+        id: set-cache
         run: |
           echo "cache-key=itk-Windows-${{ inputs.arch }}-${{ inputs.itk-hash }}" >> $GITHUB_OUTPUT
 
