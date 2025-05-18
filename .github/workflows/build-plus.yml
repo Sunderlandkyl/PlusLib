@@ -64,6 +64,7 @@ jobs:
     steps:
 
     - name: Print VTK
+      shell: bash
       run: echo ${{ inputs.vtk-cache-key }}
 
     - name: Restore VTK Cache
