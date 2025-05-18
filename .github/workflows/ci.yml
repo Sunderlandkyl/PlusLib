@@ -33,7 +33,7 @@ jobs:
         build_type: [Release]
         arch: [x64, Win32]
     with:
-      vtk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v9.4.1
+      itk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v9.4.1
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
 
@@ -51,7 +51,7 @@ jobs:
     with:
       arch: x64
       vtk-cache-key: ${{ needs.update_vtk.outputs.cache-key }}
-      itk-cache-key: itk-Windows-x64-898def645183e6a2d3293058ade451ec416c4514
+      itk-cache-key: ${{ needs.update_itk.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
