@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ "master" ]
 
-env:
-  # Specify ITK version
-  ITK_HASH: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
-
 jobs:
   ########
   # BUILD AND CACHE VTK
@@ -25,62 +21,21 @@ jobs:
       vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-
+  
+  ########
+  # BUILD AND CACHE ITK
   update_itk:
-    ########
-    # BUILD AND CACHE ITK
-    runs-on: ${{ matrix.os }}
+    uses: ./.github/workflows/build-itk.yml
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest]
         build_type: [Release]
         arch: [x64, Win32]
-
-    steps:
-    - name: Cache ITK Build
-      id: cache-itk
-      uses: actions/cache@v4
-      with:
-        lookup-only: true
-        path: itk-install
-        key: itk-${{ runner.os }}-${{ matrix.arch }}-${{ env.ITK_HASH }}
-        
-    - name: Install Dependencies
-      if: contains(matrix.os, 'ubuntu') && steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
-
-    - name: Clone ITK
-      if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        echo "Cloning ITK..."
-        mkdir itk
-        cd itk
-        git init
-        git remote add origin https://github.com/InsightSoftwareConsortium/ITK.git
-        git fetch --depth 1 origin $ITK_HASH
-        git checkout FETCH_HEAD
-
-    - name: Configure ITK
-      if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        cmake -S itk -B itk-build -G "Visual Studio 17 2022" -A ${{ matrix.arch }} -DCMAKE_INSTALL_PREFIX=itk-install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF
-
-    - name: Build ITK
-      if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        cmake --build itk-build --parallel 4 --config ${{ matrix.build_type }}
-
-    - name: Install ITK
-      if: steps.cache-itk.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        cmake --install itk-build
+    with:
+      vtk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v9.4.1
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
 
   build_plus_x64:
     needs: [update_vtk, update_itk]
