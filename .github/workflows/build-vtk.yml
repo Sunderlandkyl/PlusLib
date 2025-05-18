@@ -41,7 +41,7 @@ jobs:
         with:
           path: vtk-install
           lookup-only: true
-          key: ${{ steps.set-cache.outputs.cache-key }}
+          key: vtk-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.vtk-hash }}
 
       - name: Install Dependencies
         if: contains(inputs.os, 'ubuntu') && steps.cache-vtk.outputs.cache-hit != 'true'
