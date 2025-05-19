@@ -85,8 +85,8 @@ jobs:
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_x64.output.install-path }}
-        -DITK_DIR=${{ needs.update_itk_x64.output.install-path }}
+        -DVTK_DIR=${{ needs.update_vtk_x64.outputs.install-path }}
+        -DITK_DIR=${{ needs.update_itk_x64.outputs.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-ci-x64
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
         -DPLUS_USE_Ascension3DGm:BOOL=OFF
@@ -135,8 +135,8 @@ jobs:
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Win32
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_Win32.output.install-path }}
-        -DITK_DIR=${{ needs.update_itk_Win32.output.install-path }}
+        -DVTK_DIR=${{ needs.update_vtk_Win32.outputs.install-path }}
+        -DITK_DIR=${{ needs.update_itk_Win32.outputs.install-path }}
         -DPLUSAPP_PACKAGE_EDITION:STRING="" 
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-ci-Win32
         -DPLUSBUILD_DOCUMENTATION:BOOL=OFF
@@ -183,8 +183,8 @@ jobs:
       plus-cache-key: plus-static-x64
       archive-name: PlusApp-Win64
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_x64.output.install-path }}
-        -DITK_DIR=${{ needs.update_itk_x64.output.install-path }}
+        -DVTK_DIR=${{ needs.update_vtk_x64.outputs.install-path }}
+        -DITK_DIR=${{ needs.update_itk_x64.outputs.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-static-x64
         -DPLUSBUILD_BUILD_SHARED_LIBS:BOOL=OFF
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
