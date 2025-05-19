@@ -29,7 +29,7 @@ jobs:
       cache-key: ${{ steps.set-outputs.outputs.cache-key }}
       install-path: ${{ steps.set-outputs.outputs.install-path }}
     env:
-      CACHE_KEY: vtk-Windows-${{ inputs.arch }}-${{ inputs.vtk-hash }}
+      CACHE_KEY: vtk-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.vtk-hash }}
 
     steps:
       - name: Cache VTK Build
