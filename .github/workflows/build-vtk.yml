@@ -62,7 +62,7 @@ jobs:
           cd vtk
           git init
           git remote add origin https://gitlab.kitware.com/vtk/vtk.git
-          git fetch --depth 1 origin $VTK_HASH
+          git fetch --depth 1 origin ${{ inputs.vtk-hash }}
           git checkout FETCH_HEAD
 
       - name: Configure VTK
