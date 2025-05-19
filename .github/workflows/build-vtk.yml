@@ -28,13 +28,14 @@ jobs:
     outputs:
       cache-key: ${{ steps.set-cache.outputs.cache-key }}
       install-path: ${{ steps.set-cache.outputs.install-path }}
+    env:
+      CACHE_KEY: vtk-Windows-${{ inputs.arch }}-${{ inputs.vtk-hash }}
 
     steps:
       - name: Set VTK Cache Key
         id: set-cache
         shell: bash
         run: |
-          CACHE_KEY="vtk-Windows-${{ inputs.arch }}-${{ inputs.vtk-hash }}"
           INSTALL_PATH="$GITHUB_WORKSPACE/vtk-install/lib/cmake/vtk"
           echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
           echo "install-path=$INSTALL_PATH" >> $GITHUB_OUTPUT
