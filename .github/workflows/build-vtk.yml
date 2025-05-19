@@ -36,6 +36,11 @@ jobs:
         run: |
           echo "cache-key=vtk-Windows-${{ inputs.arch }}-${{ inputs.vtk-hash }}" >> $GITHUB_OUTPUT
           echo "install-path=${GITHUB_WORKSPACE}/vtk-install/lib/cmake/vtk" >> $GITHUB_OUTPUT
+      
+      - name: Test
+        shell: bash
+        run: |
+          echo $GITHUB_OUTPUT
 
       - name: Cache VTK Build
         id: cache-vtk
