@@ -34,13 +34,10 @@ jobs:
         id: set-cache
         shell: bash
         run: |
-          echo "cache-key=vtk-Windows-${{ inputs.arch }}-${{ inputs.vtk-hash }}" >> $GITHUB_OUTPUT
-          echo "install-path=${GITHUB_WORKSPACE}/vtk-install/lib/cmake/vtk" >> $GITHUB_OUTPUT
-      
-      - name: Test
-        shell: bash
-        run: |
-          echo $GITHUB_OUTPUT
+          CACHE_KEY="vtk-Windows-${{ inputs.arch }}-${{ inputs.vtk-hash }}"
+          INSTALL_PATH="$GITHUB_WORKSPACE/vtk-install/lib/cmake/vtk"
+          echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
+          echo "install-path=$INSTALL_PATH" >> $GITHUB_OUTPUT
 
       - name: Cache VTK Build
         id: cache-vtk
@@ -48,7 +45,7 @@ jobs:
         with:
           path: vtk-install
           lookup-only: true
-          key: vtk-Windows-${{ inputs.arch }}-${{ inputs.vtk-hash }}
+          key: ${{ env.CACHE_KEY }}
 
       - name: Install Dependencies
         if: contains(inputs.os, 'ubuntu') && steps.cache-vtk.outputs.cache-hit != 'true'
