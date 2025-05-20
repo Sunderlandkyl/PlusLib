@@ -181,7 +181,7 @@ jobs:
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-static-x64
-      archive-name: PlusApp-Win64
+      archive-name: PlusApp-Static-Win64
       plus-config: >-
         -DVTK_DIR=${{ needs.update_vtk_x64.outputs.install-path }}
         -DITK_DIR=${{ needs.update_itk_x64.outputs.install-path }}
