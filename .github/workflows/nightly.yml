@@ -116,7 +116,7 @@ jobs:
         -DPLUSBUILD_USE_aruco:BOOL=ON
 
   build_plus_x64_clarius_cast:
-    needs: [build_plus_x64] # Build off of the base x64 package
+    needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -138,7 +138,7 @@ jobs:
         -DPLUS_USE_CLARIUS:BOOL=ON
 
   build_plus_x64_clarius_oem:
-      needs: [build_plus_x64] # Build off of the base x64 package
+      needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
       uses: ./.github/workflows/build-plus.yml
       strategy:
         fail-fast: false
@@ -160,7 +160,7 @@ jobs:
           -DPLUS_USE_CLARIUS_OEM:BOOL=ON
 
   build_plus_x64_telemed:
-    needs: [build_plus_x64] # Build off of the base x64 package
+    needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -182,7 +182,7 @@ jobs:
         -DPLUS_USE_TELEMED_VIDEO:BOOL=ON
 
   build_plus_x64_sprytrack_telemed:
-    needs: [build_plus_x64] # Build off of the base x64 package
+    needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -206,7 +206,7 @@ jobs:
         -DPLUS_USE_ATRACSYS_DEVICE_TYPE:STRING="stk"
 
   build_plus_x64_fusiontrack:
-    needs: [build_plus_x64] # Build off of the base x64 package
+    needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -277,7 +277,7 @@ jobs:
         -DPLUS_USE_OpenCV_VIDEO:BOOL=ON
 
   build_plus_Win32_thorlabs:
-    needs: [ build_plus_Win32 ]
+    needs: [update_vtk_Win32, update_itk_Win32, build_plus_Win32]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -299,7 +299,7 @@ jobs:
         -DPLUS_USE_THORLABS_VIDEO:BOOL=ON
 
   build_plus_Win32_interson:
-    needs: [ build_plus_Win32 ]
+    needs: [update_vtk_Win32, update_itk_Win32, build_plus_Win32]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -321,7 +321,7 @@ jobs:
         -DPLUS_USE_INTERSON_VIDEO:BOOL=ON
 
   build_plus_Win32_telemed:
-    needs: [ build_plus_Win32 ]
+    needs: [update_vtk_Win32, update_itk_Win32, build_plus_Win32]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
