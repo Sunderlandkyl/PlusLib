@@ -16,6 +16,14 @@ on:
       vtk-hash:
         required: true
         type: string
+      build-options:
+        required: false
+        type: string
+      cache-prefix:
+        required: false
+        type: string
+        default: vtk
+
     outputs:
       cache-key:
         value: ${{ jobs.vtk.outputs.cache-key }}
@@ -29,7 +37,7 @@ jobs:
       cache-key: ${{ steps.set-outputs.outputs.cache-key }}
       install-path: ${{ steps.set-outputs.outputs.install-path }}
     env:
-      CACHE_KEY: vtk-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.vtk-hash }}
+      CACHE_KEY: ${{ inputs.cache-prefix }}-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.vtk-hash }}
 
     steps:
       - name: Cache VTK Build
@@ -76,7 +84,8 @@ jobs:
             -DVTK_BUILD_TESTING=OFF \
             -DVTK_VERSIONED_INSTALL=OFF \
             -DVTK_GROUP_ENABLE_Qt:STRING=YES \
-            -DQt5_DIR="${QT_DIR}"
+            -DQt5_DIR="${QT_DIR}" \
+            ${{ inputs.build-options }}
 
       - name: Build VTK
         if: steps.cache-vtk.outputs.cache-hit != 'true'
