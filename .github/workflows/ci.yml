@@ -38,7 +38,7 @@ jobs:
       build-type: ${{ matrix.build_type }}
       cache-prefix: vtk-static
       build-options: >-
-        -DBUILD_SHARED_LIBS:OFF
+        -DBUILD_SHARED_LIBS:BOOL=OFF
 
   update_vtk_Win32:
     uses: ./.github/workflows/build-vtk.yml
@@ -85,7 +85,7 @@ jobs:
       build-type: ${{ matrix.build_type }}
       cache-prefix: itk-static
       build-options: >-
-        -DBUILD_SHARED_LIBS:OFF
+        -DBUILD_SHARED_LIBS:BOOL=OFF
 
   update_itk_Win32:
     uses: ./.github/workflows/build-itk.yml
