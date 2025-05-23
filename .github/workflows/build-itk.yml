@@ -74,7 +74,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
             -DBUILD_SHARED_LIBS=ON \
             -DBUILD_TESTING=OFF \
-            ${{ inputs.build-options }}"
+            ${{ inputs.build-options }}
 
       - name: Build ITK
         if: steps.cache-itk.outputs.cache-hit != 'true'
