@@ -73,7 +73,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=itk-install \
             -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
             -DBUILD_SHARED_LIBS=ON \
-            -DBUILD_TESTING=OFF
+            -DBUILD_TESTING=OFF \
             ${{ inputs.build-options }}"
 
       - name: Build ITK
