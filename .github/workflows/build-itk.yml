@@ -16,6 +16,14 @@ on:
       itk-hash:
         required: true
         type: string
+      build-options:
+        required: false
+        type: string
+      cache-prefix:
+        required: false
+        type: string
+        default: itk
+
     outputs:
       cache-key:
         value: ${{ jobs.itk.outputs.cache-key }}
@@ -29,7 +37,7 @@ jobs:
       cache-key: ${{ steps.set-outputs.outputs.cache-key }}
       install-path: ${{ steps.set-outputs.outputs.install-path }}
     env:
-      CACHE_KEY: itk-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.itk-hash }}
+      CACHE_KEY: ${{ inputs.cache-prefix }}-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.itk-hash }}
 
     steps:
 
@@ -66,6 +74,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
             -DBUILD_SHARED_LIBS=ON \
             -DBUILD_TESTING=OFF
+            ${{ inputs.build-options }}"
 
       - name: Build ITK
         if: steps.cache-itk.outputs.cache-hit != 'true'

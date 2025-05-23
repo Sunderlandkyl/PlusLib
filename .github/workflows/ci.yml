@@ -23,6 +23,23 @@ jobs:
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
 
+  update_vtk_static_x64:
+    uses: ./.github/workflows/build-vtk.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [x64]
+    with:
+      vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4 # v9.4.1
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      build-type: ${{ matrix.build_type }}
+      cache-prefix: vtk-static
+      build-options: >-
+        -DBUILD_SHARED_LIBS:OFF
+
   update_vtk_Win32:
     uses: ./.github/workflows/build-vtk.yml
     strategy:
@@ -52,6 +69,23 @@ jobs:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
+
+  update_itk_static_x64:
+    uses: ./.github/workflows/build-itk.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [x64]
+    with:
+      itk-hash: 898def645183e6a2d3293058ade451ec416c4514 # v5.4.2
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      build-type: ${{ matrix.build_type }}
+      cache-prefix: itk-static
+      build-options: >-
+        -DBUILD_SHARED_LIBS:OFF
 
   update_itk_Win32:
     uses: ./.github/workflows/build-itk.yml
@@ -166,7 +200,7 @@ jobs:
         -DPLUS_USE_OpenCV_VIDEO:BOOL=ON
 
   build_plus_static_x64:
-    needs: [update_vtk_x64, update_itk_x64]
+    needs: [update_vtk_static_x64, update_itk_static_x64]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
@@ -178,13 +212,13 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
-      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
+      vtk-cache-key: ${{ needs.update_vtk_static_x64.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_static_x64.outputs.cache-key }}
       plus-cache-key: plus-static-x64
       archive-name: PlusApp-Static-Win64
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_x64.outputs.install-path }}
-        -DITK_DIR=${{ needs.update_itk_x64.outputs.install-path }}
+        -DVTK_DIR=${{ needs.update_vtk_static_x64.outputs.install-path }}
+        -DITK_DIR=${{ needs.update_itk_static_x64.outputs.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-static-x64
         -DPLUSBUILD_BUILD_SHARED_LIBS:BOOL=OFF
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
