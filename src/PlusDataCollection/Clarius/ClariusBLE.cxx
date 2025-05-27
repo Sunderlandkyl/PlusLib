@@ -67,7 +67,7 @@ static const winrt::guid WIFI_REQUEST_CHAR_UUID
 { 0xf9eb3fae, 0x947a, 0x4e5b, { 0xab, 0x7c, 0xc7, 0x99, 0xe9, 0x1e, 0xd7, 0x82 } };
 
 // max duration to wait for probe boot sequence to complete
-static const uint64_t POWER_ON_TIMEOUT_SEC = 30;
+static const uint64_t POWER_ON_TIMEOUT_SEC = 50;
 static const uint64_t POWER_ON_POLL_INTERVAL_SEC = 1;
 
 // max duration to block while waiting for a BLE operation to complete
