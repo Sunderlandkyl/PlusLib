@@ -78,6 +78,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -128,6 +130,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -138,26 +142,28 @@ jobs:
         -DPLUS_USE_CLARIUS:BOOL=ON
 
   build_plus_x64_clarius_oem:
-      needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
-      uses: ./.github/workflows/build-plus.yml
-      strategy:
-        fail-fast: false
-        matrix:
-          os: [windows-latest]
-          build_type: [Release]
-          arch: [x64]
-      secrets:
-        pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
-      with:
-        arch: ${{ matrix.arch }}
-        vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
-        itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-        plus-cache-key: plus-latest-x64
-        archive-name: PlusApp-ClariusOEM-Win64
-        plus-config: >-
-          -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusOEM"
-          -DPLUSBUILD_BUILDNAME_POSTFIX=ClariusOEM-gh-package-x64
-          -DPLUS_USE_CLARIUS_OEM:BOOL=ON
+    needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [x64]
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
+      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
+      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
+      plus-cache-key: plus-latest-x64
+      archive-name: PlusApp-ClariusOEM-Win64
+      plus-config: >-
+        -DPLUSAPP_PACKAGE_EDITION:STRING="ClariusOEM"
+        -DPLUSBUILD_BUILDNAME_POSTFIX=ClariusOEM-gh-package-x64
+        -DPLUS_USE_CLARIUS_OEM:BOOL=ON
 
   build_plus_x64_telemed:
     needs: [update_vtk_x64, update_itk_x64, build_plus_x64] # Build off of the base x64 package
@@ -172,6 +178,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -194,6 +202,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -218,6 +228,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -240,7 +252,9 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: Win32
+      arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
@@ -288,7 +302,9 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: Win32
+      arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
@@ -310,7 +326,9 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: Win32
+      arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
@@ -332,7 +350,9 @@ jobs:
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: Win32
+      arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32

@@ -8,20 +8,6 @@ on:
 
 jobs:
 
-  print_info:
-      runs-on: windows-latest
-      steps:
-      - name: Delete installer
-        shell: bash
-        run: echo ${{ github.sha }}
-    
-      - name: Clone PlusLib
-        uses: actions/checkout@v4
-        with:
-          repository: PlusToolkit/PlusLib
-          ref: ${{ github.sha }}
-          path: Test
-
   ########
   # BUILD AND CACHE VTK
   update_vtk_x64:
@@ -129,6 +115,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       plus-cache-key: plus-latest-x64
@@ -179,6 +167,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: Win32
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       plus-cache-key: plus-latest-Win32
@@ -227,6 +217,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ matrix.arch }}
+      pluslib-repository: ${{ github.repository }}
+      pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_static_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_static_x64.outputs.cache-key }}
       plus-cache-key: plus-static-x64
