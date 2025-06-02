@@ -14,6 +14,13 @@ jobs:
       - name: Delete installer
         shell: bash
         run: echo ${{ github.sha }}
+    
+      - name: Clone PlusLib
+        uses: actions/checkout@v4
+        with:
+          repository: PlusToolkit/PlusLib
+          ref: ${{ github.sha }}
+          path: Test
 
   ########
   # BUILD AND CACHE VTK
