@@ -58,6 +58,10 @@ on:
         type: boolean
         default: false
 
+      build-and-test-flag:
+        required: false
+        type: string
+
     secrets:
       pltools-access-token:
         required: false
@@ -125,7 +129,7 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: |
-        ctest -C Release -D Experimental -V
+        PlusBuildAndTest.bat ${{ inputs.build-and-test-flag }}
 
     - uses: ilammy/msvc-dev-cmd@v1
     - name: Package
