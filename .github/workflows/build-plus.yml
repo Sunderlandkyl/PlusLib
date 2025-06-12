@@ -124,6 +124,7 @@ jobs:
           -DQt5_Dir="${QT_DIR}" `
           ${{ inputs.plus-config }}
 
+    - uses: pyvista/setup-headless-display-action@v3
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: | 
