@@ -84,7 +84,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
@@ -138,7 +139,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Clarius-Win64
       plus-config: >-
@@ -164,7 +166,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-ClariusOEM-Win64
       plus-config: >-
@@ -190,7 +193,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Telemed-Win64
       plus-config: >-
@@ -216,7 +220,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-spryTrack-Telemed-Win64
       plus-config: >-
@@ -244,7 +249,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-fusionTrack-Win64
       plus-config: >-
@@ -296,7 +302,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Win32
       plus-config: >-
@@ -348,7 +355,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Thorlabs-Win32
       plus-config: >-
@@ -374,7 +382,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Interson-Win32
       plus-config: >-
@@ -400,7 +409,8 @@ jobs:
       use-pltools: true
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
-      build-and-test-flag: -N
+      dashboard: Nightly
+      ctest-options: --track "NightlyTrunkPackages"
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Telemed-Win32
       plus-config: >-

@@ -120,7 +120,6 @@ jobs:
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -E
       archive-name: PlusApp-Win64
       plus-config: >-
         -DVTK_DIR=${{ needs.update_vtk_x64.outputs.install-path }}
@@ -159,7 +158,6 @@ jobs:
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
-      build-and-test-flag: -E
       archive-name: PlusApp-Win32
       plus-config: >-
         -DVTK_DIR=${{ needs.update_vtk_Win32.outputs.install-path }}
@@ -202,7 +200,6 @@ jobs:
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_static_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_static_x64.outputs.cache-key }}
-      build-and-test-flag: -E
       archive-name: PlusApp-Static-Win64
       plus-config: >-
         -DVTK_DIR=${{ needs.update_vtk_static_x64.outputs.install-path }}
