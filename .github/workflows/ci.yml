@@ -119,7 +119,6 @@ jobs:
       pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
-      build-and-test-flag: -E
       plus-cache-key: plus-latest-x64
       archive-name: PlusApp-Win64
       plus-config: >-
@@ -172,7 +171,6 @@ jobs:
       pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
-      build-and-test-flag: -E
       plus-cache-key: plus-latest-Win32
       archive-name: PlusApp-Win32
       plus-config: >-
@@ -223,7 +221,6 @@ jobs:
       pluslib-tag: ${{ github.sha }}
       vtk-cache-key: ${{ needs.update_vtk_static_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_static_x64.outputs.cache-key }}
-      build-and-test-flag: -E
       plus-cache-key: plus-static-x64
       archive-name: PlusApp-Static-Win64
       plus-config: >-

@@ -53,7 +53,11 @@ on:
         type: string
         default: install_branch_temp
 
-      build-and-test-flag:
+      dashboard:
+        required: false
+        type: string
+        default: Experimental
+      ctest-options:
         required: false
         type: string
 
@@ -122,8 +126,10 @@ jobs:
 
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: |
-        PlusBuildAndTest.bat ${{ inputs.build-and-test-flag }}
+      run: | 
+        ctest -C Release -D ${{ inputs.dashboard }} -V ${{ inputs.ctest-options }}`
+        cd ${{github.workspace}}/build/PlusLib-bin `
+        ctest -C Release -D ${{ inputs.dashboard }} -V ${{ inputs.ctest-options }}
 
     - uses: ilammy/msvc-dev-cmd@v1
     - name: Package
