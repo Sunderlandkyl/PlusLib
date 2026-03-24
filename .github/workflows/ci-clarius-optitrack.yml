@@ -11,11 +11,11 @@ on:
           - x64
           - Win32
       archive-name:
-        description: 'Output archive name (e.g. PlusApp-Win64-Optitrack-303)'
+        description: 'Output archive name
         required: true
         default: 'PlusApp-Win64-Custom'
       package-edition:
-        description: 'PLUSAPP_PACKAGE_EDITION (leave blank to omit)'
+        description: 'PLUSAPP_PACKAGE_EDITION'
         required: false
         default: ''
       buildname-postfix:
@@ -23,13 +23,13 @@ on:
         required: false
         default: 'gh-package'
       extra-config:
-        description: 'Additional -DFLAG=VALUE arguments (one per line or space-separated)'
+        description: 'Additional CMake -DFLAG=VALUE arguments'
         required: false
         default: ''
       pluslib-repository:
         description: 'Git repository URL for PlusLib'
         required: false
-        default: 'https://github.com/PlusLib/PlusLib.git'
+        default: 'https://github.com/PlusToolkit/PlusLib.git'
       pluslib-tag:
         description: 'Git tag or commit SHA for PlusLib'
         required: false
@@ -107,49 +107,31 @@ jobs:
       build-type: ${{ matrix.build_type }}
 
   ########
-  # BUILD PLUS PACKAGE — x64
-  build_plus_package_x64:
-    needs: [update_vtk_x64, update_itk_x64]
-    if: ${{ inputs.platform == 'x64' }}
+  # BUILD PLUS PACKAGE
+  build_plus_package:
+    needs: [update_vtk_x64, update_vtk_Win32, update_itk_x64, update_itk_Win32]
+    # always() lets this job run even though the skipped jobs are in needs
+    if: always() && !failure() && !cancelled()
     uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022]
+        build_type: [Release]
     secrets:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
-      arch: x64
-      os: windows-2022
+      arch: ${{ inputs.platform }}
+      os: ${{ matrix.os }}
       pluslib-repository: ${{ inputs.pluslib-repository }}
       pluslib-tag: ${{ inputs.pluslib-tag }}
       use-pltools: ${{ inputs.use-pltools }}
-      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
+      vtk-cache-key: ${{ inputs.platform == 'x64' && needs.update_vtk_x64.outputs.cache-key || needs.update_vtk_Win32.outputs.cache-key }}
+      itk-cache-key: ${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.cache-key || needs.update_itk_Win32.outputs.cache-key }}
       archive-name: ${{ inputs.archive-name }}
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_x64.outputs.install-path }}
-        -DITK_DIR=${{ needs.update_itk_x64.outputs.install-path }}
-        -DPLUSBUILD_BUILDNAME_POSTFIX=${{ inputs.buildname-postfix }}
-        ${{ inputs.package-edition != '' && format('-DPLUSAPP_PACKAGE_EDITION:STRING="{0}"', inputs.package-edition) || '' }}
-        ${{ inputs.extra-config }}
-
-  ########
-  # BUILD PLUS PACKAGE — Win32
-  build_plus_package_Win32:
-    needs: [update_vtk_Win32, update_itk_Win32]
-    if: ${{ inputs.platform == 'Win32' }}
-    uses: ./.github/workflows/build-plus.yml
-    secrets:
-      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
-    with:
-      arch: Win32
-      os: windows-2022
-      pluslib-repository: ${{ inputs.pluslib-repository }}
-      pluslib-tag: ${{ inputs.pluslib-tag }}
-      use-pltools: ${{ inputs.use-pltools }}
-      vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
-      archive-name: ${{ inputs.archive-name }}
-      plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_Win32.outputs.install-path }}
-        -DITK_DIR=${{ needs.update_itk_Win32.outputs.install-path }}
+        -DVTK_DIR=${{ inputs.platform == 'x64' && needs.update_vtk_x64.outputs.install-path || needs.update_vtk_Win32.outputs.install-path }}
+        -DITK_DIR=${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.install-path || needs.update_itk_Win32.outputs.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=${{ inputs.buildname-postfix }}
         ${{ inputs.package-edition != '' && format('-DPLUSAPP_PACKAGE_EDITION:STRING="{0}"', inputs.package-edition) || '' }}
         ${{ inputs.extra-config }}
