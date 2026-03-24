@@ -11,7 +11,7 @@ on:
           - x64
           - Win32
       archive-name:
-        description: 'Output archive name
+        description: 'Output archive name'
         required: true
         default: 'PlusApp-Win64-Custom'
       package-edition:
