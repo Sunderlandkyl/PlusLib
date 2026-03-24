@@ -102,30 +102,42 @@ jobs:
       build-type: ${{ matrix.build_type }}
 
   ########
+  # RESOLVE OUTPUTS FROM WHICHEVER PLATFORM JOBS RAN
+  resolve_deps:
+    needs: [update_vtk_x64, update_vtk_Win32, update_itk_x64, update_itk_Win32]
+    if: always() && !failure() && !cancelled()
+    runs-on: ubuntu-latest
+    outputs:
+      vtk-cache-key: ${{ inputs.platform == 'x64' && needs.update_vtk_x64.outputs.cache-key || needs.update_vtk_Win32.outputs.cache-key }}
+      itk-cache-key: ${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.cache-key || needs.update_itk_Win32.outputs.cache-key }}
+      vtk-install-path: ${{ inputs.platform == 'x64' && needs.update_vtk_x64.outputs.install-path || needs.update_vtk_Win32.outputs.install-path }}
+      itk-install-path: ${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.install-path || needs.update_itk_Win32.outputs.install-path }}
+    steps:
+      - run: echo "Resolved deps for platform ${{ inputs.platform }}"
+
+  ########
   # BUILD PLUS PACKAGE
   build_plus_package:
-    needs: [update_vtk_x64, update_vtk_Win32, update_itk_x64, update_itk_Win32]
-    # always() lets this job run even though the skipped jobs are in needs
-    if: always() && !failure() && !cancelled()
+    needs: [resolve_deps]
     uses: ./.github/workflows/build-plus.yml
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
         os: [windows-2022]
         build_type: [Release]
-    secrets:
-      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       arch: ${{ inputs.platform }}
       os: ${{ matrix.os }}
       pluslib-repository: ${{ inputs.pluslib-repository }}
       pluslib-tag: ${{ inputs.pluslib-tag }}
-      vtk-cache-key: ${{ inputs.platform == 'x64' && needs.update_vtk_x64.outputs.cache-key || needs.update_vtk_Win32.outputs.cache-key }}
-      itk-cache-key: ${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.cache-key || needs.update_itk_Win32.outputs.cache-key }}
+      vtk-cache-key: ${{ needs.resolve_deps.outputs.vtk-cache-key }}
+      itk-cache-key: ${{ needs.resolve_deps.outputs.itk-cache-key }}
       archive-name: ${{ inputs.archive-name }}
       plus-config: >-
-        -DVTK_DIR=${{ inputs.platform == 'x64' && needs.update_vtk_x64.outputs.install-path || needs.update_vtk_Win32.outputs.install-path }}
-        -DITK_DIR=${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.install-path || needs.update_itk_Win32.outputs.install-path }}
+        -DVTK_DIR=${{ needs.resolve_deps.outputs.vtk-install-path }}
+        -DITK_DIR=${{ needs.resolve_deps.outputs.itk-install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=${{ inputs.buildname-postfix }}
         ${{ inputs.package-edition != '' && format('-DPLUSAPP_PACKAGE_EDITION:STRING="{0}"', inputs.package-edition) || '' }}
         ${{ inputs.extra-config }}
