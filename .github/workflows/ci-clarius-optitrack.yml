@@ -34,6 +34,11 @@ on:
         description: 'Git tag or commit SHA for PlusLib'
         required: false
         default: 'master'
+      use-pltools:
+        description: 'Clone PLTools (requires PLTOOLS_ACCESS_TOKEN secret)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
 
@@ -114,6 +119,7 @@ jobs:
       os: windows-2022
       pluslib-repository: ${{ inputs.pluslib-repository }}
       pluslib-tag: ${{ inputs.pluslib-tag }}
+      use-pltools: ${{ inputs.use-pltools }}
       vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
       archive-name: ${{ inputs.archive-name }}
@@ -137,6 +143,7 @@ jobs:
       os: windows-2022
       pluslib-repository: ${{ inputs.pluslib-repository }}
       pluslib-tag: ${{ inputs.pluslib-tag }}
+      use-pltools: ${{ inputs.use-pltools }}
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       archive-name: ${{ inputs.archive-name }}
