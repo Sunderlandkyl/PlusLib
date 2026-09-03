@@ -65,6 +65,27 @@ on:
         type: boolean
         default: false
 
+      # Run the PlusLib test suite (in build/PlusLib-bin) after the build.
+      run-tests:
+        required: false
+        type: boolean
+        default: false
+      # CDash model for the PlusLib test submission: Experimental or Nightly.
+      test-model:
+        required: false
+        type: string
+        default: Experimental
+      # Optional CDash track for the PlusLib test submission.
+      test-track:
+        required: false
+        type: string
+        default: ''
+      # Extra ctest arguments for the PlusLib test run (e.g. -E <regex>).
+      ctest-extra-args:
+        required: false
+        type: string
+        default: ''
+
     secrets:
       pltools-access-token:
         required: false
@@ -162,6 +183,47 @@ jobs:
         if ($LASTEXITCODE -ne 0) {
           throw "CTest failed with exit code $LASTEXITCODE"
         }
+
+    # PlusBuild itself declares no tests; the PlusLib test suite lives in the
+    # inner PlusLib-bin build tree and has to be run there.
+    # -M/-T rather than -D so that no Update step runs (it would move the
+    # checkout off the requested PlusLib revision) and the tree is not rebuilt.
+    - name: Test PlusLib
+      if: ${{ inputs.run-tests }}
+      shell: pwsh
+      working-directory: ${{ github.workspace }}/build/PlusLib-bin
+      run: |
+        $ctestArgs = @()
+        if ('${{ inputs.test-track }}' -ne '') {
+          $ctestArgs += @('--track', '${{ inputs.test-track }}')
+        }
+        if ('${{ inputs.ctest-extra-args }}' -ne '') {
+          $ctestArgs += '${{ inputs.ctest-extra-args }}'.Split(' ')
+        }
+        ctest -C Release -M ${{ inputs.test-model }} -T Start -T Test `
+          --output-on-failure --no-compress-output --timeout 600 @ctestArgs
+        if ($LASTEXITCODE -ne 0) {
+          throw "PlusLib tests failed with exit code $LASTEXITCODE"
+        }
+
+    # Separate from the test step so that a CDash outage cannot fail the job.
+    - name: Submit PlusLib test results to CDash
+      if: ${{ always() && inputs.run-tests }}
+      continue-on-error: true
+      shell: pwsh
+      working-directory: ${{ github.workspace }}/build/PlusLib-bin
+      run: ctest -M ${{ inputs.test-model }} -T Submit
+
+    - name: Upload test logs
+      if: ${{ always() && inputs.run-tests }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ inputs.archive-name }}-TestLogs
+        if-no-files-found: warn
+        path: |
+          build/PlusLib-bin/Testing/Temporary/LastTest*.log
+          build/PlusLib-bin/Testing/Temporary/LastTestsFailed*.log
+          build/PlusLib-bin/Testing/**/Test.xml
 
     - uses: step-security/msvc-dev-cmd@22c98154b708dbd743e6f27a933cf6ceba3305c4 # v1.13.1
     - name: Package
