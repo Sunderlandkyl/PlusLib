@@ -192,6 +192,7 @@ jobs:
       uses: pyvista/setup-headless-display-action@b0bf9f57d62d2b3fee9f1c0e0c7e390f05e97a4e # v5.0.0
       with:
         pyvista: false
+        mesa3d-release: '24.3.4'
 
     # PlusBuild itself declares no tests; the PlusLib test suite lives in the
     # inner PlusLib-bin build tree and has to be run there.
