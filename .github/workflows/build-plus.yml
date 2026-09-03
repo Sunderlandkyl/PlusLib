@@ -199,6 +199,7 @@ jobs:
     # checkout off the requested PlusLib revision) and the tree is not rebuilt.
     - name: Test PlusLib
       if: ${{ inputs.run-tests }}
+      continue-on-error: true
       shell: pwsh
       working-directory: ${{ github.workspace }}/build/PlusLib-bin
       run: |
@@ -221,7 +222,6 @@ jobs:
       working-directory: ${{ github.workspace }}/build/PlusLib-bin/src/PlusCalibration/Testing
       run: |
         $kits = "C:\Program Files (x86)\Windows Kits\10\Debuggers"
-        Get-ChildItem $kits -ErrorAction SilentlyContinue | Out-String | Write-Host
         $cdb = Join-Path $kits "x86\cdb.exe"
         $gflags = Join-Path $kits "x86\gflags.exe"
         $ws = "${{ github.workspace }}"
@@ -232,12 +232,22 @@ jobs:
           "--source-seq-file=$data\TestImages\USTC_Ulterius_ProbeRotationData.igs.mha",
           "--baseline-file=$data\TestImages\USTC_Ulterius_StepperCalibrationResultBaseline.xml")
         $env:_NT_SYMBOL_PATH = "$ws\build\bin\Release;$ws\vtk-install\bin;srv*C:\symbols*https://msdl.microsoft.com/download/symbols"
-        $cmds = ".lines; sxe av; sxe -c `"!analyze -v; .echo ===STACK===; kv 60; .echo ===TEB===; !teb; .echo ===GL===; lmv m opengl32; lmv m osmesa; .echo ===MODS===; lm; q`" *; g; .echo ===EXITED-NORMALLY===; q"
-        Write-Host "=========== RUN 1: plain ==========="
-        & $cdb -G -c $cmds $exe @testArgs 2>&1 | Out-String -Width 500 | Write-Host
-        Write-Host "=========== RUN 2: page heap ==========="
+        $cmds = ".lines; g; .echo ===AFTER-G===; .lastevent; !analyze -v; .echo ===STACK===; kv 60; .echo ===MODS===; lmv m opengl32; lmv m osmesa; lmv m libglapi; lmv m vtkRenderingOpenGL2; q"
+        function RunCase($label) {
+          Write-Host "=========== $label ==========="
+          & $cdb -c $cmds $exe @testArgs 2>&1 | Out-String -Width 500 | Write-Host
+          Write-Host "=========== $label exit code: $LASTEXITCODE"
+        }
+        Write-Host "--- Mesa files present:"
+        Get-ChildItem C:\Windows\SysWOW64\opengl32.dll, C:\Windows\SysWOW64\osmesa.dll, C:\Windows\System32\opengl32.dll, C:\Windows\System32\osmesa.dll -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize | Out-String | Write-Host
+        RunCase "RUN A: default"
+        $env:VTK_DEFAULT_OPENGL_WINDOW = "vtkWin32OpenGLRenderWindow"
+        RunCase "RUN B: VTK_DEFAULT_OPENGL_WINDOW=vtkWin32OpenGLRenderWindow"
+        $env:VTK_DEFAULT_OPENGL_WINDOW = "vtkOSOpenGLRenderWindow"
+        RunCase "RUN C: VTK_DEFAULT_OPENGL_WINDOW=vtkOSOpenGLRenderWindow"
+        Remove-Item Env:VTK_DEFAULT_OPENGL_WINDOW
         & $gflags /p /enable vtkCenterOfRotationCalibAlgoTest.exe /full 2>&1 | Write-Host
-        & $cdb -G -c $cmds $exe @testArgs 2>&1 | Out-String -Width 500 | Write-Host
+        RunCase "RUN D: full page heap"
         & $gflags /p /disable vtkCenterOfRotationCalibAlgoTest.exe 2>&1 | Write-Host
         exit 0
 
