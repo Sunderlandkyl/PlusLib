@@ -20,7 +20,7 @@ jobs:
         arch:
         - Win32
     with:
-      vtk-hash: f49a1dbafa60b58ef22f6292ec58370453162192
+      vtk-hash: 6b6b89ee577e6c6a5ee6f5220b9c6a12513c30b4
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
@@ -67,4 +67,4 @@ jobs:
       archive-name: PlusApp-Win32
       plus-config: -DVTK_DIR=${{ needs.update_vtk_Win32.outputs.install-path }} -DITK_DIR=${{ needs.update_itk_Win32.outputs.install-path }} -DPLUSAPP_PACKAGE_EDITION:STRING="" -DPLUSBUILD_BUILDNAME_POSTFIX=gh-ci-Win32 -DPLUSBUILD_DOCUMENTATION:BOOL=OFF -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON -DPLUS_USE_EPIPHAN:BOOL=ON -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON -DPLUS_USE_NDI:BOOL=ON -DPLUS_USE_VFW_VIDEO:BOOL=ON -DPLUS_USE_TextRecognizer:BOOL=ON -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON -DPLUS_USE_MKV_IO:BOOL=ON -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON -DPLUS_USE_VP9:BOOL=ON -DPLUS_USE_Ascension3DG:BOOL=ON -DPLUS_USE_BRACHY_TRACKER:BOOL=ON -DPLUS_USE_MMF_VIDEO:BOOL=ON -DPLUS_USE_OPTICAL_MARKER_TRACKER:BOOL=ON -DPLUSBUILD_USE_OpenCV:BOOL=ON -DPLUSBUILD_USE_aruco:BOOL=ON -DPLUS_USE_OpenCV_VIDEO:BOOL=ON
       ctest-extra-args: -R CenterOfRotationCalibration-Ulterius
-      plus-cache-key: plus-debug-Win32
+      plus-cache-key: plus-debug-Win32-vtk941
