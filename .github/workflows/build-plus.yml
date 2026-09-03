@@ -184,6 +184,15 @@ jobs:
           throw "CTest failed with exit code $LASTEXITCODE"
         }
 
+    # The runners have no GPU, so VTK cannot create a render window. Tests that
+    # generate report plots (the calibration algorithm tests) crash without a
+    # software OpenGL implementation. This installs Mesa system-wide.
+    - name: Setup headless display
+      if: ${{ inputs.run-tests }}
+      uses: pyvista/setup-headless-display-action@b0bf9f57d62d2b3fee9f1c0e0c7e390f05e97a4e # v5.0.0
+      with:
+        pyvista: false
+
     # PlusBuild itself declares no tests; the PlusLib test suite lives in the
     # inner PlusLib-bin build tree and has to be run there.
     # -M/-T rather than -D so that no Update step runs (it would move the
