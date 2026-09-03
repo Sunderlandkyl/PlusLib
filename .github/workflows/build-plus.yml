@@ -216,13 +216,35 @@ jobs:
           throw "PlusLib tests failed with exit code $LASTEXITCODE"
         }
 
+    # PlusApp has its own test suite and CDash project, in build/PlusApp-bin.
+    - name: Test PlusApp
+      id: plusapp-tests
+      if: ${{ inputs.run-tests && hashFiles('build/PlusApp-bin/CTestTestfile.cmake') != '' }}
+      shell: pwsh
+      working-directory: ${{ github.workspace }}/build/PlusApp-bin
+      run: |
+        $ctestArgs = @()
+        if ('${{ inputs.test-track }}' -ne '') {
+          $ctestArgs += @('--track', '${{ inputs.test-track }}')
+        }
+        ctest -C Release -M ${{ inputs.test-model }} -T Start -T Test `
+          --output-on-failure --no-compress-output --timeout 600 @ctestArgs
+        if ($LASTEXITCODE -ne 0) {
+          throw "PlusApp tests failed with exit code $LASTEXITCODE"
+        }
+
     # Separate from the test step so that a CDash outage cannot fail the job.
-    - name: Submit PlusLib test results to CDash
+    - name: Submit test results to CDash
       if: ${{ always() && steps.plus-tests.outcome != 'skipped' }}
       continue-on-error: true
       shell: pwsh
       working-directory: ${{ github.workspace }}/build/PlusLib-bin
-      run: ctest -M ${{ inputs.test-model }} -T Submit
+      run: |
+        ctest -M ${{ inputs.test-model }} -T Submit
+        if ('${{ steps.plusapp-tests.outcome }}' -ne 'skipped') {
+          Set-Location "${{ github.workspace }}/build/PlusApp-bin"
+          ctest -M ${{ inputs.test-model }} -T Submit
+        }
 
     - name: Upload test logs
       if: ${{ always() && steps.plus-tests.outcome != 'skipped' }}
@@ -234,6 +256,9 @@ jobs:
           build/PlusLib-bin/Testing/Temporary/LastTest*.log
           build/PlusLib-bin/Testing/Temporary/LastTestsFailed*.log
           build/PlusLib-bin/Testing/**/Test.xml
+          build/PlusApp-bin/Testing/Temporary/LastTest*.log
+          build/PlusApp-bin/Testing/Temporary/LastTestsFailed*.log
+          build/PlusApp-bin/Testing/**/Test.xml
 
     - uses: step-security/msvc-dev-cmd@22c98154b708dbd743e6f27a933cf6ceba3305c4 # v1.13.1
     - name: Package
