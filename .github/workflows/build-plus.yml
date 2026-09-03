@@ -215,6 +215,32 @@ jobs:
           throw "PlusLib tests failed with exit code $LASTEXITCODE"
         }
 
+    - name: Debug crash under cdb (Win32 diagnostic)
+      if: ${{ always() && inputs.run-tests && inputs.arch == 'Win32' }}
+      shell: pwsh
+      working-directory: ${{ github.workspace }}/build/PlusLib-bin/src/PlusCalibration/Testing
+      run: |
+        $kits = "C:\Program Files (x86)\Windows Kits\10\Debuggers"
+        Get-ChildItem $kits -ErrorAction SilentlyContinue | Out-String | Write-Host
+        $cdb = Join-Path $kits "x86\cdb.exe"
+        $gflags = Join-Path $kits "x86\gflags.exe"
+        $ws = "${{ github.workspace }}"
+        $exe = "$ws\build\bin\Release\vtkCenterOfRotationCalibAlgoTest.exe"
+        $data = "$ws\build\PlusLibData"
+        $testArgs = @(
+          "--config-file=$data\ConfigFiles\Testing\PlusDeviceSet_iCal_CalibrationOnly_SonixRP_Ulterius.xml",
+          "--source-seq-file=$data\TestImages\USTC_Ulterius_ProbeRotationData.igs.mha",
+          "--baseline-file=$data\TestImages\USTC_Ulterius_StepperCalibrationResultBaseline.xml")
+        $env:_NT_SYMBOL_PATH = "$ws\build\bin\Release;$ws\vtk-install\bin;srv*C:\symbols*https://msdl.microsoft.com/download/symbols"
+        $cmds = ".lines; sxe av; sxe -c `"!analyze -v; .echo ===STACK===; kv 60; .echo ===TEB===; !teb; .echo ===GL===; lmv m opengl32; lmv m osmesa; .echo ===MODS===; lm; q`" *; g; .echo ===EXITED-NORMALLY===; q"
+        Write-Host "=========== RUN 1: plain ==========="
+        & $cdb -G -c $cmds $exe @testArgs 2>&1 | Out-String -Width 500 | Write-Host
+        Write-Host "=========== RUN 2: page heap ==========="
+        & $gflags /p /enable vtkCenterOfRotationCalibAlgoTest.exe /full 2>&1 | Write-Host
+        & $cdb -G -c $cmds $exe @testArgs 2>&1 | Out-String -Width 500 | Write-Host
+        & $gflags /p /disable vtkCenterOfRotationCalibAlgoTest.exe 2>&1 | Write-Host
+        exit 0
+
     # Separate from the test step so that a CDash outage cannot fail the job.
     - name: Submit PlusLib test results to CDash
       if: ${{ always() && inputs.run-tests }}
