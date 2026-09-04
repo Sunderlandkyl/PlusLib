@@ -246,6 +246,7 @@ jobs:
           ${{ inputs.plus-config }}
 
     - name: Build
+      id: build
       shell: bash
       working-directory: ${{ github.workspace }}/build
       run: |
@@ -301,9 +302,12 @@ jobs:
           --output-on-failure --no-compress-output --timeout 600
 
     # PlusApp has its own test suite and CDash project, in build/PlusApp-bin.
+    # !cancelled() rather than the default success(): a failure in the PlusLib
+    # suite says nothing about the PlusApp suite, and skipping it would hide
+    # whichever of the two is still broken.
     - name: Test PlusApp
       id: plusapp-tests
-      if: ${{ inputs.run-tests && hashFiles('build/PlusApp-bin/CTestTestfile.cmake') != '' }}
+      if: ${{ !cancelled() && inputs.run-tests && hashFiles('build/PlusApp-bin/CTestTestfile.cmake') != '' }}
       shell: bash
       working-directory: ${{ github.workspace }}/build/PlusApp-bin
       env:
@@ -353,7 +357,7 @@ jobs:
       uses: step-security/msvc-dev-cmd@22c98154b708dbd743e6f27a933cf6ceba3305c4 # v1.13.1
 
     - name: Package
-      if: ${{ hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
+      if: ${{ !cancelled() && steps.build.conclusion == 'success' && hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
       shell: bash
       working-directory: ${{ github.workspace }}/build/PlusApp-bin
       run: |
@@ -369,7 +373,7 @@ jobs:
     # its own, so that one generator failing still surfaces the packages the
     # others produced; the step then fails if nothing at all was collected.
     - name: Collect packages
-      if: ${{ hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
+      if: ${{ !cancelled() && steps.build.conclusion == 'success' && hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
       shell: bash
       run: |
         set -e
@@ -393,7 +397,7 @@ jobs:
         ls -l packages
 
     - name: Upload artifact
-      if: ${{ hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
+      if: ${{ !cancelled() && steps.build.conclusion == 'success' && hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
       uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.archive-name }}

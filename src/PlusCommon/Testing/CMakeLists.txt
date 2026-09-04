@@ -18,7 +18,13 @@ function(ADD_COMPARE_FILES_TEST TestName DependsOnTestName TestFileName)
     SET(FoundReferenceFilePath ${CommonFilePath})
   endif()
 
-  ADD_TEST(${TestName} ${CMAKE_COMMAND} -E compare_files "${TEST_OUTPUT_PATH}/${TestFileName}" "${FoundReferenceFilePath}")
+  # PlusCompareFiles rather than "cmake -E compare_files": a compressed NRRD
+  # carries the writing machine's operating-system code in its gzip header, so
+  # a byte-exact comparison would need one baseline per platform.
+  ADD_TEST(${TestName} ${CMAKE_COMMAND}
+    "-DTEST_FILE=${TEST_OUTPUT_PATH}/${TestFileName}"
+    "-DBASELINE_FILE=${FoundReferenceFilePath}"
+    -P "${PlusLib_SOURCE_DIR}/CMake/PlusCompareFiles.cmake")
   SET_TESTS_PROPERTIES(${TestName} PROPERTIES DEPENDS ${DependsOnTestName})
 
 endfunction()

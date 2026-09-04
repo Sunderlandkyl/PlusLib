@@ -153,12 +153,40 @@ int main(int argc, char* argv[])
 
   for (int landmarkCounter = 0; landmarkCounter < numberOfLandmarks; ++landmarkCounter)
   {
+    const double landmarkRequestedTime = vtkIGSIOAccurateTimer::GetSystemTime();
     fakeTracker->SetCounter(landmarkCounter);
-    vtkIGSIOAccurateTimer::Delay(2.1 / fakeTracker->GetAcquisitionRate());
+
+    // Wait for the tracker to publish a frame recorded after the landmark
+    // changed, rather than for a fixed number of acquisition periods. A fixed
+    // delay races with the acquisition thread: on a loaded machine the newest
+    // frame can still describe the previous landmark, or sit close enough to
+    // the change that the buffer interpolates across it, and the registration
+    // then fits a point that was never touched.
+    const double acquisitionPeriodSec = 1.0 / fakeTracker->GetAcquisitionRate();
+    const double settleTimeSec = 2.0 * acquisitionPeriodSec;
+    const double waitTimeoutSec = 10.0;
+    bool landmarkAvailable = false;
+    while (vtkIGSIOAccurateTimer::GetSystemTime() - landmarkRequestedTime < waitTimeoutSec)
+    {
+      vtkIGSIOAccurateTimer::Delay(acquisitionPeriodSec);
+      if (aChannel->GetTrackedFrame(trackedFrame) != PLUS_SUCCESS)
+      {
+        continue;
+      }
+      if (trackedFrame.GetTimestamp() > landmarkRequestedTime + settleTimeSec)
+      {
+        landmarkAvailable = true;
+        break;
+      }
+    }
+    if (!landmarkAvailable)
+    {
+      LOG_ERROR("Timed out waiting for a tracked frame for landmark " << landmarkCounter << "!");
+      exit(EXIT_FAILURE);
+    }
 
     vtkSmartPointer<vtkMatrix4x4> stylusTipToReferenceMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
-    aChannel->GetTrackedFrame(trackedFrame);
     transformRepository->SetTransforms(trackedFrame);
 
     ToolStatus status(TOOL_INVALID);
