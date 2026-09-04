@@ -263,6 +263,12 @@ ADD_SUBDIRECTORY(PlusVolumeReconstruction)
 INCLUDE_DIRECTORIES(${PlusVolumeReconstruction_INCLUDE_DIRS})
 LIST(APPEND PLUSLIB_INCLUDE_DIRS ${PlusVolumeReconstruction_INCLUDE_DIRS} CACHE INTERNAL "")
 
+# SEIDrv is a C++/CLI assembly and uses VS_DOTNET_REFERENCE, so it can only be
+# built by MSVC. Without this guard the option fails late and confusingly on
+# any other compiler.
+IF(PLUS_USE_USDIGITALENCODERS_TRACKER AND NOT MSVC)
+  MESSAGE(FATAL_ERROR "PLUS_USE_USDIGITALENCODERS_TRACKER needs the SEIDrv C++/CLI assembly, which only Visual Studio can build. Turn the option off on this platform.")
+ENDIF()
 IF(PLUS_USE_USDIGITALENCODERS_TRACKER)
   ADD_SUBDIRECTORY(SEIDrv)
   INCLUDE_DIRECTORIES(${SEIDrv_INCLUDE_DIRS})
