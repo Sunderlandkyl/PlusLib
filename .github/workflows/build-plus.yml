@@ -278,18 +278,25 @@ jobs:
       if: ${{ inputs.run-tests }}
       shell: bash
       working-directory: ${{ github.workspace }}/build/PlusLib-bin
+      # Passed through the environment rather than substituted into the script:
+      # a value such as -E a|b is shell syntax once it lands in the text.
+      env:
+        TEST_TRACK: ${{ inputs.test-track }}
+        CTEST_EXTRA_ARGS: ${{ inputs.ctest-extra-args }}
       run: |
         set -e
         args=()
         if [ "$RUNNER_OS" = "Windows" ]; then
           args+=(-C Release)
         fi
-        if [ -n "${{ inputs.test-track }}" ]; then
-          args+=(--track "${{ inputs.test-track }}")
+        if [ -n "$TEST_TRACK" ]; then
+          args+=(--track "$TEST_TRACK")
         fi
-        # Word splitting is intended here: the input is a set of arguments,
-        # not a single one.
-        args+=(${{ inputs.ctest-extra-args }})
+        # Split on whitespace without the shell interpreting what it finds.
+        # read returns non-zero at end of input, which set -e would take as a
+        # failure when the value is empty.
+        read -ra extra_args <<< "$CTEST_EXTRA_ARGS" || true
+        args+=("${extra_args[@]}")
         ctest "${args[@]}" -M ${{ inputs.test-model }} -T Start -T Test \
           --output-on-failure --no-compress-output --timeout 600
 
@@ -299,14 +306,16 @@ jobs:
       if: ${{ inputs.run-tests && hashFiles('build/PlusApp-bin/CTestTestfile.cmake') != '' }}
       shell: bash
       working-directory: ${{ github.workspace }}/build/PlusApp-bin
+      env:
+        TEST_TRACK: ${{ inputs.test-track }}
       run: |
         set -e
         args=()
         if [ "$RUNNER_OS" = "Windows" ]; then
           args+=(-C Release)
         fi
-        if [ -n "${{ inputs.test-track }}" ]; then
-          args+=(--track "${{ inputs.test-track }}")
+        if [ -n "$TEST_TRACK" ]; then
+          args+=(--track "$TEST_TRACK")
         fi
         ctest "${args[@]}" -M ${{ inputs.test-model }} -T Start -T Test \
           --output-on-failure --no-compress-output --timeout 600
