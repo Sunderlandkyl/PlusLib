@@ -54,6 +54,11 @@ IF(PLUS_USE_OpenIGTLink)
   SET(PLUS_OPENIGTLINK_VERSION_PATCH "${OpenIGTLink_VERSION_PATCH}")
 
   FIND_PACKAGE(OpenIGTLinkIO REQUIRED NO_MODULE)
+
+  # Recorded for the same reason as VTK and ITK above: IGSIO is found next and
+  # looks for OpenIGTLink itself.
+  SET(PLUSLIB_OpenIGTLink_DIR "${OpenIGTLink_DIR}")
+  SET(PLUSLIB_OpenIGTLinkIO_DIR "${OpenIGTLinkIO_DIR}")
 ENDIF()
 
 # Reset the list of PlusLib Qt components
@@ -367,6 +372,10 @@ SET(PLUSLIB_CONFIG_CODE "SET(PlusLib_TARGETS_FILE \"${CMAKE_BINARY_DIR}/PlusLibT
 # whatever the cache entries have since become.
 SET(VTK_DIR "${PLUSLIB_VTK_DIR}")
 SET(ITK_DIR "${PLUSLIB_ITK_DIR}")
+IF(PLUS_USE_OpenIGTLink)
+  SET(OpenIGTLink_DIR "${PLUSLIB_OpenIGTLink_DIR}")
+  SET(OpenIGTLinkIO_DIR "${PLUSLIB_OpenIGTLinkIO_DIR}")
+ENDIF()
 SET(VTK_CONFIG_DIR ${VTK_DIR})
 SET(ITK_CONFIG_DIR ${ITK_DIR})
 SET(PLUSLIB_CONFIG_USEFILE "${CMAKE_BINARY_DIR}/UsePlusLib.cmake")
