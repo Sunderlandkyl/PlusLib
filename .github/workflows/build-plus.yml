@@ -396,6 +396,41 @@ jobs:
         fi
         ls -l packages
 
+    # A package that builds is not a package that runs. Unpack the archive
+    # somewhere else and start the tools out of it: that is what catches a
+    # library the dependency closure missed, or an executable sitting at a
+    # different depth than its rpath expects. Both of those shipped once
+    # already, in a package whose file list looked correct.
+    - name: Verify package
+      if: ${{ !cancelled() && steps.build.conclusion == 'success' && runner.os != 'Windows' }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        set -e
+        archive=$(ls packages/PlusApp-*.tar.gz)
+        rm -rf verify && mkdir verify
+        tar xzf "$archive" -C verify
+        root=$(ls -d verify/*/)
+        echo "Unpacked $archive to $root"
+
+        # The command-line tools, run from the unpacked tree.
+        "$root/bin/PlusVersion"
+        "$root/bin/PlusServer" --help > /dev/null
+        "$root/bin/EditSequenceFile" --help > /dev/null
+
+        # The Qt applications have to be plain executables in bin/, beside the
+        # rest. A macOS .app bundle puts its executable two directories deeper,
+        # where "@executable_path/../lib" resolves to nothing.
+        for application in fCal PlusServerLauncher; do
+          if [ ! -f "$root/bin/$application" ] || [ ! -x "$root/bin/$application" ]; then
+            echo "$application is not a plain executable in bin/:"
+            ls -l "$root/bin"
+            exit 1
+          fi
+        done
+        QT_QPA_PLATFORM=offscreen "$root/bin/PlusServerLauncher" --help > /dev/null
+        echo "The unpacked package runs."
+
     - name: Upload artifact
       if: ${{ !cancelled() && steps.build.conclusion == 'success' && hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
       uses: actions/upload-artifact@v7
@@ -409,7 +444,7 @@ jobs:
       if: always()
       shell: bash
       run: |
-        rm -rf packages
+        rm -rf packages verify
         rm -rfv build/PlusApp-bin/PlusApp-*.exe build/PlusApp-bin/PlusApp-*.zip
         rm -rfv build/PlusApp-bin/PlusApp-*.tar.gz build/PlusApp-bin/PlusApp-*.dmg
         rm -rfv build/PlusApp-bin/*.deb
