@@ -49,7 +49,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: itk-install
-          lookup-only: true
+          # Downloaded even on a hit, unlike VTK: the install path reported by
+          # this job is found by looking for the ITK-<major>.<minor> directory,
+          # which needs the tree to be present.
           key: ${{ env.CACHE_KEY }}
 
       - name: Install Dependencies (Linux)
