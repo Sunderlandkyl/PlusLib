@@ -200,6 +200,12 @@ jobs:
       os: ${{ matrix.os }}
       pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
+      # PlusToolkit defaults before this is merged.
+      plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
+      plusbuild-tag: cmake-modernization
+      plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
+      plusapp-tag: cmake-modernization
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       run-tests: true
@@ -210,8 +216,6 @@ jobs:
       ctest-extra-args: -E CenterOfRotationCalibration|SpacingCalibAlgoTest
       archive-name: PlusApp-Win32
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_Win32.outputs.install-path }}
-        -DITK_DIR=${{ needs.update_itk_Win32.outputs.install-path }}
         -DPLUSAPP_PACKAGE_EDITION:STRING=""
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-ci-Win32
         -DPLUSBUILD_DOCUMENTATION:BOOL=OFF
@@ -248,13 +252,17 @@ jobs:
       os: ${{ matrix.os }}
       pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
+      # PlusToolkit defaults before this is merged.
+      plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
+      plusbuild-tag: cmake-modernization
+      plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
+      plusapp-tag: cmake-modernization
       vtk-cache-key: ${{ needs.update_vtk_static_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_static_x64.outputs.cache-key }}
       run-tests: true
       archive-name: PlusApp-Static-Win64
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_static_x64.outputs.install-path }}
-        -DITK_DIR=${{ needs.update_itk_static_x64.outputs.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-static-x64
         -DPLUSBUILD_BUILD_SHARED_LIBS:BOOL=OFF
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON

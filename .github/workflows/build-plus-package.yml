@@ -140,8 +140,6 @@ jobs:
       itk-cache-key: ${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.cache-key || needs.update_itk_Win32.outputs.cache-key }}
       archive-name: ${{ inputs.archive-name }}
       plus-config: >-
-        -DVTK_DIR=${{ inputs.platform == 'x64' && needs.update_vtk_x64.outputs.install-path || needs.update_vtk_Win32.outputs.install-path }}
-        -DITK_DIR=${{ inputs.platform == 'x64' && needs.update_itk_x64.outputs.install-path || needs.update_itk_Win32.outputs.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=${{ inputs.buildname-postfix }}
         ${{ inputs.package-edition != '' && format('-DPLUSAPP_PACKAGE_EDITION:STRING="{0}"', inputs.package-edition) || '' }}
         ${{ inputs.extra-config }}

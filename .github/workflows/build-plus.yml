@@ -222,8 +222,9 @@ jobs:
           args+=("-DQt5_DIR=${QT_ROOT_DIR}/lib/cmake/Qt5")
         fi
 
-        # Where the cached dependency builds were restored to. A -DVTK_DIR or
-        # -DITK_DIR in plus-config comes later on the command line and wins.
+        # Where the cached dependency builds were restored to. The callers
+        # used to pass these in plus-config, but a Windows path there arrives
+        # through a bash command line, where the backslashes are escapes.
         vtk_dir="$GITHUB_WORKSPACE/vtk-install/lib/cmake/vtk"
         if [ -d "$vtk_dir" ]; then
           args+=("-DVTK_DIR=$vtk_dir")
