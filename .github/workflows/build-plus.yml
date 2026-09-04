@@ -59,6 +59,16 @@ on:
         required: false
         type: string
         default: master
+      # The superbuild that drives the whole build. Overridable so that changes
+      # to PlusBuild itself can be tested from a PlusLib workflow run.
+      plusbuild-repository:
+        required: false
+        type: string
+        default: https://github.com/PlusToolkit/PlusBuild.git
+      plusbuild-tag:
+        required: false
+        type: string
+        default: master
 
       use-pltools:
         required: false
@@ -143,12 +153,14 @@ jobs:
       with:
         nsis-version: '3.12'
 
+    # Cloned by URL rather than actions/checkout so that a fork can be used
+    # without it having to live in the same GitHub organization.
     - name: Clone PlusBuild
-      uses: actions/checkout@v7
-      with:
-        repository: PlusToolkit/PlusBuild
-        ref: master
-        path: PlusBuild
+      shell: bash
+      run: |
+        git clone "${{ inputs.plusbuild-repository }}" PlusBuild
+        git -C PlusBuild checkout --detach "${{ inputs.plusbuild-tag }}"
+        git -C PlusBuild --no-pager log --oneline -1
 
     - name: Clone PLTools
       if: ${{ inputs.use-pltools }}
