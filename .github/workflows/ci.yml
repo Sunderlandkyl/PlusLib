@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         build_type: [Release]
         arch: [x64]
     with:
@@ -63,7 +63,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         build_type: [Release]
         arch: [x64]
     with:
@@ -121,19 +121,26 @@ jobs:
       os: ${{ matrix.os }}
       pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-      vtk-cache-key: ${{ needs.update_vtk_x64.outputs.cache-key }}
-      itk-cache-key: ${{ needs.update_itk_x64.outputs.cache-key }}
+      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
+      # PlusToolkit defaults before this is merged.
+      plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
+      plusbuild-tag: cmake-modernization
+      plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
+      plusapp-tag: cmake-modernization
+      # update_vtk_x64 and update_itk_x64 build for three platforms, and a
+      # matrix job reports the outputs of whichever leg finished last, so the
+      # key is written out here instead. It has to match the one build-vtk.yml
+      # and build-itk.yml compute, including the hashes above.
+      vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
+      itk-cache-key: itk-${{ matrix.os }}-${{ matrix.arch }}-f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158
       run-tests: true
       archive-name: PlusApp-Win64
       plus-config: >-
-        -DVTK_DIR=${{ needs.update_vtk_x64.outputs.install-path }}
-        -DITK_DIR=${{ needs.update_itk_x64.outputs.install-path }}
         -DPLUSBUILD_BUILDNAME_POSTFIX=gh-ci-x64
         -DPLUS_USE_3dConnexion_TRACKER:BOOL=ON
         -DPLUS_USE_EPIPHAN:BOOL=ON
         -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON
         -DPLUS_USE_NDI:BOOL=ON
-        -DPLUS_USE_VFW_VIDEO:BOOL=ON
         -DPLUS_USE_TextRecognizer:BOOL=ON
         -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON
         -DPLUS_USE_MKV_IO:BOOL=ON
@@ -144,6 +151,38 @@ jobs:
         -DPLUSBUILD_USE_OpenCV:BOOL=ON
         -DPLUS_USE_OpenCV_VIDEO:BOOL=ON
         -DPLUSBUILD_USE_aruco:BOOL=ON
+
+  # Linux and macOS. Only the devices that exist on those platforms are
+  # enabled; the Windows job above carries the vendor SDK options.
+  build_plus_unix:
+    needs: [update_vtk_x64, update_itk_x64]
+    uses: ./.github/workflows/build-plus.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        build_type: [Release]
+        arch: [x64]
+    with:
+      arch: ${{ matrix.arch }}
+      os: ${{ matrix.os }}
+      pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
+      pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
+      # PlusToolkit defaults before this is merged.
+      plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
+      plusbuild-tag: cmake-modernization
+      plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
+      plusapp-tag: cmake-modernization
+      vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
+      itk-cache-key: itk-${{ matrix.os }}-${{ matrix.arch }}-f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158
+      run-tests: true
+      archive-name: PlusApp-${{ matrix.os }}
+      plus-config: >-
+        -DPLUSBUILD_BUILDNAME_POSTFIX=gh-ci-${{ matrix.os }}
+        -DPLUS_USE_NDI:BOOL=ON
+        -DPLUS_USE_MKV_IO:BOOL=ON
+        -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON
 
   build_plus_Win32:
     needs: [update_vtk_Win32, update_itk_Win32]
@@ -180,7 +219,6 @@ jobs:
         -DPLUS_USE_EPIPHAN:BOOL=ON
         -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON
         -DPLUS_USE_NDI:BOOL=ON
-        -DPLUS_USE_VFW_VIDEO:BOOL=ON
         -DPLUS_USE_TextRecognizer:BOOL=ON
         -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON
         -DPLUS_USE_MKV_IO:BOOL=ON
@@ -223,7 +261,6 @@ jobs:
         -DPLUS_USE_EPIPHAN:BOOL=ON
         -DPLUS_USE_PHIDGET_SPATIAL_TRACKER:BOOL=ON
         -DPLUS_USE_NDI:BOOL=ON
-        -DPLUS_USE_VFW_VIDEO:BOOL=ON
         -DPLUS_USE_WITMOTIONTRACKER:BOOL=ON
         -DPLUS_ENABLE_VIDEOSTREAMING:BOOL=ON
         -DPLUS_USE_VP9:BOOL=ON

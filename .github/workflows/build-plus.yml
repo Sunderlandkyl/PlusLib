@@ -105,6 +105,11 @@ jobs:
     runs-on: ${{ inputs.os }}
     permissions:
       actions: write
+    env:
+      # The open-source Qt 5.15 binaries are x86_64 only, so an Apple silicon
+      # runner builds for x86_64 and runs the result under Rosetta. CMake reads
+      # this variable on Apple platforms and every sub-project inherits it.
+      CMAKE_OSX_ARCHITECTURES: ${{ contains(inputs.os, 'macos') && 'x86_64' || '' }}
 
     steps:
     # fail-on-cache-miss so that a missing dependency cache fails here rather
@@ -140,6 +145,26 @@ jobs:
         path: build
         key: ${{ inputs.plus-cache-key }}
 
+    # Build tools, the OpenGL and X libraries VTK links against, and the xcb
+    # libraries that Qt's platform plugin loads at run time.
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        set -e
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends ninja-build libgl1-mesa-dev libglu1-mesa-dev libgl1-mesa-dri libxt-dev libxrender-dev libxext-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libxcb-shape0 libxcb-cursor0 libfontconfig1 libdbus-1-3
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        set -e
+        brew install ninja
+        # The Qt 5.15 binaries are x86_64, so both the Qt tools and the build
+        # they produce need Rosetta on an Apple silicon runner.
+        sudo softwareupdate --install-rosetta --agree-to-license
+
     - name: Install CMake
       uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2
       with:
@@ -150,9 +175,11 @@ jobs:
       with:
         dir: ${{ github.workspace }}/Qt
         version: ${{ inputs.qt-version }}
-        arch: ${{ inputs.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' }}
+        arch: ${{ runner.os == 'Windows' && (inputs.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019') || runner.os == 'Linux' && 'gcc_64' || 'clang_64' }}
 
+    # NSIS builds the Windows installer and has no meaning elsewhere.
     - name: Install NSIS
+      if: runner.os == 'Windows'
       uses: repolevedavaj/install-nsis@v1.3.0
       with:
         nsis-version: '3.12'
@@ -162,6 +189,7 @@ jobs:
     - name: Clone PlusBuild
       shell: bash
       run: |
+        set -e
         git clone "${{ inputs.plusbuild-repository }}" PlusBuild
         git -C PlusBuild checkout --detach "${{ inputs.plusbuild-tag }}"
         git -C PlusBuild --no-pager log --oneline -1
@@ -175,45 +203,62 @@ jobs:
         path: PLTools
         token: ${{ secrets.pltools-access-token }}
 
-    # The step had no explicit shell and used PowerShell line continuations, so
-    # it only worked because pwsh happens to be the default on Windows runners.
-    # ${QT_DIR} was also never set by install-qt-action (it exports
-    # QT_ROOT_DIR), and the CMake variable is spelled Qt5_DIR, so Qt was only
-    # ever found by way of PATH.
+    # Visual Studio on Windows, Ninja elsewhere. Ninja is single-configuration,
+    # so the configuration is chosen here rather than at build time.
     - name: Configure PlusBuild
       shell: bash
       run: |
         set -e
-        qt_args=()
-        if [ -d "${QT_ROOT_DIR}/lib/cmake/Qt5" ]; then
-          qt_args+=("-DQt5_DIR=${QT_ROOT_DIR}/lib/cmake/Qt5")
+        args=()
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          args+=(-G "Visual Studio 18 2026" -A "${{ inputs.arch }}")
+        else
+          args+=(-G Ninja)
         fi
-        cmake -S PlusBuild -B build \
-          -G "Visual Studio 18 2026" -A ${{ inputs.arch }} \
+
+        # install-qt-action exports QT_ROOT_DIR. The CMake variable is spelled
+        # Qt5_DIR, and its value is the directory holding Qt5Config.cmake.
+        if [ -d "${QT_ROOT_DIR}/lib/cmake/Qt5" ]; then
+          args+=("-DQt5_DIR=${QT_ROOT_DIR}/lib/cmake/Qt5")
+        fi
+
+        # Where the cached dependency builds were restored to. A -DVTK_DIR or
+        # -DITK_DIR in plus-config comes later on the command line and wins.
+        vtk_dir="$GITHUB_WORKSPACE/vtk-install/lib/cmake/vtk"
+        if [ -d "$vtk_dir" ]; then
+          args+=("-DVTK_DIR=$vtk_dir")
+        fi
+        itk_dir=$(find "$GITHUB_WORKSPACE/itk-install/lib/cmake" -maxdepth 1 -type d -name 'ITK-*' 2>/dev/null | head -1)
+        if [ -n "$itk_dir" ]; then
+          args+=("-DITK_DIR=$itk_dir")
+        fi
+
+        cmake -S PlusBuild -B build "${args[@]}" \
           -DCMAKE_BUILD_TYPE=Release \
           -DPLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }} \
           -DPLUSLIB_GIT_REVISION=${{ inputs.pluslib-tag }} \
           -DPLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }} \
           -DPLUSAPP_GIT_REVISION=${{ inputs.plusapp-tag }} \
-          "${qt_args[@]}" \
           ${{ inputs.plus-config }}
 
     - name: Build
-      shell: pwsh
+      shell: bash
       working-directory: ${{ github.workspace }}/build
       run: |
-        cmake --build . --config Release
-        if ($LASTEXITCODE -ne 0) {
-          throw "CMake build failed with exit code $LASTEXITCODE"
-        }
-        ctest -C Release -D Experimental -V
-        if ($LASTEXITCODE -ne 0) {
-          throw "CTest failed with exit code $LASTEXITCODE"
-        }
+        set -e
+        # --config and -C only mean something for a multi-configuration generator.
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          cmake --build . --config Release
+          ctest -C Release -D Experimental -V
+        else
+          cmake --build .
+          ctest -D Experimental -V
+        fi
 
     # The runners have no GPU, so VTK cannot create a render window. Tests that
     # generate report plots (the calibration algorithm tests) crash without a
-    # software OpenGL implementation. This installs Mesa system-wide.
+    # software OpenGL implementation. This installs Mesa system-wide, and on
+    # Linux also starts an X server and exports DISPLAY.
     - name: Setup headless display
       if: ${{ inputs.run-tests }}
       uses: pyvista/setup-headless-display-action@b0bf9f57d62d2b3fee9f1c0e0c7e390f05e97a4e # v5.0.0
@@ -227,51 +272,53 @@ jobs:
     - name: Test PlusLib
       id: plus-tests
       if: ${{ inputs.run-tests }}
-      shell: pwsh
+      shell: bash
       working-directory: ${{ github.workspace }}/build/PlusLib-bin
       run: |
-        $ctestArgs = @()
-        if ('${{ inputs.test-track }}' -ne '') {
-          $ctestArgs += @('--track', '${{ inputs.test-track }}')
-        }
-        if ('${{ inputs.ctest-extra-args }}' -ne '') {
-          $ctestArgs += '${{ inputs.ctest-extra-args }}'.Split(' ')
-        }
-        ctest -C Release -M ${{ inputs.test-model }} -T Start -T Test `
-          --output-on-failure --no-compress-output --timeout 600 @ctestArgs
-        if ($LASTEXITCODE -ne 0) {
-          throw "PlusLib tests failed with exit code $LASTEXITCODE"
-        }
+        set -e
+        args=()
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          args+=(-C Release)
+        fi
+        if [ -n "${{ inputs.test-track }}" ]; then
+          args+=(--track "${{ inputs.test-track }}")
+        fi
+        # Word splitting is intended here: the input is a set of arguments,
+        # not a single one.
+        args+=(${{ inputs.ctest-extra-args }})
+        ctest "${args[@]}" -M ${{ inputs.test-model }} -T Start -T Test \
+          --output-on-failure --no-compress-output --timeout 600
 
     # PlusApp has its own test suite and CDash project, in build/PlusApp-bin.
     - name: Test PlusApp
       id: plusapp-tests
       if: ${{ inputs.run-tests && hashFiles('build/PlusApp-bin/CTestTestfile.cmake') != '' }}
-      shell: pwsh
+      shell: bash
       working-directory: ${{ github.workspace }}/build/PlusApp-bin
       run: |
-        $ctestArgs = @()
-        if ('${{ inputs.test-track }}' -ne '') {
-          $ctestArgs += @('--track', '${{ inputs.test-track }}')
-        }
-        ctest -C Release -M ${{ inputs.test-model }} -T Start -T Test `
-          --output-on-failure --no-compress-output --timeout 600 @ctestArgs
-        if ($LASTEXITCODE -ne 0) {
-          throw "PlusApp tests failed with exit code $LASTEXITCODE"
-        }
+        set -e
+        args=()
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          args+=(-C Release)
+        fi
+        if [ -n "${{ inputs.test-track }}" ]; then
+          args+=(--track "${{ inputs.test-track }}")
+        fi
+        ctest "${args[@]}" -M ${{ inputs.test-model }} -T Start -T Test \
+          --output-on-failure --no-compress-output --timeout 600
 
     # Separate from the test step so that a CDash outage cannot fail the job.
     - name: Submit test results to CDash
       if: ${{ always() && steps.plus-tests.outcome != 'skipped' }}
       continue-on-error: true
-      shell: pwsh
-      working-directory: ${{ github.workspace }}/build/PlusLib-bin
+      shell: bash
       run: |
+        cd "${{ github.workspace }}/build/PlusLib-bin"
         ctest -M ${{ inputs.test-model }} -T Submit
-        if ('${{ steps.plusapp-tests.outcome }}' -ne 'skipped') {
-          Set-Location "${{ github.workspace }}/build/PlusApp-bin"
+        if [ "${{ steps.plusapp-tests.outcome }}" != "skipped" ]; then
+          cd "${{ github.workspace }}/build/PlusApp-bin"
           ctest -M ${{ inputs.test-model }} -T Submit
-        }
+        fi
 
     - name: Upload test logs
       if: ${{ always() && steps.plus-tests.outcome != 'skipped' }}
@@ -287,24 +334,53 @@ jobs:
           build/PlusApp-bin/Testing/Temporary/LastTestsFailed*.log
           build/PlusApp-bin/Testing/**/Test.xml
 
-    - uses: step-security/msvc-dev-cmd@22c98154b708dbd743e6f27a933cf6ceba3305c4 # v1.13.1
+    # Puts the MSVC tools on PATH for the NSIS installer build.
+    - name: Setup MSVC environment
+      if: runner.os == 'Windows'
+      uses: step-security/msvc-dev-cmd@22c98154b708dbd743e6f27a933cf6ceba3305c4 # v1.13.1
+
     - name: Package
-      if: ${{ contains(runner.os, 'windows') && hashFiles('build/PlusApp-bin/CreatePackage.bat') != '' }}
+      if: ${{ hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
+      shell: bash
       working-directory: ${{ github.workspace }}/build/PlusApp-bin
-      shell: pwsh
       run: |
-        .\CreatePackage.bat
+        set -e
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          ./CreatePackage.bat
+        else
+          ./CreatePackage.sh
+        fi
+
+    # Gathered into one directory so that the upload does not have to know
+    # which package formats each platform produces.
+    - name: Collect packages
+      if: ${{ hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
+      shell: bash
+      run: |
+        set -e
+        mkdir -p packages
+        case "$RUNNER_OS" in
+          Windows) cp build/PlusApp-bin/PlusApp-*.exe build/PlusApp-bin/PlusApp-*.zip packages/ ;;
+          Linux)   cp build/PlusApp-bin/PlusApp-*.tar.gz build/PlusApp-bin/*.deb packages/ ;;
+          macOS)   cp build/PlusApp-bin/PlusApp-*.tar.gz build/PlusApp-bin/PlusApp-*.dmg packages/ ;;
+        esac
+        ls -l packages
 
     - name: Upload artifact
+      if: ${{ hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
       uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.archive-name }}
-        path: ${{github.workspace}}/build/PlusApp-bin/*.exe
+        if-no-files-found: error
+        path: ${{ github.workspace }}/packages/*
 
-    # Delete the installer so that it isn't included in the cache.
-    - name: Delete installer
+    # Delete the packages so that they are not carried in the build cache.
+    - name: Delete packages
+      if: always()
       shell: bash
       run: |
-        rm -rfv build/PlusApp-bin/*.exe
-        rm -rfv build/PlusApp-bin/*.zip
+        rm -rf packages
+        rm -rfv build/PlusApp-bin/PlusApp-*.exe build/PlusApp-bin/PlusApp-*.zip
+        rm -rfv build/PlusApp-bin/PlusApp-*.tar.gz build/PlusApp-bin/PlusApp-*.dmg
+        rm -rfv build/PlusApp-bin/*.deb
         rm -rfv build/PlusApp-bin/_CPack_Packages

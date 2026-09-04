@@ -38,6 +38,9 @@ jobs:
       install-path: ${{ steps.set-outputs.outputs.install-path }}
     env:
       CACHE_KEY: ${{ inputs.cache-prefix }}-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.itk-hash }}
+      # The open-source Qt 5.15 binaries are x86_64 only, so an Apple silicon
+      # runner builds for x86_64 throughout.
+      CMAKE_OSX_ARCHITECTURES: ${{ contains(inputs.os, 'macos') && 'x86_64' || '' }}
 
     steps:
 
@@ -49,11 +52,22 @@ jobs:
           lookup-only: true
           key: ${{ env.CACHE_KEY }}
 
-      - name: Install Dependencies
-        if: contains(inputs.os, 'ubuntu') && steps.cache-itk.outputs.cache-hit != 'true'
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux' && steps.cache-itk.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build g++ make libgl1-mesa-dev libglu1-mesa-dev libxt-dev libxrender-dev libxext-dev
+
+      - name: Install Dependencies (macOS)
+        if: runner.os == 'macOS' && steps.cache-itk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -e
+          brew install ninja
+          # Matches the architecture VTK and Plus are built for.
+          sudo softwareupdate --install-rosetta --agree-to-license
 
       - name: Clone ITK
         if: steps.cache-itk.outputs.cache-hit != 'true'
@@ -75,7 +89,13 @@ jobs:
         if: steps.cache-itk.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          cmake -S itk -B itk-build -G "Visual Studio 18 2026" -A ${{ inputs.arch }} \
+          set -e
+          # Visual Studio on Windows, Ninja elsewhere.
+          generator=(-G Ninja)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            generator=(-G "Visual Studio 18 2026" -A "${{ inputs.arch }}")
+          fi
+          cmake -S itk -B itk-build "${generator[@]}" \
             -DCMAKE_INSTALL_PREFIX=itk-install \
             -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
             -DBUILD_SHARED_LIBS=ON \

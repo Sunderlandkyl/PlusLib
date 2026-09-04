@@ -38,6 +38,9 @@ jobs:
       install-path: ${{ steps.set-outputs.outputs.install-path }}
     env:
       CACHE_KEY: ${{ inputs.cache-prefix }}-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.vtk-hash }}
+      # The open-source Qt 5.15 binaries are x86_64 only, so an Apple silicon
+      # runner builds for x86_64 throughout.
+      CMAKE_OSX_ARCHITECTURES: ${{ contains(inputs.os, 'macos') && 'x86_64' || '' }}
 
     steps:
       - name: Cache VTK Build
@@ -48,11 +51,22 @@ jobs:
           lookup-only: true
           key: ${{ env.CACHE_KEY }}
 
-      - name: Install Dependencies
-        if: contains(inputs.os, 'ubuntu') && steps.cache-vtk.outputs.cache-hit != 'true'
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux' && steps.cache-vtk.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          sudo apt update && sudo apt install -y cmake g++ libgl1-mesa-dev libxt-dev libxrender-dev libxext-dev libglu1-mesa-dev make
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build g++ make libgl1-mesa-dev libglu1-mesa-dev libxt-dev libxrender-dev libxext-dev
+
+      - name: Install Dependencies (macOS)
+        if: runner.os == 'macOS' && steps.cache-vtk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -e
+          brew install ninja
+          # Needed to run the x86_64 Qt tools on Apple silicon.
+          sudo softwareupdate --install-rosetta --agree-to-license
 
       - name: Install CMake
         uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2
@@ -65,7 +79,7 @@ jobs:
         with:
           dir: ${{github.workspace}}/Qt
           version: '5.15.0'
-          arch: ${{ inputs.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' }}
+          arch: ${{ runner.os == 'Windows' && (inputs.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019') || runner.os == 'Linux' && 'gcc_64' || 'clang_64' }}
 
       - name: Clone VTK
         if: steps.cache-vtk.outputs.cache-hit != 'true'
@@ -82,7 +96,13 @@ jobs:
         if: steps.cache-vtk.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          cmake -S vtk -B vtk-build -G "Visual Studio 18 2026" -A ${{ inputs.arch }} \
+          set -e
+          # Visual Studio on Windows, Ninja elsewhere.
+          generator=(-G Ninja)
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            generator=(-G "Visual Studio 18 2026" -A "${{ inputs.arch }}")
+          fi
+          cmake -S vtk -B vtk-build "${generator[@]}" \
             -DCMAKE_INSTALL_PREFIX=vtk-install \
             -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
             -DBUILD_SHARED_LIBS=ON \
