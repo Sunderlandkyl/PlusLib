@@ -34,9 +34,14 @@ SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${OpenIGTLink_INCLUDE_DIRS}
   CACHE INTERNAL "" FORCE)
 
-# If igtlioConverter was compiled as a static library, we do not need igtlio in the install configuration
-GET_PROPERTY(IGTLIO_LIB_TYPE TARGET igtlioConverter PROPERTY STATIC_LIBRARY_FLAGS)
-IF(NOT IGTLIO_LIB_TYPE STREQUAL "STATIC_LIBRARY")
+# If igtlioConverter was compiled as a static library, we do not need igtlio in the install configuration.
+# Guarded on the target existing: this used to be asked unconditionally, so
+# configuring without OpenIGTLink failed here rather than simply leaving the
+# OpenIGTLinkIO clause out of the generated package configuration.
+IF(PLUS_USE_OpenIGTLink AND TARGET igtlioConverter)
+  GET_PROPERTY(IGTLIO_LIB_TYPE TARGET igtlioConverter PROPERTY STATIC_LIBRARY_FLAGS)
+ENDIF()
+IF(PLUS_USE_OpenIGTLink AND NOT IGTLIO_LIB_TYPE STREQUAL "STATIC_LIBRARY")
   SET(OPENIGTLINKIO_CONFIG_CODE [=[
     IF(NOT DEFINED OpenIGTLinkIO_DIR)
       SET(OpenIGTLinkIO_DIR "@OpenIGTLinkIO_DIR@")
