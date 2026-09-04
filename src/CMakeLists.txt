@@ -2,6 +2,12 @@
 # Try to find VTK and include its settings (otherwise complain)
 FIND_PACKAGE(VTK NO_MODULE REQUIRED PATHS ${VTK_DIR} NO_DEFAULT_PATH)
 
+# Remember which VTK this build actually used. A dependency found later can
+# call find_package(VTK) itself and leave VTK_DIR in the cache pointing at the
+# copy it was built against, and the exported configuration would then send
+# consumers to a different VTK than the one PlusLib linked.
+SET(PLUSLIB_VTK_DIR "${VTK_DIR}")
+
 IF(VTK_VERSION VERSION_LESS 8.9.0)
   INCLUDE(${VTK_USE_FILE})
   SET(PLUSLIB_VTK_PREFIX vtk)
@@ -22,6 +28,7 @@ ENDIF()
 # --------------------------------------------------------------------------
 # Try to find ITK and include its settings (otherwise complain)
 FIND_PACKAGE (ITK REQUIRED PATHS ${ITK_DIR} NO_DEFAULT_PATH)
+SET(PLUSLIB_ITK_DIR "${ITK_DIR}")
 IF(ITK_FOUND)
   IF(ITK_NO_IO_FACTORY_REGISTER_MANAGER)
     MESSAGE("ITK_NO_IO_FACTORY_REGISTER_MANAGER is true, disabling default I/O factory manager")
@@ -356,6 +363,10 @@ ENDIF()
 
 # for installing PLUSLIB_CONFIG_CODE is used
 SET(PLUSLIB_CONFIG_CODE "SET(PlusLib_TARGETS_FILE \"${CMAKE_BINARY_DIR}/PlusLibTargets.cmake\")\n")
+# Generated from the directories PlusLib was configured against, not from
+# whatever the cache entries have since become.
+SET(VTK_DIR "${PLUSLIB_VTK_DIR}")
+SET(ITK_DIR "${PLUSLIB_ITK_DIR}")
 SET(VTK_CONFIG_DIR ${VTK_DIR})
 SET(ITK_CONFIG_DIR ${ITK_DIR})
 SET(PLUSLIB_CONFIG_USEFILE "${CMAKE_BINARY_DIR}/UsePlusLib.cmake")
