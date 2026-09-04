@@ -16,7 +16,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [x64]
+    with:
+      vtk-hash: f49a1dbafa60b58ef22f6292ec58370453162192 # v9.6.2
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      build-type: ${{ matrix.build_type }}
+
+  # A separate job rather than more entries in the matrix above, so that the
+  # Windows build does not have to wait for the Linux and macOS dependencies.
+  update_vtk_unix:
+    uses: ./.github/workflows/build-vtk.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
         build_type: [Release]
         arch: [x64]
     with:
@@ -63,7 +79,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest]
+        build_type: [Release]
+        arch: [x64]
+    with:
+      itk-hash: f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158 # v5.4.6
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      build-type: ${{ matrix.build_type }}
+
+  update_itk_unix:
+    uses: ./.github/workflows/build-itk.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
         build_type: [Release]
         arch: [x64]
     with:
@@ -127,10 +157,9 @@ jobs:
       plusbuild-tag: cmake-modernization
       plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
       plusapp-tag: cmake-modernization
-      # update_vtk_x64 and update_itk_x64 build for three platforms, and a
-      # matrix job reports the outputs of whichever leg finished last, so the
-      # key is written out here instead. It has to match the one build-vtk.yml
-      # and build-itk.yml compute, including the hashes above.
+      # Written out rather than read from the dependency job: a matrix job
+      # reports the outputs of whichever leg finished last. It has to match
+      # the key build-vtk.yml and build-itk.yml compute, hashes included.
       vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
       itk-cache-key: itk-${{ matrix.os }}-${{ matrix.arch }}-f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158
       run-tests: true
@@ -155,7 +184,7 @@ jobs:
   # Linux and macOS. Only the devices that exist on those platforms are
   # enabled; the Windows job above carries the vendor SDK options.
   build_plus_unix:
-    needs: [update_vtk_x64, update_itk_x64]
+    needs: [update_vtk_unix, update_itk_unix]
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
