@@ -857,7 +857,7 @@ IF(PLUS_USE_PICOSCOPE)
     PicoScope/vtkPlusPicoScopeDataSource.cxx
   )
 
-  IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
+  IF(PLUS_MULTI_CONFIG) # headers are listed so that they appear in the IDE
     SET(PicoScope_HDRS
       PicoScope/vtkPlusPicoScopeDataSource.cxx
       )
@@ -986,7 +986,7 @@ IF(PLUS_USE_CLARIUS_OEM)
     Clarius/ClariusWifi.cxx
     Clarius/vtkPlusClariusOEM.cxx
     )
-  IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
+  IF(PLUS_MULTI_CONFIG) # headers are listed so that they appear in the IDE
     SET(CLARIUS_OEM_HDRS
       Clarius/ClariusBLE.h
       Clarius/ClariusWifi.h
@@ -1093,7 +1093,7 @@ IF( PLUS_USE_Ascension3DG )
     )
 
   ADD_LIBRARY(Ascension3DG SHARED IMPORTED)
-  IF( (MSVC AND ${CMAKE_VS_PLATFORM_NAME} MATCHES "x64") OR MINGW )
+  IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(Ascension3DG_LIB_FILE ${ATC_TRAKSTAR_LIB_DIR}/ATC3DG64${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE FILEPATH "Lib file for Ascension3DG.")
     SET(Ascension3DG_SHARED_LIB_FILE ${ATC_TRAKSTAR_BINARY_DIR}/ATC3DG64${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE FILEPATH "DLL file for Ascension3DG.")
   ELSE()
@@ -1767,7 +1767,7 @@ IF(PLUS_USE_INTERSON_VIDEO)
     ${CMAKE_CURRENT_SOURCE_DIR}/Interson
     )
 
-  IF(${CMAKE_GENERATOR} MATCHES Win64)
+  IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
     LIST(APPEND External_Libraries_Install
       ${INTERSON_WIN64_BINARY_DIR}/USBprobe${CMAKE_SHARED_LIBRARY_SUFFIX}
       ${INTERSON_BINARY_DIR}/BmodeUSB${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -1975,7 +1975,7 @@ IF(PLUS_USE_TELEMED_VIDEO)
     Telemed/TelemedUltrasound.h
     )
 
-  IF(MSVC AND ${CMAKE_VS_PLATFORM_NAME} MATCHES "x64")
+  IF(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
     LIST(APPEND Telemed_SRCS
       Telemed/x64/Usgfw2_i.c
       Telemed/x64/Usgfw2_p.c
@@ -2166,7 +2166,7 @@ IF(PLUS_USE_NVIDIA_DVP)
       NVidiaDVP/vtkPlusNVidiaDVPVideoSourceWin32.cxx
       )
 
-    IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
+    IF(PLUS_MULTI_CONFIG) # headers are listed so that they appear in the IDE
       LIST(APPEND NVidiaDVP_HDRS
         NVidiaDVP/vtkPlusNVidiaDVPVideoSourceWin32.h
         )
@@ -2878,47 +2878,10 @@ SET(vcProj_vtk${PROJECT_NAME} vtk${PROJECT_NAME};${PlusLib_BINARY_DIR}/src/${PRO
 
 # --------------------------------------------------------------------------
 # Copy external libraries to PLUS_EXECUTABLE_OUTPUT_PATH
-IF( ${CMAKE_GENERATOR} MATCHES "Visual Studio" OR ${CMAKE_GENERATOR} MATCHES "Xcode")
-  FILE(COPY ${External_Libraries_Install}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}/Release
-    )
-  FILE(COPY ${External_Libraries_Install}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}/RelWithDebInfo
-    )
-  FILE(COPY ${External_Libraries_Install}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}/MinSizeRel
-    )
-
-  # If debug and release dll has the same name then the debug dll would be
-  # overwritten by the file copy. To prevent this, copy only those release dlls
-  # that has no corresponding debug dll with the same filename.
-
-  # Find the file names of the debug shared libraries
-  FOREACH(_debug_lib ${External_Libraries_Debug})
-    GET_FILENAME_COMPONENT(_file_name ${_debug_lib} NAME)
-    LIST(APPEND External_Libraries_Debug_FileName ${_file_name})
-  ENDFOREACH()
-
-  # Extract the release shared libraries that have the same name as debug shared libraries
-  FOREACH(_release_lib ${External_Libraries_Install})
-    GET_FILENAME_COMPONENT(_file_name ${_release_lib} NAME)
-    LIST(FIND External_Libraries_Debug_FileName ${_file_name} _has_file_name)
-    IF(_has_file_name EQUAL -1)
-      LIST(APPEND External_Libraries_Install_Minus_Debug ${_release_lib})
-    ENDIF()
-  ENDFOREACH()
-
-  FILE(COPY ${External_Libraries_Install_Minus_Debug}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}/Debug
-    )
-  FILE(COPY ${External_Libraries_Debug}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}/Debug
-    )
-ELSE()
-  FILE(COPY ${External_Libraries_Install}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}
-    )
-ENDIF()
+plus_copy_runtime_files(
+  FILES ${External_Libraries_Install}
+  DEBUG_FILES ${External_Libraries_Debug}
+  )
 
 # --------------------------------------------------------------------------
 # Tools

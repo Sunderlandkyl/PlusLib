@@ -67,7 +67,7 @@ SET(${PROJECT_NAME}_LIBS
   )
 
 IF(PLUS_USE_INTEL_MKL)
-  IF(${CMAKE_GENERATOR} MATCHES Win64)
+  IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(MKL_LIBS
       "${IntelComposerXEdir}/mkl/lib/intel64/mkl_intel_lp64_dll.lib"
       "${IntelComposerXEdir}/mkl/lib/intel64/mkl_intel_thread_dll.lib"
@@ -154,18 +154,7 @@ SET(vcProj_vtk${PROJECT_NAME} vtk${PROJECT_NAME};${PlusLib_BINARY_DIR}/src/${PRO
 
 # --------------------------------------------------------------------------
 # Copy external libraries to PLUS_EXECUTABLE_OUTPUT_PATH
-IF(${CMAKE_GENERATOR} MATCHES "Visual Studio" OR ${CMAKE_GENERATOR} MATCHES "Xcode")
-  FILE(COPY ${External_Libraries_Install}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}/Release
-    )
-  FILE(COPY ${External_Libraries_Install}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}/Debug
-    )
-ELSE()
-  FILE(COPY ${External_Libraries_Install}
-    DESTINATION ${PLUS_EXECUTABLE_OUTPUT_PATH}
-    )
-ENDIF()
+plus_copy_runtime_files(FILES ${External_Libraries_Install})
 
 IF(PLUSBUILD_BUILD_PlusLib_TOOLS)
   #---------------------------------------------------------------------------

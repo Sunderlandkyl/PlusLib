@@ -58,7 +58,7 @@ FIND_PACKAGE(IGSIO REQUIRED NO_MODULE)
 
 # --------------------------------------------------------------------------
 # Options
-OPTION(BUILD_SHARED_LIBS "Build with shared libraries." ${VTK_BUILD_SHARED_LIBS} ${ITK_BUILD_SHARED_LIBS})
+OPTION(BUILD_SHARED_LIBS "Build with shared libraries." ON)
 
 # --------------------------------------------------------------------------
 # Use accurate or simple timer protocol
@@ -115,7 +115,10 @@ IF(NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 ENDIF()
 SET(PLUS_ARCHIVE_OUTPUT_PATH "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
-IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
+# Where tests write their output. This has to be a plain path rather than a
+# per-configuration one: the tests pass it as a command argument, and the
+# add_test() signature they use does not expand generator expressions.
+IF(PLUS_MULTI_CONFIG)
   SET(TEST_OUTPUT_PATH "${PLUS_EXECUTABLE_OUTPUT_PATH}/Release/Output")
 ELSE()
   SET(TEST_OUTPUT_PATH "${PLUS_EXECUTABLE_OUTPUT_PATH}/Output")
@@ -125,10 +128,12 @@ ENDIF()
 # The project library directories.
 SET(PLUSLIB_LIBRARY_DIRS ${PLUS_LIBRARY_OUTPUT_PATH} CACHE INTERNAL "Path to the Plus library directory" FORCE)
 
-# Library directories should be added automatically by the build system, however GrabbieLib
-# is not found by default (as it does not have a proper USE file), therefore we add
-# the library output directory to the library search path
-LINK_DIRECTORIES(${PLUS_LIBRARY_OUTPUT_PATH})
+# GrabbieLib has no package configuration file, so it is linked by name and
+# the library output directory has to be on the search path. Restricted to the
+# one device that needs it rather than applied to every target in the tree.
+IF(PLUS_USE_BKPROFOCUS_VIDEO)
+  LINK_DIRECTORIES(${PLUS_LIBRARY_OUTPUT_PATH})
+ENDIF()
 
 # --------------------------------------------------------------------------
 # Command-line application documentation
@@ -358,8 +363,8 @@ CONFIGURE_FILE(PlusLibConfig.cmake.in
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/PlusLibConfigVersion.cmake"
   VERSION ${PLUSLIB_VERSION}
-  COMPATIBILITY ExactVersion)
-LIST(APPEND PLUSLIB_INSTALL_CMAKE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/PlusLibConfigVersion.cmake")
+  COMPATIBILITY SameMinorVersion)
+LIST(APPEND PLUSLIB_INSTALL_CMAKE_FILES "${CMAKE_CURRENT_BINARY_DIR}/PlusLibConfigVersion.cmake")
 
 #-----------------------------------------------------------------------------
 # With regards to ticket #1075, also generate in top-level directory
@@ -368,7 +373,7 @@ CONFIGURE_FILE(PlusLibConfig.cmake.in
 write_basic_package_version_file(
   "${CMAKE_BINARY_DIR}/PlusLibConfigVersion.cmake"
   VERSION ${PLUSLIB_VERSION}
-  COMPATIBILITY ExactVersion)
+  COMPATIBILITY SameMinorVersion)
 
 #-----------------------------------------------------------------------------
 # Generate default application configuration files in the non-installed executable directories (Release and Debug too)
@@ -377,29 +382,20 @@ SET(PLUSCONFIG_IMAGE_DIR "${PLUSLIB_DATA_DIR}/TestImages")
 SET(PLUSCONFIG_MODEL_DIR "${PLUSLIB_DATA_DIR}/CADModels")
 SET(PLUSCONFIG_SCRIPTS_DIR "${PLUSLIB_SCRIPTS_DIR}")
 
-IF(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
-  # PlusConfig.xml generation for Windows or Mac (separate directories for different build types)
-  CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/PlusConfig.xml.in
-    ${PLUS_EXECUTABLE_OUTPUT_PATH}/Release/PlusConfig.xml
-    )
-  CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/PlusConfig.xml.in
-    ${PLUS_EXECUTABLE_OUTPUT_PATH}/Debug/PlusConfig.xml
-    )
-  INSTALL(FILES ${PLUS_EXECUTABLE_OUTPUT_PATH}/Release/PlusConfig.xml
-    DESTINATION ${PLUSLIB_SHARE_INSTALL}
-    )
-ELSE()
-  # PlusConfig.xml generation for other OS (only one build type is supported)
-  CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/PlusConfig.xml.in
-    ${PLUS_EXECUTABLE_OUTPUT_PATH}/PlusConfig.xml
-    )
-  INSTALL(FILES ${PLUS_EXECUTABLE_OUTPUT_PATH}/PlusConfig.xml
-    DESTINATION ${PLUSLIB_SHARE_INSTALL}
-    )
-ENDIF()
+# Substitute the PLUSCONFIG_* values first, then let file(GENERATE) place one
+# copy in each configuration directory. Only Release and Debug used to be
+# written, so a RelWithDebInfo or MinSizeRel build had no PlusConfig.xml at all.
+CONFIGURE_FILE(
+  ${CMAKE_CURRENT_SOURCE_DIR}/PlusConfig.xml.in
+  ${CMAKE_CURRENT_BINARY_DIR}/PlusConfig.xml.configured
+  )
+FILE(GENERATE
+  OUTPUT ${PLUS_EXECUTABLE_OUTPUT_PATH}/${PLUS_CONFIG_SUBDIR}PlusConfig.xml
+  INPUT ${CMAKE_CURRENT_BINARY_DIR}/PlusConfig.xml.configured
+  )
+INSTALL(FILES ${PLUS_EXECUTABLE_OUTPUT_PATH}/${PLUS_CONFIG_SUBDIR}PlusConfig.xml
+  DESTINATION ${PLUSLIB_SHARE_INSTALL}
+  )
 
 #-----------------------------------------------------------------------------
 # Documentation
@@ -553,7 +549,7 @@ GET_FILENAME_COMPONENT(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 GET_FILENAME_COMPONENT(PLUSLIB_INSTALL_PATH "${_IMPORT_PREFIX}" PATH)
 SET(PlusLib_TARGETS_FILE "${PLUSLIB_PACKAGE_DIR}/PlusLibTargets.cmake")]=])
 SET(VTK_CONFIG_DIR "\${PLUSLIB_INSTALL_PATH}/${VTK_REL_DIR}")
-SET(ITK_CONFIG_DIR "\${PLUSLIB_INSTALL_PREFIX}/${ITK_REL_DIR}")
+SET(ITK_CONFIG_DIR "\${PLUSLIB_INSTALL_PATH}/${ITK_REL_DIR}")
 SET(PLUSLIB_CONFIG_USEFILE "\${PLUSLIB_PACKAGE_DIR}/UsePlusLib.cmake")
 
 CONFIGURE_FILE(
