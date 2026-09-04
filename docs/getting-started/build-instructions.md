@@ -7,25 +7,51 @@ PlusLib uses CMake "superbuild" method for building. All required libraries and 
 ### Windows
 
 - **Visual Studio 2019 or newer** (Community, Professional, or Enterprise)
-- **CMake 3.15 or newer** - [Download](https://cmake.org/download/)
-- **Git**: - [Download](- **Qt 5.15+** (optional, required for PlusApp)
+- **CMake 3.20 or newer** - [Download](https://cmake.org/download/)
+- **Git** - [Download](https://git-scm.com/downloads)
+- **Qt 5.15+** (optional, required for PlusApp)
 
 ### Linux (Ubuntu/Debian)
 
 ```bash
 sudo apt-get update
-sudo apt-get install build-essential cmake git libxt-dev libgl1-mesa-dev
+sudo apt-get install build-essential cmake ninja-build git \
+  libxt-dev libgl1-mesa-dev libglu1-mesa-dev
 ```
 
-For Qt support:
+For Qt support (needed by PlusApp and by the PlusLib widgets):
+
 ```bash
-sudo apt-get install qt5-default qttools5-dev
+sudo apt-get install qtbase5-dev qttools5-dev libqt5xmlpatterns5-dev \
+  libqt5x11extras5-dev
+```
+
+The `qt5-default` package named by older instructions was removed in Ubuntu
+22.04; `qtbase5-dev` replaces it.
+
+To run the tests on a machine with no display, install a software OpenGL
+implementation and an X server:
+
+```bash
+sudo apt-get install libgl1-mesa-dri xvfb
+xvfb-run -a ctest
 ```
 
 ### macOS
 
 ```bash
-brew install cmake git qt5
+brew install cmake ninja git
+```
+
+Qt 5.15 is not in Homebrew in a form that can be redistributed: its libraries
+record absolute paths under `/opt/homebrew`, so a package built against it
+will not run anywhere else. Install Qt 5.15 from the Qt installer or with
+`aqtinstall` instead. Those builds are x86_64 only, so on an Apple silicon
+machine build Plus for x86_64 as well:
+
+```bash
+cmake -S PlusBuild -B PlusBuild-bin -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
 ```
 
 ## Building PlusLib
