@@ -191,7 +191,10 @@ jobs:
       run: |
         set -e
         git clone "${{ inputs.plusbuild-repository }}" PlusBuild
-        git -C PlusBuild checkout --detach "${{ inputs.plusbuild-tag }}"
+        # Plain checkout, so that a branch, a tag or a commit all work. With
+        # --detach git refuses, because checking out a branch that exists only
+        # on the remote also creates a local branch to track it.
+        git -C PlusBuild checkout "${{ inputs.plusbuild-tag }}"
         git -C PlusBuild --no-pager log --oneline -1
 
     - name: Clone PLTools
