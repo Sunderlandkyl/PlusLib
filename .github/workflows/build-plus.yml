@@ -356,7 +356,9 @@ jobs:
         fi
 
     # Gathered into one directory so that the upload does not have to know
-    # which package formats each platform produces.
+    # which package formats each platform produces. Each pattern is copied on
+    # its own, so that one generator failing still surfaces the packages the
+    # others produced; the step then fails if nothing at all was collected.
     - name: Collect packages
       if: ${{ hashFiles('build/PlusApp-bin/CPackConfig.cmake') != '' }}
       shell: bash
@@ -364,10 +366,21 @@ jobs:
         set -e
         mkdir -p packages
         case "$RUNNER_OS" in
-          Windows) cp build/PlusApp-bin/PlusApp-*.exe build/PlusApp-bin/PlusApp-*.zip packages/ ;;
-          Linux)   cp build/PlusApp-bin/PlusApp-*.tar.gz build/PlusApp-bin/*.deb packages/ ;;
-          macOS)   cp build/PlusApp-bin/PlusApp-*.tar.gz build/PlusApp-bin/PlusApp-*.dmg packages/ ;;
+          Windows) patterns="PlusApp-*.exe PlusApp-*.zip" ;;
+          Linux)   patterns="PlusApp-*.tar.gz *.deb" ;;
+          macOS)   patterns="PlusApp-*.tar.gz PlusApp-*.dmg" ;;
+          *)       patterns="PlusApp-*" ;;
         esac
+        for pattern in $patterns; do
+          # shellcheck disable=SC2086
+          if ! cp build/PlusApp-bin/$pattern packages/ 2>/dev/null; then
+            echo "No package matched $pattern"
+          fi
+        done
+        if [ -z "$(ls -A packages)" ]; then
+          echo "CPack produced no packages at all."
+          exit 1
+        fi
         ls -l packages
 
     - name: Upload artifact
