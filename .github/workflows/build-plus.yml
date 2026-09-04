@@ -107,17 +107,21 @@ jobs:
       actions: write
 
     steps:
+    # fail-on-cache-miss so that a missing dependency cache fails here rather
+    # than much later as a confusing FIND_PACKAGE(VTK) error.
     - name: Restore VTK Cache
       uses: actions/cache/restore@v6
       with:
         path: vtk-install
         key: ${{ inputs.vtk-cache-key }}
+        fail-on-cache-miss: true
 
     - name: Restore ITK Cache
       uses: actions/cache/restore@v6
       with:
         path: itk-install
         key: ${{ inputs.itk-cache-key }}
+        fail-on-cache-miss: true
 
     # actions/cache never overwrites an existing key, so a fixed plus-cache-key
     # (e.g. plus-latest-x64) would otherwise never refresh once created.
@@ -171,16 +175,27 @@ jobs:
         path: PLTools
         token: ${{ secrets.pltools-access-token }}
 
+    # The step had no explicit shell and used PowerShell line continuations, so
+    # it only worked because pwsh happens to be the default on Windows runners.
+    # ${QT_DIR} was also never set by install-qt-action (it exports
+    # QT_ROOT_DIR), and the CMake variable is spelled Qt5_DIR, so Qt was only
+    # ever found by way of PATH.
     - name: Configure PlusBuild
+      shell: bash
       run: |
-        cmake -S PlusBuild -B build `
-          -G "Visual Studio 18 2026" -A ${{ inputs.arch }} `
-          -DCMAKE_BUILD_TYPE=Release `
-          -DPLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }} `
-          -DPLUSLIB_GIT_REVISION=${{ inputs.pluslib-tag }} `
-          -DPLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }} `
-          -DPLUSAPP_GIT_REVISION=${{ inputs.plusapp-tag }} `
-          -DQt5_Dir="${QT_DIR}" `
+        set -e
+        qt_args=()
+        if [ -d "${QT_ROOT_DIR}/lib/cmake/Qt5" ]; then
+          qt_args+=("-DQt5_DIR=${QT_ROOT_DIR}/lib/cmake/Qt5")
+        fi
+        cmake -S PlusBuild -B build \
+          -G "Visual Studio 18 2026" -A ${{ inputs.arch }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DPLUSLIB_GIT_REPOSITORY=${{ inputs.pluslib-repository }} \
+          -DPLUSLIB_GIT_REVISION=${{ inputs.pluslib-tag }} \
+          -DPLUSAPP_GIT_REPOSITORY=${{ inputs.plusapp-repository }} \
+          -DPLUSAPP_GIT_REVISION=${{ inputs.plusapp-tag }} \
+          "${qt_args[@]}" \
           ${{ inputs.plus-config }}
 
     - name: Build

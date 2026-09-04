@@ -89,7 +89,7 @@ jobs:
             -DVTK_BUILD_TESTING=OFF \
             -DVTK_VERSIONED_INSTALL=OFF \
             -DVTK_GROUP_ENABLE_Qt:STRING=YES \
-            -DQt5_DIR="${QT_DIR}" \
+            -DQt5_DIR="${QT_ROOT_DIR}/lib/cmake/Qt5" \
             ${{ inputs.build-options }}
 
       - name: Build VTK
@@ -102,7 +102,7 @@ jobs:
         if: steps.cache-vtk.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          cmake --install vtk-build
+          cmake --install vtk-build --config ${{ inputs.build-type }}
 
       - name: Set Outputs
         id: set-outputs

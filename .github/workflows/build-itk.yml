@@ -46,6 +46,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: itk-install
+          lookup-only: true
           key: ${{ env.CACHE_KEY }}
 
       - name: Install Dependencies
@@ -91,7 +92,7 @@ jobs:
         if: steps.cache-itk.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          cmake --install itk-build
+          cmake --install itk-build --config ${{ inputs.build-type }}
 
       - name: Set Outputs
         id: set-outputs
