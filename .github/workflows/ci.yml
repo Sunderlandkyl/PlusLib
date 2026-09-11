@@ -31,10 +31,19 @@ jobs:
     uses: ./.github/workflows/build-vtk.yml
     strategy:
       fail-fast: false
+      # Written as include entries, each complete, rather than as os and arch
+      # lists: the arch differs per platform, and a partial include entry is
+      # merged into the existing combinations instead of adding one.
+      # macos-latest is an Apple silicon runner. The arch names what the job
+      # builds for, and is part of every dependency cache key.
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        build_type: [Release]
-        arch: [x64]
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            build_type: Release
+          - os: macos-latest
+            arch: arm64
+            build_type: Release
     with:
       vtk-hash: f49a1dbafa60b58ef22f6292ec58370453162192 # v9.6.2
       os: ${{ matrix.os }}
@@ -92,10 +101,19 @@ jobs:
     uses: ./.github/workflows/build-itk.yml
     strategy:
       fail-fast: false
+      # Written as include entries, each complete, rather than as os and arch
+      # lists: the arch differs per platform, and a partial include entry is
+      # merged into the existing combinations instead of adding one.
+      # macos-latest is an Apple silicon runner. The arch names what the job
+      # builds for, and is part of every dependency cache key.
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        build_type: [Release]
-        arch: [x64]
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            build_type: Release
+          - os: macos-latest
+            arch: arm64
+            build_type: Release
     with:
       itk-hash: f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158 # v5.4.6
       os: ${{ matrix.os }}
@@ -188,10 +206,19 @@ jobs:
     uses: ./.github/workflows/build-plus.yml
     strategy:
       fail-fast: false
+      # Written as include entries, each complete, rather than as os and arch
+      # lists: the arch differs per platform, and a partial include entry is
+      # merged into the existing combinations instead of adding one.
+      # macos-latest is an Apple silicon runner. The arch names what the job
+      # builds for, and is part of every dependency cache key.
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        build_type: [Release]
-        arch: [x64]
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            build_type: Release
+          - os: macos-latest
+            arch: arm64
+            build_type: Release
     with:
       arch: ${{ matrix.arch }}
       os: ${{ matrix.os }}
