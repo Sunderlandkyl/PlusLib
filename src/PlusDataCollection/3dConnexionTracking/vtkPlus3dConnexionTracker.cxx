@@ -117,8 +117,8 @@ PlusStatus vtkPlus3dConnexionTracker::RegisterDevice()
     if (pRawInputDeviceList[i].dwType == RIM_TYPEHID)
     {
       UINT nchars = 300;
-      TCHAR deviceName[300];
-      if (GetRawInputDeviceInfo(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, deviceName, &nchars) >= 0)
+      char deviceName[300];
+      if (GetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, deviceName, &nchars) >= 0)
       {
         LOG_DEBUG("Device[" << i << "]: handle=" << pRawInputDeviceList[i].hDevice << " name = " << deviceName);
       }
@@ -305,7 +305,7 @@ PlusStatus vtkPlus3dConnexionTracker::CreateCaptureWindow()
   }
 
   // set up a class for the main window
-  WNDCLASS wc;
+  WNDCLASSA wc;
   wc.lpszClassName = this->CaptureWindowClassName.c_str();
   wc.hInstance = hinstance;
   wc.lpfnWndProc = reinterpret_cast<WNDPROC>(&vtkPlus3dConnexionTrackerWinProc);
@@ -321,7 +321,7 @@ PlusStatus vtkPlus3dConnexionTracker::CreateCaptureWindow()
   const int MAX_WINDOW_CLASS_REGISTRATION_ATTEMPTS = 32;
   for (int i = 1; i <= MAX_WINDOW_CLASS_REGISTRATION_ATTEMPTS; i++)
   {
-    if (RegisterClass(&wc))
+    if (RegisterClassA(&wc))
     {
       registrationSuccessful = true;
       break;
@@ -338,7 +338,7 @@ PlusStatus vtkPlus3dConnexionTracker::CreateCaptureWindow()
     return PLUS_FAIL;
   }
 
-  this->CaptureWindowHandle = CreateWindow(this->CaptureWindowClassName.c_str(), "Plus 3dConnexion capture window", WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, NULL, NULL, hinstance, NULL);
+  this->CaptureWindowHandle = CreateWindowA(this->CaptureWindowClassName.c_str(), "Plus 3dConnexion capture window", WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, NULL, NULL, hinstance, NULL);
   if (!this->CaptureWindowHandle)
   {
     LOG_ERROR("Initialize: failed to create window (" << GetLastError() << ")");
@@ -370,7 +370,7 @@ void vtkPlus3dConnexionTracker::DestroyCaptureWindow()
   if (!this->CaptureWindowClassName.empty())
   {
     // Window class name is valid
-    UnregisterClass(this->CaptureWindowClassName.c_str(), GetModuleHandle(NULL));
+    UnregisterClassA(this->CaptureWindowClassName.c_str(), GetModuleHandle(NULL));
     this->CaptureWindowClassName.clear();
   }
 

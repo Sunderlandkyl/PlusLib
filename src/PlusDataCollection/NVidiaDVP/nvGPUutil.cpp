@@ -47,8 +47,8 @@ bool CreateDummyGLWindowWin32( HWND* hWnd, HGLRC* hGLRC )
 {
   HINSTANCE hInstance = GetModuleHandle( NULL ); // Need a handle to this process instance
   // Create the window class
-  WNDCLASSEX  wc;           // Windows Class Structure
-  wc.cbSize     = sizeof( WNDCLASSEX );
+  WNDCLASSEXA wc;           // Windows Class Structure
+  wc.cbSize     = sizeof( WNDCLASSEXA );
   wc.style      = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; // Redraw On Size, And Own DC For Window.
   wc.lpfnWndProc    = DefWindowProc;          // WndProc Handles Messages, we'll pass a static version, which will receive a 'this' pointer
   wc.cbClsExtra   = 0;                  // No Extra Window Data
@@ -62,10 +62,10 @@ bool CreateDummyGLWindowWin32( HWND* hWnd, HGLRC* hGLRC )
   wc.lpszClassName  = "Dummy";            // Set The Class Name
 
   // register the window class
-  RegisterClassEx( &wc );
+  RegisterClassExA( &wc );
 
   // Call the windows function to create the window.  The
-  *hWnd = CreateWindowEx( NULL, "Dummy", NULL, NULL, 0, 0, 1, 1,  NULL, NULL, NULL, NULL );
+  *hWnd = CreateWindowExA( NULL, "Dummy", NULL, NULL, 0, 0, 1, 1,  NULL, NULL, NULL, NULL );
 
   // Get the windows device context
   HDC hDC = GetDC( *hWnd );
