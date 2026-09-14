@@ -68,7 +68,7 @@ public:
   * \param aParent parent
   * \param aFlags widget flag
   */
-  QPlusStatusIcon(QWidget* aParent = 0, Qt::WindowFlags aFlags = 0);
+  QPlusStatusIcon(QWidget* aParent = 0, Qt::WindowFlags aFlags = Qt::WindowFlags());
 
   /*!
   * Destructor

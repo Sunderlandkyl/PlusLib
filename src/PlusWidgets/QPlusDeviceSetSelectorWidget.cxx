@@ -604,7 +604,7 @@ void QPlusDeviceSetSelectorWidget::FixComboBoxDropDownListSizeAdjustemnt(QComboB
 
   for (int i = 0; i < cb->count(); i++)
   {
-    int width = cb->view()->fontMetrics().width(cb->itemText(i));
+    int width = cb->view()->fontMetrics().horizontalAdvance(cb->itemText(i));
     if (max < width) { max = width; }
   }
 

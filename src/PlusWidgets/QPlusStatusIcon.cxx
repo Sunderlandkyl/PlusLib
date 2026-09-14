@@ -311,8 +311,12 @@ bool QPlusStatusIcon::eventFilter(QObject* obj, QEvent* ev)
 //----------------------------------------------------------------------------
 void QPlusStatusIcon::resizeEvent(QResizeEvent* event)
 {
-  const QPixmap* pix = m_DotLabel->pixmap();
-  m_DotLabel->setPixmap(pix->scaled(m_DotLabel->width() - 1, m_DotLabel->height() - 1, Qt::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  QPixmap pix = m_DotLabel->pixmap();
+#else
+  QPixmap pix = m_DotLabel->pixmap() ? *m_DotLabel->pixmap() : QPixmap();
+#endif
+  m_DotLabel->setPixmap(pix.scaled(m_DotLabel->width() - 1, m_DotLabel->height() - 1, Qt::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
 
   QWidget::resizeEvent(event);
 }
