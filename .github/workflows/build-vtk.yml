@@ -66,7 +66,10 @@ jobs:
         run: |
           set -e
           brew install ninja qt@5
-          echo "QT_ROOT_DIR=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          qt_prefix=$(brew --prefix qt@5)
+          echo "QT_ROOT_DIR=$qt_prefix" >> "$GITHUB_ENV"
+          echo "CMAKE_PREFIX_PATH=$qt_prefix${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" >> "$GITHUB_ENV"
+          echo "$qt_prefix/bin" >> "$GITHUB_PATH"
 
       - name: Install CMake
         uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2

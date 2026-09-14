@@ -153,13 +153,23 @@ jobs:
     # the open-source Qt 5.15 binaries the action downloads are x86_64 only,
     # and Homebrew has a native arm64 build. Exported under the same name the
     # action uses, so the configure step does not have to know which.
+    #
+    # The action also puts Qt where any find_package(Qt5) finds it without
+    # being told, which the superbuild relies on: IGSIO's own superbuild does
+    # not pass Qt5_DIR to its inner build, whose VTK config then looks Qt up
+    # on its own. CMAKE_PREFIX_PATH does the same for the keg-only Homebrew
+    # Qt, and is consulted before the prefixes derived from PATH, where
+    # /opt/homebrew holds a Qt5 cmake stub with nothing behind it.
     - name: Install system dependencies (macOS)
       if: runner.os == 'macOS'
       shell: bash
       run: |
         set -e
         brew install ninja qt@5
-        echo "QT_ROOT_DIR=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+        qt_prefix=$(brew --prefix qt@5)
+        echo "QT_ROOT_DIR=$qt_prefix" >> "$GITHUB_ENV"
+        echo "CMAKE_PREFIX_PATH=$qt_prefix${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" >> "$GITHUB_ENV"
+        echo "$qt_prefix/bin" >> "$GITHUB_PATH"
 
     - name: Install CMake
       uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2
