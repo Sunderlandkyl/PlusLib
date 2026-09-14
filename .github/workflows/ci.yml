@@ -24,6 +24,8 @@ jobs:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
+      qt-version: '6.8.3'
+      cache-prefix: vtk-qt6
 
   # A separate job rather than more entries in the matrix above, so that the
   # Windows build does not have to wait for the Linux and macOS dependencies.
@@ -49,6 +51,8 @@ jobs:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
+      qt-version: '6.8.3'
+      cache-prefix: vtk-qt6
 
   update_vtk_static_x64:
     uses: ./.github/workflows/build-vtk.yml
@@ -63,7 +67,8 @@ jobs:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
-      cache-prefix: vtk-static
+      qt-version: '6.8.3'
+      cache-prefix: vtk-static-qt6
       build-options: >-
         -DBUILD_SHARED_LIBS:BOOL=OFF
 
@@ -169,17 +174,18 @@ jobs:
       os: ${{ matrix.os }}
       pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
-      # PlusToolkit defaults before this is merged.
+      # TEMPORARY: the matching PlusBuild and PlusApp qt6 branches. Restore
+      # the PlusToolkit defaults before this is merged.
       plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
-      plusbuild-tag: cmake-modernization
+      plusbuild-tag: qt6
       plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
-      plusapp-tag: cmake-modernization
+      plusapp-tag: qt6
       # Written out rather than read from the dependency job: a matrix job
       # reports the outputs of whichever leg finished last. It has to match
       # the key build-vtk.yml and build-itk.yml compute, hashes included.
-      vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
+      vtk-cache-key: vtk-qt6-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
       itk-cache-key: itk-${{ matrix.os }}-${{ matrix.arch }}-f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158
+      qt-version: '6.8.3'
       run-tests: true
       archive-name: PlusApp-Win64
       plus-config: >-
@@ -224,14 +230,15 @@ jobs:
       os: ${{ matrix.os }}
       pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
-      # PlusToolkit defaults before this is merged.
+      # TEMPORARY: the matching PlusBuild and PlusApp qt6 branches. Restore
+      # the PlusToolkit defaults before this is merged.
       plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
-      plusbuild-tag: cmake-modernization
+      plusbuild-tag: qt6
       plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
-      plusapp-tag: cmake-modernization
-      vtk-cache-key: vtk-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
+      plusapp-tag: qt6
+      vtk-cache-key: vtk-qt6-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
       itk-cache-key: itk-${{ matrix.os }}-${{ matrix.arch }}-f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158
+      qt-version: '6.8.3'
       run-tests: true
       archive-name: PlusApp-${{ matrix.os }}
       plus-config: >-
@@ -256,12 +263,12 @@ jobs:
       os: ${{ matrix.os }}
       pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
-      # PlusToolkit defaults before this is merged.
+      # TEMPORARY: the matching PlusBuild and PlusApp qt6 branches. Restore
+      # the PlusToolkit defaults before this is merged.
       plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
-      plusbuild-tag: cmake-modernization
+      plusbuild-tag: qt6
       plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
-      plusapp-tag: cmake-modernization
+      plusapp-tag: qt6
       vtk-cache-key: ${{ needs.update_vtk_Win32.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_Win32.outputs.cache-key }}
       run-tests: true
@@ -308,14 +315,15 @@ jobs:
       os: ${{ matrix.os }}
       pluslib-repository: https://github.com/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git
       pluslib-tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-      # TEMPORARY: the matching PlusBuild and PlusApp branches. Restore the
-      # PlusToolkit defaults before this is merged.
+      # TEMPORARY: the matching PlusBuild and PlusApp qt6 branches. Restore
+      # the PlusToolkit defaults before this is merged.
       plusbuild-repository: https://github.com/Sunderlandkyl/PlusBuild.git
-      plusbuild-tag: cmake-modernization
+      plusbuild-tag: qt6
       plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
-      plusapp-tag: cmake-modernization
+      plusapp-tag: qt6
       vtk-cache-key: ${{ needs.update_vtk_static_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_static_x64.outputs.cache-key }}
+      qt-version: '6.8.3'
       run-tests: true
       archive-name: PlusApp-Static-Win64
       plus-config: >-

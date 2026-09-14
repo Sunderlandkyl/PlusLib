@@ -28,7 +28,7 @@ QPlusToolStateDisplayWidget::QPlusToolStateDisplayWidget(QWidget* aParent, Qt::W
 
   // Create default appearance
   QGridLayout* grid = new QGridLayout(this);
-  grid->setMargin(0);
+  grid->setContentsMargins(0, 0, 0, 0);
   grid->setSpacing(0);
   QLabel* uninitializedLabel = new QLabel(tr("Tool state display is unavailable until connected to a device set."), this);
   uninitializedLabel->setWordWrap(true);
@@ -71,7 +71,7 @@ PlusStatus QPlusToolStateDisplayWidget::InitializeTools(vtkPlusChannel* aChannel
   if (!aConnectionSuccessful)
   {
     QGridLayout* grid = new QGridLayout(this);
-    grid->setMargin(0);
+    grid->setContentsMargins(0, 0, 0, 0);
     grid->setSpacing(0);
     QLabel* uninitializedLabel = new QLabel(tr("Tool state display is unavailable until connected to a device set."), this);
     uninitializedLabel->setWordWrap(true);

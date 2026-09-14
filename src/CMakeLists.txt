@@ -89,8 +89,19 @@ OPTION(PLUS_USE_INTEL_MKL "Use the Intel MKL library (only for image processing)
 
 OPTION(PLUS_BUILD_WIDGETS "Build re-usable widgets for writing PlusLib based applications" OFF)
 IF(PLUS_BUILD_WIDGETS)
-  FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Widgets Test Xml)
+  # Qt 6 where it is available, Qt 5 otherwise. A Qt5_DIR given without a
+  # Qt6_DIR is taken as the choice of Qt 5, so that pointing at a Qt 5 is not
+  # overridden by a Qt 6 that happens to be installed in a system location.
+  IF(Qt5_DIR AND NOT Qt6_DIR)
+    FIND_PACKAGE(QT NAMES Qt5 REQUIRED COMPONENTS Core)
+  ELSE()
+    FIND_PACKAGE(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+  ENDIF()
+  FIND_PACKAGE(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets Test Xml)
   SET(PLUSLIB_QT_COMPONENTS ${PLUSLIB_QT_COMPONENTS} Core Widgets Test Xml CACHE INTERNAL "" FORCE)
+  # Recorded for PlusLibConfig.cmake, so that a dependent project finds the
+  # same Qt that the widgets were built against.
+  SET(PLUSLIB_QT_DIR "${Qt${QT_VERSION_MAJOR}_DIR}")
 
   # Instruct CMake to run tools automatically when needed.
   SET(CMAKE_AUTOMOC ON)

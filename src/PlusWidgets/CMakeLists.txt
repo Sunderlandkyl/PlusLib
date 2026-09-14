@@ -28,8 +28,8 @@ MARK_AS_ADVANCED(PLUSLIB_WIDGETS_QRC)
 # --------------------------------------------------------------------------
 # Build the library
 SET(${PROJECT_NAME}_LIBS 
-  Qt5::Xml
-  Qt5::Widgets
+  Qt${QT_VERSION_MAJOR}::Xml
+  Qt${QT_VERSION_MAJOR}::Widgets
   ${PLUSLIB_VTK_PREFIX}GUISupportQt
   vtkPlusCalibration
   vtkPlusCommon
@@ -63,10 +63,8 @@ ADD_LIBRARY(${PROJECT_NAME}
   ${${PROJECT_NAME}_UI_SRCS} 
   ${_Qt_resource}
   )
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES 
-  COMPILE_DEFINITIONS 
-  ${Qt5Widgets_COMPILE_DEFINITIONS} 
-  )
+# The Qt compile definitions (QT_WIDGETS_LIB and the like) arrive through the
+# imported Qt targets linked below.
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_LIBS})
 FOREACH(p IN LISTS ${PROJECT_NAME}_INCLUDE_DIRS)
   target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${p}>)

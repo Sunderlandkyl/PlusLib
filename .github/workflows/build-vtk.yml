@@ -13,6 +13,10 @@ on:
           required: false
           type: string
           default: Release
+      qt-version:
+        required: false
+        type: string
+        default: '5.15.0'
       vtk-hash:
         required: true
         type: string
@@ -56,33 +60,61 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends ninja-build g++ make libgl1-mesa-dev libglu1-mesa-dev libxt-dev libxrender-dev libxext-dev
 
-      # Qt comes from Homebrew here rather than from install-qt-action below:
-      # the open-source Qt 5.15 binaries the action downloads are x86_64 only,
-      # and Homebrew has a native arm64 build. Exported under the same name
-      # the action uses, so the configure step does not have to know which.
+      # Qt 5 comes from Homebrew here rather than from install-qt-action
+      # below: the open-source Qt 5.15 binaries the action downloads are
+      # x86_64 only, and Homebrew has a native arm64 build. The Qt 6 binaries
+      # are universal, so for Qt 6 the action is used on macOS as everywhere
+      # else. Exported under the same name the action uses, so the configure
+      # step does not have to know which.
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS' && steps.cache-vtk.outputs.cache-hit != 'true'
         shell: bash
+        env:
+          QT_VERSION: ${{ inputs.qt-version }}
         run: |
           set -e
-          brew install ninja qt@5
-          qt_prefix=$(brew --prefix qt@5)
-          echo "QT_ROOT_DIR=$qt_prefix" >> "$GITHUB_ENV"
-          echo "CMAKE_PREFIX_PATH=$qt_prefix${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" >> "$GITHUB_ENV"
-          echo "$qt_prefix/bin" >> "$GITHUB_PATH"
+          brew install ninja
+          if [ "${QT_VERSION%%.*}" = 5 ]; then
+            brew install qt@5
+            qt_prefix=$(brew --prefix qt@5)
+            echo "QT_ROOT_DIR=$qt_prefix" >> "$GITHUB_ENV"
+            echo "CMAKE_PREFIX_PATH=$qt_prefix${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" >> "$GITHUB_ENV"
+            echo "$qt_prefix/bin" >> "$GITHUB_PATH"
+          fi
 
       - name: Install CMake
         uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2
         with:
           cmakeVersion: 4.3.4
 
+      # What the Qt installer calls an architecture depends on the Qt major
+      # version as well as on the platform. Qt 6 has no 32-bit Windows build.
+      - name: Select Qt build
+        if: (runner.os != 'macOS' || !startsWith(inputs.qt-version, '5')) && steps.cache-vtk.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          QT_VERSION: ${{ inputs.qt-version }}
+          ARCH: ${{ inputs.arch }}
+        run: |
+          set -e
+          case "$RUNNER_OS:${QT_VERSION%%.*}:$ARCH" in
+            Windows:5:x64)   qt_arch=win64_msvc2019_64 ;;
+            Windows:5:Win32) qt_arch=win32_msvc2019 ;;
+            Windows:6:x64)   qt_arch=win64_msvc2022_64 ;;
+            Linux:5:*)       qt_arch=gcc_64 ;;
+            Linux:6:*)       qt_arch=linux_gcc_64 ;;
+            macOS:*:*)       qt_arch=clang_64 ;;
+            *) echo "There is no Qt $QT_VERSION build for $RUNNER_OS $ARCH."; exit 1 ;;
+          esac
+          echo "QT_ARCH=$qt_arch" >> "$GITHUB_ENV"
+
       - name: Install Qt
-        if: runner.os != 'macOS' && steps.cache-vtk.outputs.cache-hit != 'true'
+        if: (runner.os != 'macOS' || !startsWith(inputs.qt-version, '5')) && steps.cache-vtk.outputs.cache-hit != 'true'
         uses: jurplel/install-qt-action@v4
         with:
           dir: ${{github.workspace}}/Qt
-          version: '5.15.0'
-          arch: ${{ runner.os == 'Windows' && (inputs.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019') || 'gcc_64' }}
+          version: ${{ inputs.qt-version }}
+          arch: ${{ env.QT_ARCH }}
 
       - name: Clone VTK
         if: steps.cache-vtk.outputs.cache-hit != 'true'
@@ -105,6 +137,11 @@ jobs:
           if [ "$RUNNER_OS" = "Windows" ]; then
             generator=(-G "Visual Studio 18 2026" -A "${{ inputs.arch }}")
           fi
+          # Qt6_DIR or Qt5_DIR after the major version of the Qt installed.
+          qt_major=5
+          if [ -d "${QT_ROOT_DIR}/lib/cmake/Qt6" ]; then
+            qt_major=6
+          fi
           cmake -S vtk -B vtk-build "${generator[@]}" \
             -DCMAKE_INSTALL_PREFIX=vtk-install \
             -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
@@ -112,8 +149,8 @@ jobs:
             -DVTK_BUILD_TESTING=OFF \
             -DVTK_VERSIONED_INSTALL=OFF \
             -DVTK_GROUP_ENABLE_Qt:STRING=YES \
-            -DVTK_QT_VERSION:STRING=5 \
-            -DQt5_DIR="${QT_ROOT_DIR}/lib/cmake/Qt5" \
+            -DVTK_QT_VERSION:STRING=${qt_major} \
+            -DQt${qt_major}_DIR="${QT_ROOT_DIR}/lib/cmake/Qt${qt_major}" \
             ${{ inputs.build-options }}
 
       - name: Build VTK

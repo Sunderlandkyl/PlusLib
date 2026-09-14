@@ -340,10 +340,14 @@ IF(PLUS_USE_OPTITRACK)
           )
       ENDIF()
 
-      FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Multimedia)
+      IF(NOT QT_VERSION_MAJOR)
+        # Without the widgets nothing has chosen a Qt yet.
+        FIND_PACKAGE(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+      ENDIF()
+      FIND_PACKAGE(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia)
       SET(PLUSLIB_QT_COMPONENTS ${PLUSLIB_QT_COMPONENTS} Multimedia CACHE INTERNAL "" FORCE)
         LIST(APPEND ${PROJECT_NAME}_LIBS
-        Qt5::Multimedia
+        Qt${QT_VERSION_MAJOR}::Multimedia
         )
     ENDIF()
   ELSE()

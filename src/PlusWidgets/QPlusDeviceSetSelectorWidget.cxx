@@ -15,7 +15,7 @@ See License.txt for details.
 #include <QAction>
 #include <QComboBox>
 #include <QDesktopServices>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QDomDocument>
 #include <QFileDialog>
 #include <QKeyEvent>
@@ -618,8 +618,7 @@ void QPlusDeviceSetSelectorWidget::resizeEvent(QResizeEvent* event)
 
   if (m_DeviceSetComboBoxMaximumSizeRatio != -1)
   {
-    QDesktopWidget desktop;
-    int screenWidth = desktop.screenGeometry(desktop.screenNumber(this)).width();
+    int screenWidth = this->screen()->geometry().width();
     ui.comboBox_DeviceSet->setMaximumWidth(screenWidth * m_DeviceSetComboBoxMaximumSizeRatio);
   }
 }

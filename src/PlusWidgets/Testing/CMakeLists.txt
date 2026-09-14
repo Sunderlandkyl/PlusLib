@@ -4,9 +4,9 @@ SET( ConfigFilesDir ${PLUSLIB_DATA_DIR}/ConfigFiles )
 # --------------------------------------------------------------------------
 # ToolStateDisplayWidgetTest
 SET(ToolStateDisplayWidgetTest_LIBS 
-  Qt5::Widgets
-  Qt5::Core
-  Qt5::Test
+  Qt${QT_VERSION_MAJOR}::Widgets
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Test
   PlusWidgets
   vtkPlusCommon
   vtkPlusDataCollection
@@ -16,7 +16,6 @@ ADD_EXECUTABLE(ToolStateDisplayWidgetTest ToolStateDisplayWidgetTest.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/../PlusWidgets.qrc 
   )
 SET_TARGET_PROPERTIES(ToolStateDisplayWidgetTest PROPERTIES 
-  COMPILE_DEFINTIIONS ${Qt5Widgets_COMPILE_DEFINITIONS}
   FOLDER Tests
   )
 target_include_directories(ToolStateDisplayWidgetTest PRIVATE 

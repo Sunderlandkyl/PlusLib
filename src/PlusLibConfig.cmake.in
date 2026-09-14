@@ -53,7 +53,13 @@ ENDIF()
 
 SET(PLUSLIB_QT_COMPONENTS @PLUSLIB_QT_COMPONENTS@)
 IF(PLUSLIB_QT_COMPONENTS) # guard against an empty list
-  FIND_PACKAGE(Qt5 REQUIRED COMPONENTS @PLUSLIB_QT_COMPONENTS@)
+  # The Qt that PlusLib was built against: the same major version, found in
+  # the same place unless the caller has already said where to look.
+  SET(QT_VERSION_MAJOR @QT_VERSION_MAJOR@)
+  IF(NOT Qt@QT_VERSION_MAJOR@_DIR)
+    SET(Qt@QT_VERSION_MAJOR@_DIR "@PLUSLIB_QT_DIR@")
+  ENDIF()
+  FIND_PACKAGE(Qt@QT_VERSION_MAJOR@ REQUIRED COMPONENTS @PLUSLIB_QT_COMPONENTS@)
 ENDIF()
 
 INCLUDE(${PlusLib_TARGETS_FILE})
