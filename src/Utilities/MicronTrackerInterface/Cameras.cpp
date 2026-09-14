@@ -135,7 +135,7 @@ int Cameras::getMTHome(std::string& mtHomeDirectory)
 
   /* Check registry key to determine log file name: */
   HKEY key = NULL;
-  if (RegOpenKeyEx(topkey, subkey, 0, KEY_QUERY_VALUE, &key) != ERROR_SUCCESS)
+  if (RegOpenKeyExA(topkey, subkey, 0, KEY_QUERY_VALUE, &key) != ERROR_SUCCESS)
   {
     LOG_ERROR("Failed to open registry key: " << subkey);
     return mtInternalMTError;
@@ -146,7 +146,7 @@ int Cameras::getMTHome(std::string& mtHomeDirectory)
   smtHomeDirectory[smtHomeDirectorySize] = 0;
   DWORD value_type = 0;
   DWORD value_size = smtHomeDirectorySize;
-  if (RegQueryValueEx(key, mfile, 0,  /* reserved */ &value_type, (unsigned char*)smtHomeDirectory, &value_size) != ERROR_SUCCESS || value_size <= 1)
+  if (RegQueryValueExA(key, mfile, 0,  /* reserved */ &value_type, (unsigned char*)smtHomeDirectory, &value_size) != ERROR_SUCCESS || value_size <= 1)
   {
     /* size always >1 if exists ('\0' terminator) ? */
     LOG_ERROR("Failed to get environment variable " << mfile);

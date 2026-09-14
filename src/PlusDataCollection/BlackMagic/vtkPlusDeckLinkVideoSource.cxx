@@ -440,8 +440,8 @@ out:
     HRESULT res = this->Internal->DeckLinkInput->EnableVideoInput(this->Internal->DeckLinkDisplayMode->GetDisplayMode(), this->Internal->RequestedPixelFormat, bmdVideoInputFlagDefault);
     if (res != S_OK)
     {
-      LPTSTR errorMsgPtr = 0;
-      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, res, 0, (LPTSTR)&errorMsgPtr, 0, NULL);
+      LPSTR errorMsgPtr = 0;
+      FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, res, 0, (LPSTR)&errorMsgPtr, 0, NULL);
       LOG_ERROR("Unable to convert video frame: " << errorMsgPtr);
       LocalFree(errorMsgPtr);
       this->Internal->DeckLinkDisplayMode->Release();
@@ -626,8 +626,8 @@ HRESULT STDMETHODCALLTYPE vtkPlusDeckLinkVideoSource::VideoInputFrameArrived(IDe
       HRESULT res = this->Internal->DeckLinkVideoConversion->ConvertFrame(videoFrame, this->Internal->OutputFrame);
       if (res != S_OK)
       {
-        LPTSTR errorMsgPtr = 0;
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, res, 0, (LPTSTR)&errorMsgPtr, 0, NULL);
+        LPSTR errorMsgPtr = 0;
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, res, 0, (LPSTR)&errorMsgPtr, 0, NULL);
         LOG_ERROR("Unable to convert video frame: " << errorMsgPtr);
         LocalFree(errorMsgPtr);
       }

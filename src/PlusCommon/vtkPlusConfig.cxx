@@ -151,7 +151,7 @@ void vtkPlusConfig::SetProgramDirectory()
 {
 #ifdef _WIN32
   char cProgramPath[2048] = {'\0'};
-  GetModuleFileName(NULL, cProgramPath, 2048);
+  GetModuleFileNameA(NULL, cProgramPath, 2048);
   this->ProgramDirectory = vtksys::SystemTools::GetProgramPath(cProgramPath);
 #elif defined(__linux__)
   const unsigned int cProgramPathSize = 2048;
@@ -346,7 +346,7 @@ PlusStatus vtkPlusConfig::LoadApplicationConfiguration()
 #if _WIN32
     // Try to find Notepad++ in Program Files, if not found then use notepad.
     char pf[MAX_PATH];
-    SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL, 0, pf);
+    SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, pf);
     std::string fullPath = std::string(pf) + "\\Notepad++\\notepad++.exe";
     std::string application = "notepad.exe";
     if (vtksys::SystemTools::FileExists(fullPath.c_str()))

@@ -292,8 +292,8 @@ PlusStatus vtkPlusOpenIGTLinkDevice::ReceiveMessageHeader(igtl::MessageHeader::P
     }
     else
     {
-      LPTSTR errorMsgPtr = 0;
-      if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, socketErrorCode, 0, (LPTSTR)&errorMsgPtr, 0, NULL) != 0)
+      LPSTR errorMsgPtr = 0;
+      if (FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, socketErrorCode, 0, (LPSTR)&errorMsgPtr, 0, NULL) != 0)
       {
         LOG_DEBUG("No data coming from OpenIGTLink device " << this->GetDeviceId() << ": (socket error: " << errorMsgPtr << ")");
       }
