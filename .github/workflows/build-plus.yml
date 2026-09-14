@@ -461,6 +461,17 @@ jobs:
         root=$(ls -d verify/*/)
         echo "Unpacked $archive to $root"
 
+        # A package that a user downloads carries the quarantine attribute,
+        # and Gatekeeper then refuses to load a library whose Developer ID
+        # signature has no notarization ticket. The Qt frameworks from the Qt
+        # installer are signed exactly that way, which once left the launcher
+        # unable to start on the machine that downloaded it while the same
+        # tree ran here. Marking every file as a download makes this check
+        # see what the user would.
+        if [ "$RUNNER_OS" = "macOS" ]; then
+          find "$root" -type f -exec xattr -w com.apple.quarantine "0083;$(printf '%x' "$(date +%s)");ci;" {} +
+        fi
+
         # The command-line tools, run from the unpacked tree.
         "$root/bin/PlusVersion"
         "$root/bin/PlusServer" --help > /dev/null
