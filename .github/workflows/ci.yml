@@ -24,8 +24,8 @@ jobs:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
-      qt-version: '6.8.3'
-      cache-prefix: vtk-qt6
+      qt-version: '6.9.3'
+      cache-prefix: vtk-qt693
 
   # A separate job rather than more entries in the matrix above, so that the
   # Windows build does not have to wait for the Linux and macOS dependencies.
@@ -51,8 +51,8 @@ jobs:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
-      qt-version: '6.8.3'
-      cache-prefix: vtk-qt6
+      qt-version: '6.9.3'
+      cache-prefix: vtk-qt693
 
   update_vtk_static_x64:
     uses: ./.github/workflows/build-vtk.yml
@@ -67,8 +67,8 @@ jobs:
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
       build-type: ${{ matrix.build_type }}
-      qt-version: '6.8.3'
-      cache-prefix: vtk-static-qt6
+      qt-version: '6.9.3'
+      cache-prefix: vtk-static-qt693
       build-options: >-
         -DBUILD_SHARED_LIBS:BOOL=OFF
 
@@ -183,9 +183,9 @@ jobs:
       # Written out rather than read from the dependency job: a matrix job
       # reports the outputs of whichever leg finished last. It has to match
       # the key build-vtk.yml and build-itk.yml compute, hashes included.
-      vtk-cache-key: vtk-qt6-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
+      vtk-cache-key: vtk-qt693-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
       itk-cache-key: itk-${{ matrix.os }}-${{ matrix.arch }}-f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158
-      qt-version: '6.8.3'
+      qt-version: '6.9.3'
       run-tests: true
       archive-name: PlusApp-Win64
       plus-config: >-
@@ -236,9 +236,9 @@ jobs:
       plusbuild-tag: qt6
       plusapp-repository: https://github.com/Sunderlandkyl/PlusApp.git
       plusapp-tag: qt6
-      vtk-cache-key: vtk-qt6-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
+      vtk-cache-key: vtk-qt693-${{ matrix.os }}-${{ matrix.arch }}-f49a1dbafa60b58ef22f6292ec58370453162192
       itk-cache-key: itk-${{ matrix.os }}-${{ matrix.arch }}-f7ff6ad56d487d9f52e6ba1dbbd9a816a14b5158
-      qt-version: '6.8.3'
+      qt-version: '6.9.3'
       run-tests: true
       archive-name: PlusApp-${{ matrix.os }}
       plus-config: >-
@@ -323,7 +323,7 @@ jobs:
       plusapp-tag: qt6
       vtk-cache-key: ${{ needs.update_vtk_static_x64.outputs.cache-key }}
       itk-cache-key: ${{ needs.update_itk_static_x64.outputs.cache-key }}
-      qt-version: '6.8.3'
+      qt-version: '6.9.3'
       run-tests: true
       archive-name: PlusApp-Static-Win64
       plus-config: >-
