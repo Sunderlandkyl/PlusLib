@@ -39,14 +39,19 @@ public:
     return cb;
   }
 
-  vtkDisplayMessageCallback()
-    : QObject()
-  { }
-
   virtual void Execute(vtkObject* caller, unsigned long eventId, void* callData);
 
 signals:
   void AddMessage(QString);
+
+protected:
+  // Constructed through New(), as VTK objects are. Kept out of the public
+  // interface also because Qt 6 registers a default-constructible QObject
+  // subclass with a placement-new constructor, and on Windows vtkObjectBase
+  // declares its own operator new, which hides the placement form.
+  vtkDisplayMessageCallback()
+    : QObject()
+  { }
 };
 
 //-----------------------------------------------------------------------------
