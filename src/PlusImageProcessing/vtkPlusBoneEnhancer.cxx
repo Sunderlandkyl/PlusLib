@@ -783,9 +783,9 @@ PlusStatus vtkPlusBoneEnhancer::SaveAllIntermediateResultsToFile()
 Takes a postfix as an argument and saves the intermediate image associated with that postfix
 Returns PLUS_FAIL if an error occured during this process, returns PLUS_SUCCESS otherwise
 */
-PlusStatus vtkPlusBoneEnhancer::SaveIntermediateResultToFile(char* fileNamePostfix)
+PlusStatus vtkPlusBoneEnhancer::SaveIntermediateResultToFile(const char* fileNamePostfix)
 {
-  std::map<char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
+  std::map<const char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
   if (indexIterator != this->IntermediateImageMap.end())
   {
     //Try to save the intermediate image
@@ -804,7 +804,7 @@ PlusStatus vtkPlusBoneEnhancer::SaveIntermediateResultToFile(char* fileNamePostf
 }
 
 //----------------------------------------------------------------------------
-void vtkPlusBoneEnhancer::AddIntermediateImage(char* fileNamePostfix, vtkSmartPointer<vtkImageData> image)
+void vtkPlusBoneEnhancer::AddIntermediateImage(const char* fileNamePostfix, vtkSmartPointer<vtkImageData> image)
 {
   if (fileNamePostfix == "")
   {
@@ -812,7 +812,7 @@ void vtkPlusBoneEnhancer::AddIntermediateImage(char* fileNamePostfix, vtkSmartPo
   }
 
   // See if the intermediate image should be created
-  std::map<char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
+  std::map<const char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> >::iterator indexIterator = this->IntermediateImageMap.find(fileNamePostfix);
   if (indexIterator != this->IntermediateImageMap.end()){}
   else
   {
@@ -832,7 +832,7 @@ void vtkPlusBoneEnhancer::AddIntermediateImage(char* fileNamePostfix, vtkSmartPo
 
 //----------------------------------------------------------------------------
 // Given a vtk filter, get the image that would display at that point and save it
-void vtkPlusBoneEnhancer::AddIntermediateFromFilter(char* fileNamePostfix, vtkImageAlgorithm* imageFilter)
+void vtkPlusBoneEnhancer::AddIntermediateFromFilter(const char* fileNamePostfix, vtkImageAlgorithm* imageFilter)
 {
   if (fileNamePostfix == "")
   {

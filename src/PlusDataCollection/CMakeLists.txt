@@ -341,8 +341,15 @@ IF(PLUS_USE_OPTITRACK)
       ENDIF()
 
       IF(NOT QT_VERSION_MAJOR)
-        # Without the widgets nothing has chosen a Qt yet.
-        FIND_PACKAGE(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+        # Without the widgets nothing has chosen a Qt yet. Same rule as the
+        # top-level CMakeLists: the directory that was given wins.
+        IF(Qt6_DIR)
+          SET(QT_VERSION_MAJOR 6)
+        ELSEIF(Qt5_DIR)
+          SET(QT_VERSION_MAJOR 5)
+        ELSE()
+          FIND_PACKAGE(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+        ENDIF()
       ENDIF()
       FIND_PACKAGE(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia)
       SET(PLUSLIB_QT_COMPONENTS ${PLUSLIB_QT_COMPONENTS} Multimedia CACHE INTERNAL "" FORCE)

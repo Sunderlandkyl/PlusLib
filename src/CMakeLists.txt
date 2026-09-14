@@ -89,11 +89,14 @@ OPTION(PLUS_USE_INTEL_MKL "Use the Intel MKL library (only for image processing)
 
 OPTION(PLUS_BUILD_WIDGETS "Build re-usable widgets for writing PlusLib based applications" OFF)
 IF(PLUS_BUILD_WIDGETS)
-  # Qt 6 where it is available, Qt 5 otherwise. A Qt5_DIR given without a
-  # Qt6_DIR is taken as the choice of Qt 5, so that pointing at a Qt 5 is not
-  # overridden by a Qt 6 that happens to be installed in a system location.
-  IF(Qt5_DIR AND NOT Qt6_DIR)
-    FIND_PACKAGE(QT NAMES Qt5 REQUIRED COMPONENTS Core)
+  # The Qt whose directory was given, Qt 6 over Qt 5 when both were; failing
+  # that, whichever of the two the search finds, Qt 6 first. Qt6_DIR and
+  # Qt5_DIR are read here explicitly because find_package(QT NAMES ...)
+  # consults neither, only QT_DIR and the prefix paths.
+  IF(Qt6_DIR)
+    SET(QT_VERSION_MAJOR 6)
+  ELSEIF(Qt5_DIR)
+    SET(QT_VERSION_MAJOR 5)
   ELSE()
     FIND_PACKAGE(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
   ENDIF()

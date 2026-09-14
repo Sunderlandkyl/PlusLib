@@ -99,9 +99,9 @@ public:
   void MarkShadowOutline(vtkSmartPointer<vtkImageData> inputImage);
 
   /*! Methods related to intermediate images */
-  std::map<char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> > GetIntermediateImageMap() { return (this->IntermediateImageMap); };
+  std::map<const char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> > GetIntermediateImageMap() { return (this->IntermediateImageMap); };
   PlusStatus SaveAllIntermediateResultsToFile();
-  PlusStatus SaveIntermediateResultToFile(char* fileNamePostfix);
+  PlusStatus SaveIntermediateResultToFile(const char* fileNamePostfix);
 
 protected:
   vtkPlusBoneEnhancer();
@@ -112,8 +112,8 @@ protected:
 
   void ImageConjunction(vtkSmartPointer<vtkImageData> inputImage, vtkSmartPointer<vtkImageData> maskImage);
 
-  void AddIntermediateImage(char* fileNamePostfix, vtkSmartPointer<vtkImageData> image);
-  void AddIntermediateFromFilter(char* fileNamePostfix, vtkImageAlgorithm* imageAlgorithm);
+  void AddIntermediateImage(const char* fileNamePostfix, vtkSmartPointer<vtkImageData> image);
+  void AddIntermediateFromFilter(const char* fileNamePostfix, vtkImageAlgorithm* imageAlgorithm);
 
   virtual PlusStatus ProcessImageExtents();
 
@@ -152,10 +152,10 @@ protected:
 
   bool SaveIntermediateResults;
   std::string IntermediateImageFileName;
-  std::vector<char*> IntermediatePostfixes;
+  std::vector<const char*> IntermediatePostfixes;
 
   /*! Image after some of the processing operations have been applied */
-  std::map<char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> > IntermediateImageMap;
+  std::map<const char*, vtkSmartPointer<vtkIGSIOTrackedFrameList> > IntermediateImageMap;
 
   /*! Image for pixels (uchar) along scan lines only */
   vtkSmartPointer<vtkImageData> LinesImage;
