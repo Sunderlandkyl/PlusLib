@@ -7,32 +7,60 @@ on:
 
 jobs:
   fake_build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        archive-name:
-          - PlusApp-Win64
-          - PlusApp-Win32
-          - PlusApp-Clarius-Win64
-          - PlusApp-ClariusOEM-Win64
-          - PlusApp-Telemed-Win64
-          - PlusApp-spryTrack-Telemed-Win64
-          - PlusApp-fusionTrack-Win64
-          - PlusApp-MicronTracker-4.1-Win64
-          - PlusApp-Thorlabs-Win32
-          - PlusApp-Interson-Win32
-          - PlusApp-Telemed-Win32
+    runs-on: windows-latest
     steps:
-    - name: Create fake installer
+    - name: Create fake installers
+      shell: bash
       run: |
-        mkdir out
-        name=$(sed 's/^PlusApp-/PlusApp-2.9.0.'"$(date -u +%Y%m%d)"'-/' <<< "${{ matrix.archive-name }}")
-        head -c 1048576 /dev/urandom > "out/$name.exe"
-        ls -l out
+        for name in PlusApp-Win64 PlusApp-Win32 PlusApp-Clarius-Win64 PlusApp-ClariusOEM-Win64 PlusApp-Telemed-Win64 PlusApp-spryTrack-Telemed-Win64 PlusApp-fusionTrack-Win64 PlusApp-MicronTracker-4.1-Win64 PlusApp-Thorlabs-Win32 PlusApp-Interson-Win32 PlusApp-Telemed-Win32; do
+          mkdir -p "out/$name"
+          head -c 1048576 /dev/urandom > "out/$name/$(sed "s/^PlusApp-/PlusApp-2.9.0.$(date -u +%Y%m%d)-/" <<< "$name").exe"
+        done
+        find out -type f
     - uses: actions/upload-artifact@v7
       with:
-        name: ${{ matrix.archive-name }}
-        path: out/*.exe
+        name: PlusApp-Win64
+        path: out/PlusApp-Win64/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-Win32
+        path: out/PlusApp-Win32/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-Clarius-Win64
+        path: out/PlusApp-Clarius-Win64/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-ClariusOEM-Win64
+        path: out/PlusApp-ClariusOEM-Win64/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-Telemed-Win64
+        path: out/PlusApp-Telemed-Win64/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-spryTrack-Telemed-Win64
+        path: out/PlusApp-spryTrack-Telemed-Win64/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-fusionTrack-Win64
+        path: out/PlusApp-fusionTrack-Win64/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-MicronTracker-4.1-Win64
+        path: out/PlusApp-MicronTracker-4.1-Win64/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-Thorlabs-Win32
+        path: out/PlusApp-Thorlabs-Win32/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-Interson-Win32
+        path: out/PlusApp-Interson-Win32/*.exe
+    - uses: actions/upload-artifact@v7
+      with:
+        name: PlusApp-Telemed-Win32
+        path: out/PlusApp-Telemed-Win32/*.exe
 
   publish:
     needs: [fake_build]
