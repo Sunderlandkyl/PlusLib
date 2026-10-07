@@ -85,7 +85,7 @@ jobs:
           echo "date,installer,downloads" > "upload/$stats"
         fi
         gh release view "$tag" --json assets \
-          --jq ".assets[] | select(.name | endswith(\".exe\")) | \"$(date -u +%Y-%m-%d),\(.name),\(.download_count)\"" \
+          --jq ".assets[] | select(.name | endswith(\".exe\")) | \"$(date -u +%Y-%m-%d),\(.name),\(.downloadCount)\"" \
           >> "upload/$stats"
         tail -n 12 "upload/$stats"
 
