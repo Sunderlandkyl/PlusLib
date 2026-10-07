@@ -132,10 +132,7 @@ jobs:
         The installers below replace the previous night's. An installer with an earlier date is from the last night its build succeeded. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
         EOF
         if [ -n "$kept" ]; then
-          printf '
-Not rebuilt tonight:
-' >> notes.md
-          printf -- '- %s
-' $kept >> notes.md
+          printf '\nNot rebuilt tonight:\n' >> notes.md
+          printf -- '- %s\n' $kept >> notes.md
         fi
         gh release edit "$tag" --prerelease --notes-file notes.md
