@@ -74,20 +74,46 @@ jobs:
         fi
 
         # The download counts of the installers are lost when they are
-        # removed, so they are recorded in a CSV file kept as an asset of the
-        # release. A new release takes over the file from the previous one.
+        # removed, so they are recorded first in a CSV file kept as an asset
+        # of the release: one row per build date, one column per package
+        # (e.g. 2.9.0-Win64), with columns added as packages appear. A new
+        # release takes over the file from the previous one.
         stats=download-stats.csv
         prev=$(gh api "repos/$GH_REPO/releases?per_page=100" \
           --jq "first(.[] | select(any(.assets[]; .name == \"$stats\")) | .tag_name)")
         if [ -n "$prev" ]; then
           gh release download "$prev" --pattern "$stats" --dir upload
-        else
-          echo "date,installer,downloads" > "upload/$stats"
         fi
         gh release view "$tag" --json assets \
-          --jq ".assets[] | select(.name | endswith(\".exe\")) | \"$(date -u +%Y-%m-%d),\(.name),\(.downloadCount)\"" \
-          >> "upload/$stats"
-        tail -n 12 "upload/$stats"
+          --jq '.assets[] | select(.name | endswith(".exe")) | "\(.name) \(.downloadCount)"' > counts.txt
+        python3 - "upload/$stats" counts.txt <<'EOF'
+        import csv, re, sys
+        path, counts = sys.argv[1:]
+        header, table = ['date'], {}
+        try:
+          with open(path, newline='') as f:
+            rows = list(csv.reader(f))
+          header = rows[0]
+          table = {row[0]: dict(zip(header[1:], row[1:])) for row in rows[1:]}
+        except FileNotFoundError:
+          pass
+        for line in open(counts):
+          name, count = line.split()
+          m = re.fullmatch(r'PlusApp-([0-9.]+)\.(\d{4})(\d{2})(\d{2})-(.*)\.exe', name)
+          if not m:
+            sys.exit(f'Unexpected installer name: {name}')
+          date, package = f'{m[2]}-{m[3]}-{m[4]}', f'{m[1]}-{m[5]}'
+          if package not in header:
+            header.append(package)
+          row = table.setdefault(date, {})
+          row[package] = str(int(row.get(package) or 0) + int(count))
+        with open(path, 'w', newline='') as f:
+          writer = csv.writer(f, lineterminator='\n')
+          writer.writerow(header)
+          for date in sorted(table):
+            writer.writerow([date] + [table[date].get(p, '') for p in header[1:]])
+        EOF
+        tail -n 3 "upload/$stats"
 
         # Upload tonight's installers, then remove the previous night's.
         # --clobber covers a second run on the same day.
