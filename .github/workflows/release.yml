@@ -1,0 +1,111 @@
+name: Release
+
+# Builds the installers of a stable release when it is published and uploads
+# them to it. The release is tagged Plus-<major>.<minor>.<patch> on the
+# release branch of PlusLib; PlusApp and PlusBuild are built from their
+# branch of the same name, Plus-<major>.<minor>. Pre-releases are left to the
+# nightly workflow.
+#
+# Run it by hand on the tag of the release to build the installers again.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+      branch: ${{ steps.check.outputs.branch }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        sparse-checkout: CMakeLists.txt
+        sparse-checkout-cone-mode: false
+
+    - name: Check the release
+      id: check
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+        tag=$GITHUB_REF_NAME
+        if ! [[ $tag =~ ^Plus-([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          echo "$tag is not a release tag (Plus-<major>.<minor>.<patch>)"
+          exit 1
+        fi
+        version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+        branch="Plus-${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+
+        major=$(sed -n 's/^SET(PLUSLIB_VERSION_MAJOR "\([0-9]*\)")/\1/p' CMakeLists.txt)
+        minor=$(sed -n 's/^SET(PLUSLIB_VERSION_MINOR "\([0-9]*\)")/\1/p' CMakeLists.txt)
+        patch=$(sed -n 's/^SET(PLUSLIB_VERSION_PATCH "\([0-9]*\)")/\1/p' CMakeLists.txt)
+        if [ "$major.$minor.$patch" != "$version" ]; then
+          echo "The version in CMakeLists.txt is $major.$minor.$patch, not $version"
+          exit 1
+        fi
+        if [ "$(gh release view "$tag" --json isPrerelease --jq .isPrerelease)" != "false" ]; then
+          echo "$tag is not a published release"
+          exit 1
+        fi
+        echo "tag=$tag" >> "$GITHUB_OUTPUT"
+        echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    uses: ./.github/workflows/build-packages.yml
+    secrets:
+      pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
+    with:
+      pluslib-tag: ${{ github.sha }}
+      plusapp-tag: ${{ needs.prepare.outputs.branch }}
+      plusbuild-tag: ${{ needs.prepare.outputs.branch }}
+      plus-cache-key-prefix: plus-release
+      clear-plus-cache: true
+
+  # Upload the installers that were built even if some builds failed, and
+  # fail in that case, so that the run can be repeated for the failed builds.
+  upload:
+    needs: [prepare, build]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@v7
+      with:
+        pattern: PlusApp-*
+        path: installers
+
+    - name: Upload installers
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ needs.prepare.outputs.tag }}
+      run: |
+        set -euo pipefail
+        mkdir upload
+        for dir in installers/*/; do
+          exe=$(find "$dir" -maxdepth 1 -name '*.exe' | head -n 1)
+          if [ -z "$exe" ]; then
+            echo "Artifact $(basename "$dir") contains no installer"
+            exit 1
+          fi
+          cp "$exe" upload/
+        done
+        if ! ls upload/*.exe >/dev/null 2>&1; then
+          echo "No installers to upload"
+          exit 1
+        fi
+        ls -l upload
+        gh release upload "$TAG" upload/*.exe --clobber
+
+        if [ "${{ needs.build.result }}" != "success" ]; then
+          echo "Some builds failed; their installers are missing from the release. Re-run the failed jobs."
+          exit 1
+        fi
