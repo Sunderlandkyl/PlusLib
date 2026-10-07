@@ -3,10 +3,10 @@ name: Publish nightly release
 # Uploads the installers built by the calling workflow to the pre-release of
 # the current development version, replacing the previous night's installers.
 #
-# The pre-release is tagged v<major>.<minor>.0 from the version in
-# CMakeLists.txt, so a new one starts automatically when the version is bumped
-# after a stable release. The tag never moves; the commit that the installers
-# were built from is recorded in the release notes.
+# The pre-release is tagged Plus-<major>.<minor>.0 from the version in
+# CMakeLists.txt, like the stable releases, so a new one starts automatically
+# when the version is bumped after a stable release. The tag never moves; the
+# commit that the installers were built from is recorded in the release notes.
 
 on:
   workflow_call:
@@ -53,7 +53,7 @@ jobs:
           exit 1
         fi
         version="$major.$minor.0"
-        tag="v$version"
+        tag="Plus-$version"
 
         # One installer per artifact, renamed to the artifact name so that the
         # download URL stays the same from night to night.
@@ -74,7 +74,7 @@ jobs:
         if ! gh release view "$tag" >/dev/null 2>&1; then
           echo "Creating pre-release $tag"
           gh release create "$tag" --target "$GITHUB_SHA" --prerelease \
-            --title "Plus $version (development)" --notes "Development snapshot of Plus $version."
+            --title "$tag" --notes "Development snapshot of Plus $version."
         fi
 
         gh release upload "$tag" upload/*.exe --clobber
