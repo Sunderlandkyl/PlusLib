@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-"""Record the download counts of the installers of a GitHub release.
+"""Record the download counts of the installers of GitHub releases.
 
-The counts are kept in a CSV file stored as an asset of a release, by default
+The counts are kept in CSV files stored as assets of a release, by default
 <release>.csv on the download-stats release of PlusToolkit/PlusLibData: one row
-per date, one column per package (e.g. 2.9.0-Win64), with columns added as
-packages appear, so that the files of several releases can be combined.
+per date, one column per package (e.g. 2.9.0-Win64), holding the total number
+of downloads of the package up to that date. Columns are added as packages
+appear, and every file has the same meaning, so that the files of several
+releases can be combined on the date.
 
-The row is either today's date, for sampling the counts of a release that keeps
-its installers (the value is then the cumulative count, replaced on a re-run),
-or the build date in the installer name, for installers that are replaced
-every night (the value is then the final count, summed on a re-run).
+For a release that keeps its installers, the total is the download count of
+the installer; by default every release that is not a pre-release is recorded.
+For installers that are replaced (the nightly builds on the pre-release), pass
+--release and --accumulate: the download count of each installer is then added
+to the total of the previous row, and should be recorded once, right before
+the installer is removed.
 
-Nothing is written when there is nothing new: no count changed since the last
-row (today), or no installer was downloaded (build).
+Nothing is written when no total changed since the last row.
 
 Requires the gh CLI. The ledger release is accessed with the token in
-LEDGER_TOKEN when it is set, otherwise with the same token as the release.
+LEDGER_TOKEN when it is set, otherwise with the same token as the releases.
 """
 
 import argparse
@@ -27,7 +30,7 @@ import subprocess
 import sys
 import tempfile
 
-INSTALLER_NAME = re.compile(r'PlusApp-([0-9.]+)\.(\d{4})(\d{2})(\d{2})-(.*)\.exe')
+INSTALLER_NAME = re.compile(r'PlusApp-([0-9.]+)\.\d{8}-(.*)\.exe')
 
 
 def gh(*args, token=None):
@@ -37,28 +40,38 @@ def gh(*args, token=None):
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-  parser.add_argument('--repo', default=os.environ.get('GH_REPO'), help='OWNER/REPO of the release (default: $GH_REPO)')
-  parser.add_argument('--release', required=True, help='tag of the release whose installers are counted')
+  parser.add_argument('--repo', default=os.environ.get('GH_REPO'), help='OWNER/REPO of the releases (default: $GH_REPO)')
+  parser.add_argument('--release', action='append', metavar='TAG',
+                      help='tag of a release whose installers are counted (default: all releases but pre-releases)')
   parser.add_argument('--ledger-repo', default='PlusToolkit/PlusLibData', help='OWNER/REPO of the ledger release (default: %(default)s)')
   parser.add_argument('--ledger-release', default='download-stats', help='tag of the release that holds the CSV files (default: %(default)s)')
-  parser.add_argument('--file', help='name of the CSV asset (default: <release>.csv)')
-  parser.add_argument('--row', choices=['today', 'build'], default='today',
-                      help='key the row by today\'s date or by the build date of the installers (default: %(default)s)')
+  parser.add_argument('--file', help='name of the CSV asset, for a single release (default: <release>.csv)')
+  parser.add_argument('--accumulate', action='store_true',
+                      help='add the counts to the totals of the previous row (installers that are replaced)')
   parser.add_argument('--installer', nargs='*', metavar='NAME',
                       help='record only these installers (default: all of the release)')
   args = parser.parse_args()
   if not args.repo:
     sys.exit('No repository: pass --repo or set GH_REPO')
-  file = args.file or f'{args.release}.csv'
+  if (args.file or args.accumulate or args.installer is not None) and len(args.release or []) != 1:
+    parser.error('--file, --accumulate and --installer apply to a single --release')
+  releases = args.release or gh('release', 'list', '--repo', args.repo, '--exclude-pre-releases', '--exclude-drafts',
+                                '--json', 'tagName', '--jq', '.[].tagName').split()
+  for release in releases:
+    record(args, release)
+
+
+def record(args, release):
+  file = args.file or f'{release}.csv'
   ledger = ['--repo', args.ledger_repo, args.ledger_release]
   token = os.environ.get('LEDGER_TOKEN')
 
-  counts = gh('release', 'view', args.release, '--repo', args.repo, '--json', 'assets',
+  counts = gh('release', 'view', release, '--repo', args.repo, '--json', 'assets',
               '--jq', '.assets[] | select(.name | endswith(".exe")) | "\\(.name) \\(.downloadCount)"')
   if args.installer is not None:
     counts = '\n'.join(line for line in counts.splitlines() if line.split()[0] in args.installer)
   if not counts:
-    print('No installers to record')
+    print(f'No installers to record for {release}')
     return
 
   header, table = ['date'], {}
@@ -70,27 +83,25 @@ def main():
         rows = list(csv.reader(f))
       header = rows[0]
       table = {row[0]: dict(zip(header[1:], row[1:])) for row in rows[1:]}
-    last = table[max(table)] if table else {}
 
     today = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+    last = table[max(table)] if table else {}
+    # Today's row starts from the last one, so that a package not counted
+    # today keeps its total.
+    row = table.setdefault(today, dict(last))
     changed = False
     for line in counts.splitlines():
       name, count = line.split()
       m = INSTALLER_NAME.fullmatch(name)
       if not m:
         sys.exit(f'Unexpected installer name: {name}')
-      package = f'{m[1]}-{m[5]}'
-      print(f'{package}: {count}')
+      package = f'{m[1]}-{m[2]}'
       if package not in header:
         header.append(package)
-      if args.row == 'build':
-        row = table.setdefault(f'{m[2]}-{m[3]}-{m[4]}', {})
-        row[package] = str(int(row.get(package) or 0) + int(count))
-        changed |= int(count) > 0
-      else:
-        row = table.setdefault(today, {})
-        row[package] = count
-        changed |= count != last.get(package)
+      total = int(row.get(package) or 0) + int(count) if args.accumulate else int(count)
+      changed |= str(total) != last.get(package)
+      row[package] = str(total)
+      print(f'{package}: {count} -> {total}')
     if not changed:
       print(f'Nothing new for {file}')
       return

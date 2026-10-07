@@ -462,14 +462,10 @@ jobs:
     secrets:
       LEDGER_TOKEN: ${{ secrets.PLUSLIBDATA_TOKEN }}
 
-  # Sample the download counts of the stable releases.
-  record_stable_downloads:
+  # Record the download counts of the installers of the releases. The ones of
+  # the development pre-release are recorded by the publish job instead.
+  record_downloads:
     if: ${{ github.event_name == 'schedule' }}
-    strategy:
-      matrix:
-        release: [Plus-2.4.0, Plus-2.6.0, Plus-2.8.0]
     uses: ./.github/workflows/record-downloads.yml
-    with:
-      release: ${{ matrix.release }}
     secrets:
       LEDGER_TOKEN: ${{ secrets.PLUSLIBDATA_TOKEN }}

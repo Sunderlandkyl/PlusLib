@@ -108,8 +108,10 @@ jobs:
         done
 
         # The download counts of the replaced installers are lost with them,
-        # so they are recorded first, by build date.
-        python3 .github/scripts/record-downloads.py --release "$tag" --row build           --ledger-repo '${{ inputs.ledger-repo || format('{0}/PlusLibData', github.repository_owner) }}'           --installer "${replaced[@]}"
+        # so they are added to the download statistics first.
+        python3 .github/scripts/record-downloads.py --release "$tag" --accumulate \
+          --ledger-repo '${{ inputs.ledger-repo || format('{0}/PlusLibData', github.repository_owner) }}' \
+          --installer "${replaced[@]}"
 
         # Upload tonight's installers, then remove the ones they replace.
         # --clobber covers a second run on the same day.
