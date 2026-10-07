@@ -27,7 +27,7 @@ INSTALLER_NAME = re.compile(r'PlusApp-([0-9.]+)\.(\d{4})(\d{2})(\d{2})-(.*)\.exe
 
 
 def gh(*args, **kwargs):
-  return subprocess.run(['gh', *args], check=True, text=True, capture_output=True, **kwargs).stdout
+  return subprocess.run(['gh', *args], check=True, text=True, stdout=subprocess.PIPE, **kwargs).stdout
 
 
 def main():
