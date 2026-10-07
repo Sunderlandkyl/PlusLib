@@ -12,10 +12,8 @@ on:
   workflow_call:
     inputs:
       # Name pattern of the artifacts that hold the installers. Each artifact
-      # is expected to contain a single installer; it is published under the
-      # artifact name with the .exe extension (e.g. PlusApp-Win64.exe), with
-      # the installer's own name (e.g. PlusApp-2.9.0.20261007-Win64.exe) as
-      # the label shown on the release page.
+      # is expected to contain a single installer, which is published under
+      # its own name (e.g. PlusApp-2.9.0.20261007-Win64.exe).
       artifact-pattern:
         required: false
         type: string
@@ -57,22 +55,17 @@ jobs:
         version="$major.$minor.0"
         tag="Plus-$version"
 
-        # One installer per artifact, renamed to the artifact name so that the
-        # download URL stays the same from night to night. The release page
-        # shows the installer's own (dated) name as the asset label.
+        # One installer per artifact.
         mkdir upload
-        assets=()
         for dir in installers/*/; do
-          name=$(basename "$dir")
           exe=$(find "$dir" -maxdepth 1 -name '*.exe' | head -n 1)
           if [ -z "$exe" ]; then
-            echo "Artifact $name contains no installer"
+            echo "Artifact $(basename "$dir") contains no installer"
             exit 1
           fi
-          cp "$exe" "upload/$name.exe"
-          assets+=("upload/$name.exe#$(basename "$exe")")
+          cp "$exe" upload/
         done
-        printf '%s\n' "${assets[@]}"
+        ls -l upload
 
         if ! gh release view "$tag" >/dev/null 2>&1; then
           echo "Creating pre-release $tag"
@@ -80,7 +73,15 @@ jobs:
             --title "$tag" --notes "Development snapshot of Plus $version."
         fi
 
-        gh release upload "$tag" "${assets[@]}" --clobber
+        # Upload tonight's installers, then remove the previous night's.
+        # --clobber covers a second run on the same day.
+        gh release upload "$tag" upload/*.exe --clobber
+        for old in $(gh release view "$tag" --json assets --jq '.assets[].name'); do
+          if [ ! -e "upload/$old" ]; then
+            echo "Removing $old"
+            gh release delete-asset "$tag" "$old" --yes
+          fi
+        done
 
         repo_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
         cat > notes.md <<EOF
@@ -89,6 +90,6 @@ jobs:
         - Commit: [${GITHUB_SHA:0:8}]($repo_url/commit/$GITHUB_SHA)
         - Built: $(date -u +'%Y-%m-%d %H:%M UTC') ([workflow run]($repo_url/actions/runs/$GITHUB_RUN_ID))
 
-        The installers below replace the previous night's; their download URLs do not change. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
+        The installers below replace the previous night's. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
         EOF
         gh release edit "$tag" --prerelease --notes-file notes.md
