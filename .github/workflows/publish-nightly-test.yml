@@ -67,3 +67,5 @@ jobs:
     uses: ./.github/workflows/publish-nightly.yml
     permissions:
       contents: write
+    secrets:
+      LEDGER_TOKEN: ${{ secrets.PLUSLIBDATA_TOKEN }}

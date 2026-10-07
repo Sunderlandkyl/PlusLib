@@ -18,6 +18,11 @@ on:
         required: false
         type: string
         default: PlusApp-*
+    secrets:
+      # Token with write access to the contents of the repository that holds
+      # the download statistics (see record-downloads.py).
+      LEDGER_TOKEN:
+        required: true
 
 jobs:
   publish:
@@ -26,7 +31,7 @@ jobs:
       contents: write
 
     steps:
-    # Only CMakeLists.txt is needed, for the version number.
+    # Only CMakeLists.txt, for the version number, and the script are needed.
     - uses: actions/checkout@v7
       with:
         sparse-checkout: |
@@ -45,6 +50,7 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
         GH_REPO: ${{ github.repository }}
+        LEDGER_TOKEN: ${{ secrets.LEDGER_TOKEN }}
       run: |
         set -euo pipefail
 
@@ -75,18 +81,15 @@ jobs:
             --title "$tag" --notes "Development snapshot of Plus $version."
         fi
 
-        # The download counts of the installers are lost when they are
-        # removed, so they are recorded first, by build date, in the CSV file
-        # kept as an asset of the release. A new release continues the file
-        # of the previous one.
-        stats=download-stats.csv
-        python3 .github/scripts/record-downloads.py --release "$tag" --row build --inherit --file "$stats"
+        # The download counts of the installers are lost with them when they
+        # are removed, so they are recorded first, by build date.
+        python3 .github/scripts/record-downloads.py --release "$tag" --row build
 
         # Upload tonight's installers, then remove the previous night's.
         # --clobber covers a second run on the same day.
         gh release upload "$tag" upload/*.exe --clobber
         for old in $(gh release view "$tag" --json assets --jq '.assets[].name'); do
-          if [ "$old" != "$stats" ] && [ ! -e "upload/$old" ]; then
+          if [ ! -e "upload/$old" ]; then
             echo "Removing $old"
             gh release delete-asset "$tag" "$old" --yes
           fi
@@ -99,6 +102,6 @@ jobs:
         - Commit: [${GITHUB_SHA:0:8}]($repo_url/commit/$GITHUB_SHA)
         - Built: $(date -u +'%Y-%m-%d %H:%M UTC') ([workflow run]($repo_url/actions/runs/$GITHUB_RUN_ID))
 
-        The installers below replace the previous night's; $stats records how many times each night's installers were downloaded. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
+        The installers below replace the previous night's. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
         EOF
         gh release edit "$tag" --prerelease --notes-file notes.md

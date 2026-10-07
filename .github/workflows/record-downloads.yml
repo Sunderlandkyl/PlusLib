@@ -1,9 +1,9 @@
 name: Record downloads
 
-# Records the download counts of the installers of a release in the CSV file
-# kept as an asset of the release (see .github/scripts/record-downloads.py).
-# Call it from a scheduled workflow to sample the downloads of a stable
-# release, e.g. every night.
+# Records the download counts of the installers of a release in a CSV file
+# kept on the download-stats release of PlusToolkit/PlusLibData (see
+# .github/scripts/record-downloads.py). Call it from a scheduled workflow to
+# sample the downloads of a stable release, e.g. every night.
 
 on:
   workflow_call:
@@ -12,49 +12,51 @@ on:
         description: 'Tag of the release whose installers are counted'
         required: true
         type: string
-      ledger:
-        description: 'Tag of the release that holds the CSV file (default: the same release)'
-        required: false
-        type: string
-        default: ''
       row:
         description: 'Key the row by today or by the build date of the installers'
         required: false
         type: string
         default: today
-      inherit:
-        description: 'Continue the CSV file of the newest release that has one, if the ledger release has none'
+      ledger-repo:
+        description: 'Repository of the release that holds the CSV files'
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: PlusToolkit/PlusLibData
+      ledger-release:
+        description: 'Tag of the release that holds the CSV files'
+        required: false
+        type: string
+        default: download-stats
+    secrets:
+      LEDGER_TOKEN:
+        description: 'Token with write access to the contents of the ledger repository'
+        required: true
   workflow_dispatch:
     inputs:
       release:
         description: 'Tag of the release whose installers are counted'
         required: true
         type: string
-      ledger:
-        description: 'Tag of the release that holds the CSV file (default: the same release)'
-        required: false
-        type: string
-        default: ''
       row:
         description: 'Key the row by today or by the build date of the installers'
         required: false
         type: choice
         options: [today, build]
         default: today
-      inherit:
-        description: 'Continue the CSV file of the newest release that has one, if the ledger release has none'
+      ledger-repo:
+        description: 'Repository of the release that holds the CSV files'
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: PlusToolkit/PlusLibData
+      ledger-release:
+        description: 'Tag of the release that holds the CSV files'
+        required: false
+        type: string
+        default: download-stats
 
 jobs:
   record:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
     - uses: actions/checkout@v7
@@ -66,9 +68,10 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
         GH_REPO: ${{ github.repository }}
+        LEDGER_TOKEN: ${{ secrets.LEDGER_TOKEN || secrets.PLUSLIBDATA_TOKEN }}
       run: >
         python3 .github/scripts/record-downloads.py
         --release '${{ inputs.release }}'
-        --ledger '${{ inputs.ledger || inputs.release }}'
         --row '${{ inputs.row }}'
-        ${{ inputs.inherit && '--inherit' || '' }}
+        --ledger-repo '${{ inputs.ledger-repo }}'
+        --ledger-release '${{ inputs.ledger-release }}'
