@@ -73,9 +73,25 @@ jobs:
             --title "$tag" --notes "Development snapshot of Plus $version."
         fi
 
+        # The download counts of the installers are lost when they are
+        # removed, so they are recorded in a CSV file kept as an asset of the
+        # release. A new release takes over the file from the previous one.
+        stats=download-stats.csv
+        prev=$(gh api "repos/$GH_REPO/releases?per_page=100" \
+          --jq "first(.[] | select(any(.assets[]; .name == \"$stats\")) | .tag_name)")
+        if [ -n "$prev" ]; then
+          gh release download "$prev" --pattern "$stats" --dir upload
+        else
+          echo "date,installer,downloads" > "upload/$stats"
+        fi
+        gh release view "$tag" --json assets \
+          --jq ".assets[] | select(.name | endswith(\".exe\")) | \"$(date -u +%Y-%m-%d),\(.name),\(.download_count)\"" \
+          >> "upload/$stats"
+        tail -n 12 "upload/$stats"
+
         # Upload tonight's installers, then remove the previous night's.
         # --clobber covers a second run on the same day.
-        gh release upload "$tag" upload/*.exe --clobber
+        gh release upload "$tag" upload/* --clobber
         for old in $(gh release view "$tag" --json assets --jq '.assets[].name'); do
           if [ ! -e "upload/$old" ]; then
             echo "Removing $old"
@@ -90,6 +106,6 @@ jobs:
         - Commit: [${GITHUB_SHA:0:8}]($repo_url/commit/$GITHUB_SHA)
         - Built: $(date -u +'%Y-%m-%d %H:%M UTC') ([workflow run]($repo_url/actions/runs/$GITHUB_RUN_ID))
 
-        The installers below replace the previous night's. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
+        The installers below replace the previous night's; $stats records how many times each night's installers were downloaded. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
         EOF
         gh release edit "$tag" --prerelease --notes-file notes.md
