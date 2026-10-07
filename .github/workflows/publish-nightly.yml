@@ -18,6 +18,12 @@ on:
         required: false
         type: string
         default: PlusApp-*
+      # Repository whose download-stats release holds the download statistics
+      # (see record-downloads.py).
+      ledger-repo:
+        required: false
+        type: string
+        default: ''
     secrets:
       # Token with write access to the contents of the repository that holds
       # the download statistics (see record-downloads.py).
@@ -83,7 +89,7 @@ jobs:
 
         # The download counts of the installers are lost with them when they
         # are removed, so they are recorded first, by build date.
-        python3 .github/scripts/record-downloads.py --release "$tag" --row build
+        python3 .github/scripts/record-downloads.py --release "$tag" --row build           --ledger-repo '${{ inputs.ledger-repo || format('{0}/PlusLibData', github.repository_owner) }}'
 
         # Upload tonight's installers, then remove the previous night's.
         # --clobber covers a second run on the same day.

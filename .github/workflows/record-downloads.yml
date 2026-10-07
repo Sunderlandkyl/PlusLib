@@ -18,10 +18,10 @@ on:
         type: string
         default: today
       ledger-repo:
-        description: 'Repository of the release that holds the CSV files'
+        description: 'Repository of the release that holds the CSV files (default: PlusLibData of the same owner)'
         required: false
         type: string
-        default: PlusToolkit/PlusLibData
+        default: ''
       ledger-release:
         description: 'Tag of the release that holds the CSV files'
         required: false
@@ -44,10 +44,10 @@ on:
         options: [today, build]
         default: today
       ledger-repo:
-        description: 'Repository of the release that holds the CSV files'
+        description: 'Repository of the release that holds the CSV files (default: PlusLibData of the same owner)'
         required: false
         type: string
-        default: PlusToolkit/PlusLibData
+        default: ''
       ledger-release:
         description: 'Tag of the release that holds the CSV files'
         required: false
@@ -73,5 +73,5 @@ jobs:
         python3 .github/scripts/record-downloads.py
         --release '${{ inputs.release }}'
         --row '${{ inputs.row }}'
-        --ledger-repo '${{ inputs.ledger-repo }}'
+        --ledger-repo '${{ inputs.ledger-repo || format('{0}/PlusLibData', github.repository_owner) }}'
         --ledger-release '${{ inputs.ledger-release }}'
