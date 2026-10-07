@@ -13,7 +13,9 @@ on:
     inputs:
       # Name pattern of the artifacts that hold the installers. Each artifact
       # is expected to contain a single installer; it is published under the
-      # artifact name with the .exe extension (e.g. PlusApp-Win64.exe).
+      # artifact name with the .exe extension (e.g. PlusApp-Win64.exe), with
+      # the installer's own name (e.g. PlusApp-2.9.0.20261007-Win64.exe) as
+      # the label shown on the release page.
       artifact-pattern:
         required: false
         type: string
@@ -56,9 +58,10 @@ jobs:
         tag="Plus-$version"
 
         # One installer per artifact, renamed to the artifact name so that the
-        # download URL stays the same from night to night.
+        # download URL stays the same from night to night. The release page
+        # shows the installer's own (dated) name as the asset label.
         mkdir upload
-        table=""
+        assets=()
         for dir in installers/*/; do
           name=$(basename "$dir")
           exe=$(find "$dir" -maxdepth 1 -name '*.exe' | head -n 1)
@@ -67,9 +70,9 @@ jobs:
             exit 1
           fi
           cp "$exe" "upload/$name.exe"
-          table+="| $name.exe | $(basename "$exe") |"$'\n'
+          assets+=("upload/$name.exe#$(basename "$exe")")
         done
-        ls -l upload
+        printf '%s\n' "${assets[@]}"
 
         if ! gh release view "$tag" >/dev/null 2>&1; then
           echo "Creating pre-release $tag"
@@ -77,7 +80,7 @@ jobs:
             --title "$tag" --notes "Development snapshot of Plus $version."
         fi
 
-        gh release upload "$tag" upload/*.exe --clobber
+        gh release upload "$tag" "${assets[@]}" --clobber
 
         repo_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
         cat > notes.md <<EOF
@@ -86,10 +89,6 @@ jobs:
         - Commit: [${GITHUB_SHA:0:8}]($repo_url/commit/$GITHUB_SHA)
         - Built: $(date -u +'%Y-%m-%d %H:%M UTC') ([workflow run]($repo_url/actions/runs/$GITHUB_RUN_ID))
 
-        The installers below replace the previous night's. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
-
-        | Installer | Built as |
-        |---|---|
-        $table
+        The installers below replace the previous night's; their download URLs do not change. The *Source code* links refer to the start of the $version development cycle, not to this snapshot; use the commit above instead.
         EOF
         gh release edit "$tag" --prerelease --notes-file notes.md
