@@ -4,6 +4,12 @@ name: Publish nightly release (test)
 
 on:
   workflow_dispatch:
+    inputs:
+      skip:
+        description: 'Artifact to leave out, as if its build had failed'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   fake_build:
@@ -50,6 +56,7 @@ jobs:
         name: PlusApp-MicronTracker-4.1-Win64
         path: out/PlusApp-MicronTracker-4.1-Win64/*.exe
     - uses: actions/upload-artifact@v7
+      if: inputs.skip != 'PlusApp-Thorlabs-Win32'
       with:
         name: PlusApp-Thorlabs-Win32
         path: out/PlusApp-Thorlabs-Win32/*.exe

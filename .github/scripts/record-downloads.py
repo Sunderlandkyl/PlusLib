@@ -44,6 +44,8 @@ def main():
   parser.add_argument('--file', help='name of the CSV asset (default: <release>.csv)')
   parser.add_argument('--row', choices=['today', 'build'], default='today',
                       help='key the row by today\'s date or by the build date of the installers (default: %(default)s)')
+  parser.add_argument('--installer', nargs='*', metavar='NAME',
+                      help='record only these installers (default: all of the release)')
   args = parser.parse_args()
   if not args.repo:
     sys.exit('No repository: pass --repo or set GH_REPO')
@@ -53,6 +55,11 @@ def main():
 
   counts = gh('release', 'view', args.release, '--repo', args.repo, '--json', 'assets',
               '--jq', '.assets[] | select(.name | endswith(".exe")) | "\\(.name) \\(.downloadCount)"')
+  if args.installer is not None:
+    counts = '\n'.join(line for line in counts.splitlines() if line.split()[0] in args.installer)
+  if not counts:
+    print('No installers to record')
+    return
 
   header, table = ['date'], {}
   with tempfile.TemporaryDirectory() as tmp:

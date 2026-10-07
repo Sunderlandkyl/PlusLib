@@ -440,8 +440,8 @@ jobs:
   # PUBLISH
   ########
   # Replace the installers of the development pre-release with tonight's.
-  # Requires every build above to have succeeded so that the release never
-  # holds installers from different nights.
+  # Runs even if some builds failed; their installers of a previous night
+  # stay on the release.
   publish_release:
     needs:
       - build_plus_x64
@@ -455,7 +455,7 @@ jobs:
       - build_plus_Win32_thorlabs
       - build_plus_Win32_interson
       - build_plus_Win32_telemed
-    if: ${{ github.event_name == 'schedule' || inputs.publish-release == true }}
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || inputs.publish-release == true) }}
     uses: ./.github/workflows/publish-nightly.yml
     permissions:
       contents: write
