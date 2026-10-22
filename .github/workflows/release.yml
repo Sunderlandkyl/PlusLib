@@ -9,11 +9,23 @@ name: Release
 #
 # Run it by hand on the tag of the release to build the installers again. The
 # notes written for the release are kept; only the device table is replaced.
+# A manual run may build PlusApp and PlusBuild from other refs.
 
 on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      plusapp-ref:
+        description: 'PlusApp branch, tag or commit (default: the Plus-<major>.<minor> branch)'
+        required: false
+        type: string
+        default: ''
+      plusbuild-ref:
+        description: 'PlusBuild branch, tag or commit (default: the Plus-<major>.<minor> branch)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   prepare:
@@ -21,7 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.check.outputs.tag }}
-      branch: ${{ steps.check.outputs.branch }}
+      plusapp-ref: ${{ steps.check.outputs.plusapp-ref }}
+      plusbuild-ref: ${{ steps.check.outputs.plusbuild-ref }}
     steps:
     - uses: actions/checkout@v7
       with:
@@ -33,6 +46,8 @@ jobs:
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
+        PLUSAPP_REF: ${{ inputs.plusapp-ref }}
+        PLUSBUILD_REF: ${{ inputs.plusbuild-ref }}
       run: |
         set -euo pipefail
         tag=$GITHUB_REF_NAME
@@ -54,8 +69,27 @@ jobs:
           echo "$tag is not a published release"
           exit 1
         fi
+
+        # PlusApp and PlusBuild are built from their release branch unless a
+        # manual run says otherwise. Check now that the refs exist, not hours
+        # later in the build jobs.
+        plusapp_ref=${PLUSAPP_REF:-$branch}
+        plusbuild_ref=${PLUSBUILD_REF:-$branch}
+        for spec in "PlusApp $plusapp_ref" "PlusBuild $plusbuild_ref"; do
+          set -- $spec
+          if [[ $2 =~ ^[0-9a-f]{40}$ ]]; then
+            continue # a commit cannot be listed
+          fi
+          if ! git ls-remote --exit-code --heads --tags "https://github.com/PlusToolkit/$1.git" "$2" >/dev/null; then
+            echo "PlusToolkit/$1 has no branch or tag $2"
+            exit 1
+          fi
+        done
+        echo "PlusApp: $plusapp_ref, PlusBuild: $plusbuild_ref"
+
         echo "tag=$tag" >> "$GITHUB_OUTPUT"
-        echo "branch=$branch" >> "$GITHUB_OUTPUT"
+        echo "plusapp-ref=$plusapp_ref" >> "$GITHUB_OUTPUT"
+        echo "plusbuild-ref=$plusbuild_ref" >> "$GITHUB_OUTPUT"
 
   build:
     needs: prepare
@@ -64,8 +98,8 @@ jobs:
       pltools-access-token: ${{ secrets.PLTOOLS_ACCESS_TOKEN }}
     with:
       pluslib-tag: ${{ github.sha }}
-      plusapp-tag: ${{ needs.prepare.outputs.branch }}
-      plusbuild-tag: ${{ needs.prepare.outputs.branch }}
+      plusapp-tag: ${{ needs.prepare.outputs.plusapp-ref }}
+      plusbuild-tag: ${{ needs.prepare.outputs.plusbuild-ref }}
       plus-cache-key-prefix: plus-release
       clear-plus-cache: true
 
