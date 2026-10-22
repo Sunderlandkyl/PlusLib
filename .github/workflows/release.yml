@@ -147,23 +147,12 @@ jobs:
         ls -l upload
         gh release upload "$TAG" upload/*.exe --clobber
 
-        # The table of the devices each installer supports, from the device
-        # lists in the artifacts and, for the installers of a previous run
-        # that were not rebuilt, from the supported-devices.json asset.
-        python3 .github/scripts/supported-devices.py --release "$TAG" --artifacts installers/*/ > devices.md
-
-        # Add the table to the notes of the release, replacing the one of a
-        # previous run (between the markers) and keeping everything else.
-        gh release view "$TAG" --json body --jq .body | tr -d '\r' \
-          | awk '/<!-- supported-devices -->/ { skip = 1 } !skip { print } /<!-- \/supported-devices -->/ { skip = 0 }' \
-          | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > notes.md
-        {
-          echo
-          echo '<!-- supported-devices -->'
-          cat devices.md
-          echo '<!-- /supported-devices -->'
-        } >> notes.md
-        gh release edit "$TAG" --notes-file notes.md
+        # Add the table of the devices each installer supports to the notes
+        # of the release, from the device lists in the artifacts and, for the
+        # installers of a previous run that were not rebuilt, from the
+        # supported-devices.json asset. The notes written for the release are
+        # kept; the table of a previous run is replaced.
+        python3 .github/scripts/supported-devices.py --release "$TAG" --artifacts installers/*/ --update-notes
 
         if [ "${{ needs.build.result }}" != "success" ]; then
           echo "Some builds failed; their installers are missing from the release. Re-run the failed jobs."

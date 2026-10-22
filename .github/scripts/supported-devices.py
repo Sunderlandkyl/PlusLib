@@ -7,8 +7,9 @@ as SupportedDevices.txt next to the installer in its artifact. The lists of all
 the installers on the release are kept in supported-devices.json, an asset of
 the release, so that a package that is not rebuilt keeps its list.
 
-The table is printed as Markdown, to be added to the release notes. Requires
-the gh CLI.
+The table is printed as Markdown. With --update-notes it is also added to the
+notes of the release, between HTML comment markers, replacing the table of a
+previous run and keeping the rest of the notes. Requires the gh CLI.
 """
 
 import argparse
@@ -27,10 +28,23 @@ SOFTWARE_VERSION = re.compile(r'Software version:\s*(.*\S)')
 #   - NDITracker (ver: Plus-2.9.0)
 DEVICE = re.compile(r'\s*-\s+(\S+)\s+\(ver:\s*(.*?)\s*\)\s*$')
 DEVICES_FILE = 'SupportedDevices.txt'
+# The table sits between these in the release notes.
+NOTES_START = '<!-- supported-devices -->'
+NOTES_END = '<!-- /supported-devices -->'
 
 
 def gh(*args):
   return subprocess.run(['gh', *args], check=True, text=True, stdout=subprocess.PIPE).stdout
+
+
+def with_table(notes, table):
+  """The notes with the table at the end, in place of the one of a previous run."""
+  notes = notes.replace('\r\n', '\n')
+  start, end = notes.find(NOTES_START), notes.find(NOTES_END)
+  if 0 <= start < end:
+    notes = re.sub(r'\n{3,}', '\n\n', notes[:start] + notes[end + len(NOTES_END):])
+  notes = notes.strip('\n')
+  return (notes + '\n\n' if notes else '') + f'{NOTES_START}\n{table.strip(chr(10))}\n{NOTES_END}\n'
 
 
 def parse_devices(text):
@@ -121,6 +135,9 @@ def main():
   parser.add_argument('--state', default='supported-devices.json',
                       help='name of the release asset that keeps the device lists (default: %(default)s)')
   parser.add_argument('--no-upload', action='store_true', help='do not update the release asset')
+  parser.add_argument('--update-notes', nargs='?', const='', metavar='FILE',
+                      help='add the table to the notes of the release, replacing the one of a previous run; '
+                           'the rest of the notes is kept, or taken from FILE')
   args = parser.parse_args()
   if not args.repo:
     sys.exit('No repository: pass --repo or set GH_REPO')
@@ -151,7 +168,20 @@ def main():
       gh('release', 'upload', args.release, '--repo', args.repo, path, '--clobber')
       print(f'Uploaded {args.state}: {len(state)} of {len(packages)} packages', file=sys.stderr)
 
-  print(render(state, packages))
+    table = render(state, packages)
+    print(table)
+
+    if args.update_notes is not None:
+      if args.update_notes:
+        with open(args.update_notes, encoding='utf-8') as f:
+          notes = f.read()
+      else:
+        notes = gh(*release, '--json', 'body', '--jq', '.body')
+      path = os.path.join(tmp, 'notes.md')
+      with open(path, 'w', encoding='utf-8') as f:
+        f.write(with_table(notes, table))
+      gh('release', 'edit', args.release, '--repo', args.repo, '--notes-file', path)
+      print('Updated the release notes', file=sys.stderr)
 
 
 if __name__ == '__main__':
