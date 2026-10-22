@@ -16,7 +16,7 @@ INCLUDE(CMake/PlusLibMacros.cmake)
 # Set project version number
 SET(PLUSLIB_VERSION_MAJOR "2")
 SET(PLUSLIB_VERSION_MINOR "9")
-SET(PLUSLIB_VERSION_PATCH "0")
+SET(PLUSLIB_VERSION_PATCH "1")
 SET(PLUSLIB_VERSION ${PLUSLIB_VERSION_MAJOR}.${PLUSLIB_VERSION_MINOR}.${PLUSLIB_VERSION_PATCH})
 
 # Set project install folders, these paths should be relative to ${CMAKE_INTALL_PREFIX}, absolute paths will break things
