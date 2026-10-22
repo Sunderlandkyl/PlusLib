@@ -1,12 +1,14 @@
 name: Release
 
-# Builds the installers of a stable release when it is published and uploads
-# them to it. The release is tagged Plus-<major>.<minor>.<patch> on the
-# release branch of PlusLib; PlusApp and PlusBuild are built from their
-# branch of the same name, Plus-<major>.<minor>. Pre-releases are left to the
-# nightly workflow.
+# Builds the installers of a stable release when it is published, uploads
+# them to it and adds the table of the devices they support to the release
+# notes. The release is tagged Plus-<major>.<minor>.<patch> on the release
+# branch of PlusLib; PlusApp and PlusBuild are built from their branch of the
+# same name, Plus-<major>.<minor>. Pre-releases are left to the nightly
+# workflow.
 #
-# Run it by hand on the tag of the release to build the installers again.
+# Run it by hand on the tag of the release to build the installers again. The
+# notes written for the release are kept; only the device table is replaced.
 
 on:
   release:
@@ -76,7 +78,13 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/download-artifact@v7
+    # Only the script that makes the device table is needed.
+    - uses: actions/checkout@v7
+      with:
+        sparse-checkout: .github/scripts/supported-devices.py
+        sparse-checkout-cone-mode: false
+
+    - uses: actions/download-artifact@v8
       with:
         pattern: PlusApp-*
         path: installers
@@ -104,6 +112,24 @@ jobs:
         fi
         ls -l upload
         gh release upload "$TAG" upload/*.exe --clobber
+
+        # The table of the devices each installer supports, from the device
+        # lists in the artifacts and, for the installers of a previous run
+        # that were not rebuilt, from the supported-devices.json asset.
+        python3 .github/scripts/supported-devices.py --release "$TAG" --artifacts installers/*/ > devices.md
+
+        # Add the table to the notes of the release, replacing the one of a
+        # previous run (between the markers) and keeping everything else.
+        gh release view "$TAG" --json body --jq .body | tr -d '\r' \
+          | awk '/<!-- supported-devices -->/ { skip = 1 } !skip { print } /<!-- \/supported-devices -->/ { skip = 0 }' \
+          | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > notes.md
+        {
+          echo
+          echo '<!-- supported-devices -->'
+          cat devices.md
+          echo '<!-- /supported-devices -->'
+        } >> notes.md
+        gh release edit "$TAG" --notes-file notes.md
 
         if [ "${{ needs.build.result }}" != "success" ]; then
           echo "Some builds failed; their installers are missing from the release. Re-run the failed jobs."
