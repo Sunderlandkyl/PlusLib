@@ -16,6 +16,9 @@ See License.txt for details.
 #include <vtkObjectFactory.h>
 
 // Order matters, leave these at the bottom
+#if defined(_MSC_VER)
+  #include <windows.h> // LoadLibraryA
+#endif
 #include <BmodeDLL.h>
 #include <usbProbeDLL_net.h>
 
@@ -298,6 +301,17 @@ int CALLBACK ProbeDetached()
 PlusStatus vtkPlusIntersonVideoSource::InternalConnect()
 {
   LOG_TRACE("vtkPlusIntersonVideoSource::InternalConnect");
+
+#if defined(_MSC_VER)
+  // With MSVC the SDK DLLs are delay-loaded (see CMakeLists.txt). Load them
+  // here so that a missing Interson installation is reported instead of
+  // raising a delay-load exception on the first SDK call.
+  if (LoadLibraryA("USBprobe.dll") == NULL || LoadLibraryA("BmodeUSB.dll") == NULL)
+  {
+    LOG_ERROR("Failed to load the Interson SDK libraries (USBprobe.dll, BmodeUSB.dll). Install the Interson USB probe driver.");
+    return PLUS_FAIL;
+  }
+#endif
 
   LOG_DEBUG("Interson Bmode DLL version " << bmDLLVer() << ", USB probe DLL version " << usbDLLVer());
 

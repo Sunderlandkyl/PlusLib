@@ -17,6 +17,10 @@ See License.txt for details.
 //#include <stdio.h>      // stdio for file operations
 //#include <time.h>       // time stamps
 
+#if defined(_MSC_VER)
+  #include <windows.h> // LoadLibraryA
+#endif
+
 // ThorLabs SDK headers
 #include <visa.h>
 #include "TLCCS.h"
@@ -99,6 +103,17 @@ PlusStatus vtkPlusThorLabsVideoSource::InternalConnect()
     // already connected
     return PLUS_SUCCESS;
   }
+
+#if defined(_MSC_VER)
+  // With MSVC the SDK DLLs are delay-loaded (see CMakeLists.txt). Load them
+  // here so that a missing NI-VISA installation is reported instead of
+  // raising a delay-load exception on the first SDK call.
+  if (LoadLibraryA("TLCCS_32.dll") == NULL || LoadLibraryA("VISA32.dll") == NULL)
+  {
+    LOG_ERROR("Failed to load the Thorlabs spectrometer SDK libraries (TLCCS_32.dll, VISA32.dll). Install the Thorlabs spectrometer software, which includes the NI-VISA runtime.");
+    return PLUS_FAIL;
+  }
+#endif
 
   ViStatus err = VI_SUCCESS;
 

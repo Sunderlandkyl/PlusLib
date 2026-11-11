@@ -243,6 +243,12 @@ LIST(APPEND ${PROJECT_NAME}_HDRS
 SET(${PROJECT_NAME}_INSTALL_INCLUDE_FILES)
 SET(External_Libraries_Install)
 SET(External_Libraries_Debug)
+# Vendor DLLs that are delay-loaded (MSVC only), so that the library loads
+# without the vendor's driver or runtime installed; the DLL is looked up
+# when a device of that vendor connects. The device checks for it in
+# InternalConnect to report a missing installation instead of raising a
+# delay-load exception.
+SET(${PROJECT_NAME}_DELAYLOAD_DLLS)
 
 SET(${PROJECT_NAME}_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -1762,6 +1768,9 @@ IF(PLUS_USE_INTERSON_VIDEO)
     ${INTERSON_LIBRARY_DIR}/BmodeDLL${CMAKE_STATIC_LIBRARY_SUFFIX}
     ${INTERSON_LIBRARY_DIR}/USBprobeDLL${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
+  # USBprobe.dll needs the Interson USB driver (WDAPI1010.dll) and the
+  # Visual C++ 2008 runtime, which the Interson installer provides.
+  LIST(APPEND ${PROJECT_NAME}_DELAYLOAD_DLLS USBprobe.dll BmodeUSB.dll)
   LIST(APPEND ${PROJECT_NAME}_INCLUDE_DIRS
     ${INTERSON_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Interson
@@ -2057,6 +2066,9 @@ IF(PLUS_USE_THORLABS_VIDEO)
     ${THORLABS_LIBRARY_DIR}/TLCCS_32${CMAKE_STATIC_LIBRARY_SUFFIX}
     ${THORLABS_LIBRARY_DIR}/visa32${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
+  # TLCCS_32.dll and VISA32.dll belong to the NI-VISA runtime that the
+  # Thorlabs spectrometer software installs.
+  LIST(APPEND ${PROJECT_NAME}_DELAYLOAD_DLLS TLCCS_32.dll VISA32.dll)
 ENDIF()
 
 # --------------------------------------------------------------------------
@@ -2807,6 +2819,13 @@ ENDIF()
 
 TARGET_LINK_LIBRARIES(vtk${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_LIBS})
 TARGET_LINK_LIBRARIES(vtk${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_PRIVATE_LIBS})
+
+IF(MSVC AND ${PROJECT_NAME}_DELAYLOAD_DLLS)
+  FOREACH(_dll IN LISTS ${PROJECT_NAME}_DELAYLOAD_DLLS)
+    SET_PROPERTY(TARGET vtk${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /DELAYLOAD:${_dll}")
+  ENDFOREACH()
+  TARGET_LINK_LIBRARIES(vtk${PROJECT_NAME} PRIVATE delayimp)
+ENDIF()
 
 IF(PLUS_USE_BLACKMAGIC_DECKLINK)
   DeckLinkGenerateAPIFiles(vtk${PROJECT_NAME})
